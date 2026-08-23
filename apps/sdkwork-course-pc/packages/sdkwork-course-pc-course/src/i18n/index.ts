@@ -1,4 +1,5 @@
 import { createInstance } from 'i18next';
+import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import zhCN from './locales/zh-CN/course.json';
 import enUS from './locales/en-US/course.json';
@@ -30,7 +31,7 @@ function resolveInitialLanguage(): SupportedLanguage {
   return 'zh-CN';
 }
 
-const i18n = createInstance();
+const i18n: i18next.i18n = createInstance();
 i18n.use(initReactI18next).init({
   resources: { 'zh-CN': { course: zhCN }, 'en-US': { course: enUS } },
   lng: resolveInitialLanguage(),
