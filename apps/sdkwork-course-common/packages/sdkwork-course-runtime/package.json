@@ -15,7 +15,8 @@
   "dependencies": {
     "@sdkwork/course-app-sdk": "workspace:*",
     "@sdkwork/course-sdk-ports": "workspace:*",
-    "@sdkwork/sdk-common": "workspace:*"
+    "@sdkwork/sdk-common": "workspace:*",
+    "@sdkwork/utils": "workspace:*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

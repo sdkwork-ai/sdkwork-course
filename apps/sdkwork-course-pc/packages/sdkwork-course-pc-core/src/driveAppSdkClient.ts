@@ -3,6 +3,7 @@ import {
   type SdkworkDriveAppClient,
   type SdkworkAppConfig,
 } from '@sdkwork/drive-app-sdk';
+import { uuid } from '@sdkwork/utils/id';
 
 import {
   getCourseGlobalTokenManager,
@@ -51,7 +52,7 @@ export interface CourseDriveUploadResult {
 
 export async function uploadCourseMediaFile(file: File): Promise<CourseDriveUploadResult> {
   const driveClient = getDriveAppSdkClient();
-  const appResourceId = crypto.randomUUID();
+  const appResourceId = uuid();
   const uploadResult = await driveClient.uploader.upload({
     file,
     appResourceType: 'course_media',

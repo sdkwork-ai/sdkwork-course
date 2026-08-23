@@ -23,6 +23,7 @@ import type {
   CourseReaction,
   CourseSection,
 } from "@sdkwork/course-sdk-ports";
+import { uuid } from "@sdkwork/utils/id";
 
 function firstString(record: Record<string, unknown>, ...keys: string[]): string | undefined {
   for (const key of keys) {
@@ -216,7 +217,7 @@ export function createGeneratedCourseAppSdkPort(client: SdkworkAppClient): Cours
         const payload = await client.courseEnrollments.create(
           offeringId,
           { source: command.source ?? "self_service" },
-          { idempotencyKey: crypto.randomUUID() },
+          { idempotencyKey: uuid() },
         );
         return mapCourseEnrollment(payload as Record<string, unknown>);
       },

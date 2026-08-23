@@ -1,3 +1,5 @@
+import { uuid } from '@sdkwork/utils/id';
+
 import type { CourseAppSdkClient } from './courseAppSdkClient';
 import { extractSdkListItems } from './courseSdkPayload';
 
@@ -23,7 +25,7 @@ export async function enrollInFirstCourseOffering(
   await sdk.courseEnrollments.create(
     offeringId,
     { source: 'self_service' },
-    { idempotencyKey: crypto.randomUUID() },
+    { idempotencyKey: uuid() },
   );
 
   return offeringId;
