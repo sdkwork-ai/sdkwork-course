@@ -40,6 +40,38 @@ profiles:
         tls: dtupay.cn
         mode: web+api
         web: adaptive
+      - domain: course-test.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+      - domain: course-test.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+      - domain: course-test.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+      - domain: course-test.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+      - domain: course-test.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+      - domain: course-test.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+      - domain: course-test.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+      - domain: course-test.86offer.cn
+        tls: 86offer.cn
+        mode: web+api
+        web: adaptive
     packages: []
     overrides:
       topology:
@@ -87,6 +119,38 @@ profiles:
         tls: dtupay.cn
         mode: web+api
         web: adaptive
+      - domain: course-staging.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+      - domain: course-staging.86offer.cn
+        tls: 86offer.cn
+        mode: web+api
+        web: adaptive
     packages: []
     overrides:
       topology:
@@ -132,6 +196,38 @@ profiles:
         web: adaptive
       - domain: course.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: adaptive
+      - domain: course.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+      - domain: course.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+      - domain: course.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+      - domain: course.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+      - domain: course.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+      - domain: course.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+      - domain: course.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+      - domain: course.86offer.cn
+        tls: 86offer.cn
         mode: web+api
         web: adaptive
     packages: []
@@ -188,6 +284,46 @@ profiles:
         apiPathStyle: full-prefix
       - domain: course.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.skubc.com
+        tls: skubc.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.skubc.cn
+        tls: skubc.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.zowalk.com
+        tls: zowalk.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.zowalk.cn
+        tls: zowalk.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.offer86.com
+        tls: offer86.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.offer86.cn
+        tls: offer86.cn
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.86offer.com
+        tls: 86offer.com
+        mode: web+api
+        web: adaptive
+        apiPathStyle: full-prefix
+      - domain: course.86offer.cn
+        tls: 86offer.cn
         mode: web+api
         web: adaptive
         apiPathStyle: full-prefix
