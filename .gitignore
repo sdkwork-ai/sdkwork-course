@@ -62,3 +62,9 @@ Thumbs.db
 **/src/index.d.ts
 **/src/index.js.map
 **/src/index.d.ts.map
+
+# TypeScript compiled outputs in src directories
+**/src/**/*.js
+**/src/**/*.d.ts
+**/src/**/*.js.map
+**/src/**/*.d.ts.map
