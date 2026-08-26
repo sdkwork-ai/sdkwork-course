@@ -18,6 +18,7 @@
     "appApiPrefix": "/app/v3/api",
     "backendApiPrefix": "/backend/v3/api",
     "supportedDeploymentProfiles": [
+      "standalone",
       "cloud"
     ],
     "defaultDeploymentProfile": "cloud"
