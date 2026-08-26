@@ -68,3 +68,6 @@ Thumbs.db
 **/src/**/*.d.ts
 **/src/**/*.js.map
 **/src/**/*.d.ts.map
+
+# Runtime-generated env config (modified by local dev server)
+**/public/runtime-env.json
