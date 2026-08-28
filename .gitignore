@@ -71,3 +71,17 @@ Thumbs.db
 
 # Runtime-generated env config (modified by local dev server)
 **/public/runtime-env.json
+# SDKWork baseline ignore patterns (auto-appended)
+.pnpm-store/
+.turbo/
+**/.turbo/
+*.sqlite-shm
+*.sqlite-wal
+**/test-results/
+*.tsbuildinfo
+**/.cache/
+**/build/
+**/*.bootstrap.local.json
+etc/**/*.local.*
+/etc/secrets/
+
