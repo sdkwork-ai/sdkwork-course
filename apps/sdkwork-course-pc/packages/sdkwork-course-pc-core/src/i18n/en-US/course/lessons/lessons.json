@@ -1,0 +1,12 @@
+{
+  "lessons": {
+    "title": "Course Learning",
+    "content": "Content",
+    "notes": "Notes",
+    "comments": "Comments",
+    "courseCatalog": "Course Catalog",
+    "noContent": "No content description",
+    "duration": "{{minutes}} minutes",
+    "durationUnknown": "Duration unknown"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "reports": {
+    "overview": "概览",
+    "totalCourses": "总课程数",
+    "totalEnrollments": "总报名数",
+    "totalApplications": "总申请数",
+    "publishedCourses": "已发布课程",
+    "learning": "学习报告",
+    "liveSessions": "直播报告"
+  }
+}

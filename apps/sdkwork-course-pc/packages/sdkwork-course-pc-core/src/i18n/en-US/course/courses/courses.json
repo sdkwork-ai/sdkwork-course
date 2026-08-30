@@ -1,0 +1,28 @@
+{
+  "courses": {
+    "title": "Course Center",
+    "subtitle": "Explore our premium courses",
+    "searchPlaceholder": "Search courses...",
+    "allCategories": "All Categories",
+    "noCourses": "No courses",
+    "noCoursesDesc": "No courses found matching your criteria",
+    "lessonsCount": "{{count}} lessons",
+    "studentsCount": "{{count}} students",
+    "rating": "Rating",
+    "noRating": "No rating yet",
+    "enroll": "Enroll Now",
+    "enrolled": "Enrolled",
+    "enrollSuccess": "Enrollment successful",
+    "enrollFailed": "Enrollment failed",
+    "noOfferings": "No available course offerings",
+    "continueLearning": "Continue Learning",
+    "courseDetail": "Course Details",
+    "courseContent": "Course Description",
+    "courseCatalog": "Course Catalog",
+    "instructor": "Instructor",
+    "duration": "Duration",
+    "level": "Level",
+    "category": "Category",
+    "tags": "Tags"
+  }
+}

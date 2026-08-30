@@ -15,7 +15,7 @@
     "manifests": ["package.json"]
   },
   "contracts": {
-    "layerRole": "frontend-runtime",
+    "layerRole": "runtime-composition",
     "publicExports": ["."],
     "providedPorts": [
       { "name": "courseAppSdkClient", "export": "." },

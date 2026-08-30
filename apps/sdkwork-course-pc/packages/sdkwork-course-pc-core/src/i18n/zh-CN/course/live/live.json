@@ -1,0 +1,19 @@
+{
+  "live": {
+    "title": "直播课堂",
+    "subtitle": "参与实时互动学习",
+    "noSessions": "暂无直播课程",
+    "noSessionsDesc": "没有即将开始的直播课程",
+    "liveNow": "直播中",
+    "scheduled": "即将开始",
+    "ended": "已结束",
+    "joinLive": "加入直播",
+    "setReminder": "预约提醒",
+    "watchReplay": "观看回放",
+    "liveDetail": "直播详情",
+    "startTime": "开始时间",
+    "endTime": "结束时间",
+    "actualStart": "实际开始",
+    "description": "直播详情"
+  }
+}

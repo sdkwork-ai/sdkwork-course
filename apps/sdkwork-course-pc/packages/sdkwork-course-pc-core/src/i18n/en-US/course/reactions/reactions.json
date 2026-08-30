@@ -1,0 +1,11 @@
+{
+  "reactions": {
+    "like": "Like",
+    "liked": "Liked",
+    "favorite": "Favorite",
+    "favorited": "Favorited",
+    "save": "Save",
+    "saved": "Saved",
+    "share": "Share"
+  }
+}

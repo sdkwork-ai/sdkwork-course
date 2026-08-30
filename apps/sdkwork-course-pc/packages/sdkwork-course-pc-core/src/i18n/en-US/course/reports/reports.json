@@ -1,0 +1,11 @@
+{
+  "reports": {
+    "overview": "Overview",
+    "totalCourses": "Total Courses",
+    "totalEnrollments": "Total Enrollments",
+    "totalApplications": "Total Applications",
+    "publishedCourses": "Published Courses",
+    "learning": "Learning Report",
+    "liveSessions": "Live Sessions Report"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "progress": {
+    "title": "Learning Progress",
+    "completedLessons": "Completed Lessons",
+    "totalLessons": "Total Lessons",
+    "watchTime": "Watch Time",
+    "startTime": "Start Time",
+    "completionTime": "Completion Time",
+    "completed": "Congratulations! You have completed this course",
+    "hours": "hours",
+    "minutes": "minutes"
+  }
+}

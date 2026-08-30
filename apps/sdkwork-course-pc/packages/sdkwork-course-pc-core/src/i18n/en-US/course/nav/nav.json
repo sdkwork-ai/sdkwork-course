@@ -1,0 +1,13 @@
+{
+  "nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "live": "Live",
+    "myLearning": "My Learning",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings"
+  }
+}

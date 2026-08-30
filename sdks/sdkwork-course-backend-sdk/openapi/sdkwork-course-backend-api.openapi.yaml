@@ -32,7 +32,7 @@
         ],
         "summary": "course Categories list.",
         "description": "course Categories list operation for the course learning domain.",
-        "operationId": "courseCategories.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -180,7 +180,7 @@
         ],
         "summary": "course Categories create.",
         "description": "course Categories create operation for the course learning domain.",
-        "operationId": "courseCategories.create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -294,7 +294,7 @@
         ],
         "summary": "course Categories update.",
         "description": "course Categories update operation for the course learning domain.",
-        "operationId": "courseCategories.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "categoryId",
@@ -415,7 +415,7 @@
         ],
         "summary": "course Categories delete.",
         "description": "course Categories delete operation for the course learning domain.",
-        "operationId": "courseCategories.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "categoryId",
@@ -520,7 +520,7 @@
         ],
         "summary": "course Categories update.",
         "description": "course Categories update operation for the course learning domain.",
-        "operationId": "courseCategories.update",
+        "operationId": "update",
         "parameters": [],
         "responses": {
           "200": {
@@ -634,7 +634,7 @@
         ],
         "summary": "course Instructors list.",
         "description": "course Instructors list operation for the course learning domain.",
-        "operationId": "courseInstructors.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -782,7 +782,7 @@
         ],
         "summary": "course Instructors create.",
         "description": "course Instructors create operation for the course learning domain.",
-        "operationId": "courseInstructors.create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -896,7 +896,7 @@
         ],
         "summary": "course Instructors retrieve.",
         "description": "course Instructors retrieve operation for the course learning domain.",
-        "operationId": "courseInstructors.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "instructorId",
@@ -1006,7 +1006,7 @@
         ],
         "summary": "course Instructors update.",
         "description": "course Instructors update operation for the course learning domain.",
-        "operationId": "courseInstructors.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "instructorId",
@@ -1129,7 +1129,7 @@
         ],
         "summary": "course Instructors status update.",
         "description": "course Instructors update operation for the course learning domain.",
-        "operationId": "courseInstructors.status.update",
+        "operationId": "status.update",
         "parameters": [
           {
             "name": "instructorId",
@@ -1252,7 +1252,7 @@
         ],
         "summary": "courses list.",
         "description": "courses list operation for the course learning domain.",
-        "operationId": "courses.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -1400,7 +1400,7 @@
         ],
         "summary": "courses create.",
         "description": "courses create operation for the course learning domain.",
-        "operationId": "courses.create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -1514,7 +1514,7 @@
         ],
         "summary": "courses retrieve.",
         "description": "courses retrieve operation for the course learning domain.",
-        "operationId": "courses.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "courseId",
@@ -1624,7 +1624,7 @@
         ],
         "summary": "courses update.",
         "description": "courses update operation for the course learning domain.",
-        "operationId": "courses.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "courseId",
@@ -1745,7 +1745,7 @@
         ],
         "summary": "courses delete.",
         "description": "courses delete operation for the course learning domain.",
-        "operationId": "courses.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "courseId",
@@ -1850,7 +1850,7 @@
         ],
         "summary": "courses publish.",
         "description": "courses publish operation for the course learning domain.",
-        "operationId": "courses.publish",
+        "operationId": "publish",
         "parameters": [
           {
             "name": "courseId",
@@ -1973,7 +1973,7 @@
         ],
         "summary": "courses unpublish.",
         "description": "courses unpublish operation for the course learning domain.",
-        "operationId": "courses.unpublish",
+        "operationId": "unpublish",
         "parameters": [
           {
             "name": "courseId",
@@ -2096,7 +2096,7 @@
         ],
         "summary": "course Offerings list.",
         "description": "course Offerings list operation for the course learning domain.",
-        "operationId": "courseOfferings.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -2252,7 +2252,7 @@
         ],
         "summary": "course Offerings create.",
         "description": "course Offerings create operation for the course learning domain.",
-        "operationId": "courseOfferings.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "courseId",
@@ -2375,7 +2375,7 @@
         ],
         "summary": "course Offerings retrieve.",
         "description": "course Offerings retrieve operation for the course learning domain.",
-        "operationId": "courseOfferings.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "offeringId",
@@ -2485,7 +2485,7 @@
         ],
         "summary": "course Offerings update.",
         "description": "course Offerings update operation for the course learning domain.",
-        "operationId": "courseOfferings.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "offeringId",
@@ -2606,7 +2606,7 @@
         ],
         "summary": "course Offerings delete.",
         "description": "course Offerings delete operation for the course learning domain.",
-        "operationId": "courseOfferings.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "offeringId",
@@ -2711,7 +2711,7 @@
         ],
         "summary": "course Offerings publish.",
         "description": "course Offerings publish operation for the course learning domain.",
-        "operationId": "courseOfferings.publish",
+        "operationId": "publish",
         "parameters": [
           {
             "name": "offeringId",
@@ -2834,7 +2834,7 @@
         ],
         "summary": "course Offerings close.",
         "description": "course Offerings close operation for the course learning domain.",
-        "operationId": "courseOfferings.close",
+        "operationId": "close",
         "parameters": [
           {
             "name": "offeringId",
@@ -2957,7 +2957,7 @@
         ],
         "summary": "course Sections list.",
         "description": "course Sections list operation for the course learning domain.",
-        "operationId": "courseSections.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -3113,7 +3113,7 @@
         ],
         "summary": "course Sections create.",
         "description": "course Sections create operation for the course learning domain.",
-        "operationId": "courseSections.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "courseId",
@@ -3236,7 +3236,7 @@
         ],
         "summary": "course Sections update.",
         "description": "course Sections update operation for the course learning domain.",
-        "operationId": "courseSections.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "sectionId",
@@ -3357,7 +3357,7 @@
         ],
         "summary": "course Sections delete.",
         "description": "course Sections delete operation for the course learning domain.",
-        "operationId": "courseSections.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "sectionId",
@@ -3462,7 +3462,7 @@
         ],
         "summary": "course Sections update.",
         "description": "course Sections update operation for the course learning domain.",
-        "operationId": "courseSections.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "courseId",
@@ -3585,7 +3585,7 @@
         ],
         "summary": "course Lessons list.",
         "description": "course Lessons list operation for the course learning domain.",
-        "operationId": "courseLessons.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -3741,7 +3741,7 @@
         ],
         "summary": "course Lessons create.",
         "description": "course Lessons create operation for the course learning domain.",
-        "operationId": "courseLessons.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "courseId",
@@ -3864,7 +3864,7 @@
         ],
         "summary": "course Lessons retrieve.",
         "description": "course Lessons retrieve operation for the course learning domain.",
-        "operationId": "courseLessons.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "lessonId",
@@ -3974,7 +3974,7 @@
         ],
         "summary": "course Lessons update.",
         "description": "course Lessons update operation for the course learning domain.",
-        "operationId": "courseLessons.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "lessonId",
@@ -4095,7 +4095,7 @@
         ],
         "summary": "course Lessons delete.",
         "description": "course Lessons delete operation for the course learning domain.",
-        "operationId": "courseLessons.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "lessonId",
@@ -4200,7 +4200,7 @@
         ],
         "summary": "course Lessons update.",
         "description": "course Lessons update operation for the course learning domain.",
-        "operationId": "courseLessons.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "courseId",
@@ -4323,7 +4323,7 @@
         ],
         "summary": "course Resources list.",
         "description": "course Resources list operation for the course learning domain.",
-        "operationId": "courseResources.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "lessonId",
@@ -4479,7 +4479,7 @@
         ],
         "summary": "course Resources create.",
         "description": "course Resources create operation for the course learning domain.",
-        "operationId": "courseResources.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "lessonId",
@@ -4602,7 +4602,7 @@
         ],
         "summary": "course Resources update.",
         "description": "course Resources update operation for the course learning domain.",
-        "operationId": "courseResources.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "resourceRefId",
@@ -4723,7 +4723,7 @@
         ],
         "summary": "course Resources delete.",
         "description": "course Resources delete operation for the course learning domain.",
-        "operationId": "courseResources.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "resourceRefId",
@@ -4828,7 +4828,7 @@
         ],
         "summary": "course Live Sessions list.",
         "description": "course Live Sessions list operation for the course learning domain.",
-        "operationId": "courseLiveSessions.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -4976,7 +4976,7 @@
         ],
         "summary": "course Live Sessions create.",
         "description": "course Live Sessions create operation for the course learning domain.",
-        "operationId": "courseLiveSessions.create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -5090,7 +5090,7 @@
         ],
         "summary": "course Live Sessions retrieve.",
         "description": "course Live Sessions retrieve operation for the course learning domain.",
-        "operationId": "courseLiveSessions.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5200,7 +5200,7 @@
         ],
         "summary": "course Live Sessions update.",
         "description": "course Live Sessions update operation for the course learning domain.",
-        "operationId": "courseLiveSessions.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5323,7 +5323,7 @@
         ],
         "summary": "course Live Sessions start.",
         "description": "course Live Sessions start operation for the course learning domain.",
-        "operationId": "courseLiveSessions.start",
+        "operationId": "start",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5446,7 +5446,7 @@
         ],
         "summary": "course Live Sessions end.",
         "description": "course Live Sessions end operation for the course learning domain.",
-        "operationId": "courseLiveSessions.end",
+        "operationId": "end",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5569,7 +5569,7 @@
         ],
         "summary": "course Live Sessions cancel.",
         "description": "course Live Sessions cancel operation for the course learning domain.",
-        "operationId": "courseLiveSessions.cancel",
+        "operationId": "cancel",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5692,7 +5692,7 @@
         ],
         "summary": "course Live Sessions replay create.",
         "description": "course Live Sessions create operation for the course learning domain.",
-        "operationId": "courseLiveSessions.replay.create",
+        "operationId": "replay.create",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5815,7 +5815,7 @@
         ],
         "summary": "course Live Sessions replay publish.",
         "description": "course Live Sessions publish operation for the course learning domain.",
-        "operationId": "courseLiveSessions.replay.publish",
+        "operationId": "replay.publish",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -5938,7 +5938,7 @@
         ],
         "summary": "course Enrollments list.",
         "description": "course Enrollments list operation for the course learning domain.",
-        "operationId": "courseEnrollments.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -6088,7 +6088,7 @@
         ],
         "summary": "course Enrollments create.",
         "description": "course Enrollments create operation for the course learning domain.",
-        "operationId": "courseEnrollments.create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -6202,7 +6202,7 @@
         ],
         "summary": "course Enrollments revoke.",
         "description": "course Enrollments revoke operation for the course learning domain.",
-        "operationId": "courseEnrollments.revoke",
+        "operationId": "revoke",
         "parameters": [
           {
             "name": "enrollmentId",
@@ -6325,7 +6325,7 @@
         ],
         "summary": "course Progress list.",
         "description": "course Progress list operation for the course learning domain.",
-        "operationId": "courseProgress.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -6475,7 +6475,7 @@
         ],
         "summary": "course Progress retrieve.",
         "description": "course Progress retrieve operation for the course learning domain.",
-        "operationId": "courseProgress.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "enrollmentId",
@@ -6587,7 +6587,7 @@
         ],
         "summary": "course Lesson Progress update.",
         "description": "course Lesson Progress update operation for the course learning domain.",
-        "operationId": "courseLessonProgress.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "lessonProgressId",
@@ -6710,7 +6710,7 @@
         ],
         "summary": "course Comments list.",
         "description": "course Comments list operation for the course learning domain.",
-        "operationId": "courseComments.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -6860,7 +6860,7 @@
         ],
         "summary": "course Comments update.",
         "description": "course Comments update operation for the course learning domain.",
-        "operationId": "courseComments.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "commentId",
@@ -6983,7 +6983,7 @@
         ],
         "summary": "course Comments delete.",
         "description": "course Comments delete operation for the course learning domain.",
-        "operationId": "courseComments.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "commentId",
@@ -7088,7 +7088,7 @@
         ],
         "summary": "course Reactions list.",
         "description": "course Reactions list operation for the course learning domain.",
-        "operationId": "courseReactions.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -7238,7 +7238,7 @@
         ],
         "summary": "course Applications list.",
         "description": "course Applications list operation for the course learning domain.",
-        "operationId": "courseApplications.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -7388,7 +7388,7 @@
         ],
         "summary": "course Applications retrieve.",
         "description": "course Applications retrieve operation for the course learning domain.",
-        "operationId": "courseApplications.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "applicationId",
@@ -7500,7 +7500,7 @@
         ],
         "summary": "course Applications update.",
         "description": "course Applications update operation for the course learning domain.",
-        "operationId": "courseApplications.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "applicationId",
@@ -7623,7 +7623,7 @@
         ],
         "summary": "course Applications convert.",
         "description": "course Applications convert operation for the course learning domain.",
-        "operationId": "courseApplications.convert",
+        "operationId": "convert",
         "parameters": [
           {
             "name": "applicationId",
@@ -7746,7 +7746,7 @@
         ],
         "summary": "course Reports overview retrieve.",
         "description": "course Reports retrieve operation for the course learning domain.",
-        "operationId": "courseReports.overview.retrieve",
+        "operationId": "overview.retrieve",
         "parameters": [],
         "responses": {
           "200": {
@@ -7849,7 +7849,7 @@
         ],
         "summary": "course Reports learning list.",
         "description": "course Reports list operation for the course learning domain.",
-        "operationId": "courseReports.learning.list",
+        "operationId": "learning.list",
         "parameters": [
           {
             "name": "q",
@@ -7999,7 +7999,7 @@
         ],
         "summary": "course Reports live Sessions list.",
         "description": "course Reports list operation for the course learning domain.",
-        "operationId": "courseReports.liveSessions.list",
+        "operationId": "liveSessions.list",
         "parameters": [
           {
             "name": "q",
@@ -8149,7 +8149,7 @@
         ],
         "summary": "course Audit Logs list.",
         "description": "course Audit Logs list operation for the course learning domain.",
-        "operationId": "courseAuditLogs.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -8299,7 +8299,7 @@
         ],
         "summary": "course Audit Logs retrieve.",
         "description": "course Audit Logs retrieve operation for the course learning domain.",
-        "operationId": "courseAuditLogs.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "auditLogId",

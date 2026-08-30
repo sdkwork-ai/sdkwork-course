@@ -26,7 +26,8 @@
   "defaults": {
     "developmentProfileId": "standalone.development",
     "productionProfileId": "cloud.production",
-    "gatewayBind": "127.0.0.1:3900"
+    "gatewayBind": "127.0.0.1:3900",
+    "desktopBuildProfileId": "cloud.production"
   },
   "profileFiles": {
     "standalone.development": "etc/topology/standalone.development.env",
@@ -392,7 +393,8 @@
         ],
         "healthSurfaces": [
           "application.public-ingress"
-        ]
+        ],
+        "browserDeliveries": []
       },
       "standalone.production": {
         "processes": [
@@ -406,6 +408,24 @@
         ],
         "healthSurfaces": [
           "application.public-ingress"
+        ],
+        "browserDeliveries": [
+          {
+            "id": "course-static-v1",
+            "applicationRoot": "apps/sdkwork-course-pc",
+            "clientArchitectures": [
+              "pc-web",
+              "h5"
+            ],
+            "originMode": "same-origin",
+            "deliveryMode": "gateway-static",
+            "apiSurfaceId": "application.public-ingress",
+            "hostProcessId": "application.public-ingress",
+            "buildOutput": "apps/sdkwork-course-pc/dist",
+            "runtimeRootEnv": "SDKWORK_COURSE_PC_STATIC_ROOT",
+            "mountPath": "/",
+            "spaFallback": "/index.html"
+          }
         ]
       },
       "cloud.development": {
@@ -555,7 +575,8 @@
       },
       "standalone.demo": {
         "processes": [],
-        "healthSurfaces": []
+        "healthSurfaces": [],
+        "browserDeliveries": []
       },
       "cloud.demo": {
         "processes": [],

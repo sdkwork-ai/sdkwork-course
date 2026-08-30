@@ -1,0 +1,13 @@
+{
+  "nav": {
+    "home": "首页",
+    "courses": "课程",
+    "live": "直播",
+    "myLearning": "我的学习",
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出",
+    "profile": "个人资料",
+    "settings": "设置"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "common": {
+    "appName": "SDKWork Course",
+    "loading": "加载中...",
+    "error": "出错了",
+    "retry": "重试",
+    "refresh": "刷新页面",
+    "back": "返回",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "noData": "暂无数据",
+    "noResults": "没有找到结果",
+    "success": "操作成功",
+    "failed": "操作失败"
+  }
+}

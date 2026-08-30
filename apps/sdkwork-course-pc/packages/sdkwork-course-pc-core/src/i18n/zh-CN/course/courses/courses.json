@@ -1,0 +1,28 @@
+{
+  "courses": {
+    "title": "课程中心",
+    "subtitle": "探索我们的精品课程",
+    "searchPlaceholder": "搜索课程...",
+    "allCategories": "所有分类",
+    "noCourses": "暂无课程",
+    "noCoursesDesc": "没有找到符合条件的课程",
+    "lessonsCount": "{{count}}课",
+    "studentsCount": "{{count}}人",
+    "rating": "评分",
+    "noRating": "暂无评分",
+    "enroll": "立即报名",
+    "enrolled": "已报名",
+    "enrollSuccess": "报名成功",
+    "enrollFailed": "报名失败",
+    "noOfferings": "暂无可报名的课程班次",
+    "continueLearning": "继续学习",
+    "courseDetail": "课程详情",
+    "courseContent": "课程简介",
+    "courseCatalog": "课程目录",
+    "instructor": "讲师",
+    "duration": "时长",
+    "level": "难度",
+    "category": "分类",
+    "tags": "标签"
+  }
+}

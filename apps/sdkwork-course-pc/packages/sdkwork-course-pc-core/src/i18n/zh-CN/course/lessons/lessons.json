@@ -1,0 +1,12 @@
+{
+  "lessons": {
+    "title": "课程学习",
+    "content": "课程内容",
+    "notes": "学习笔记",
+    "comments": "评论",
+    "courseCatalog": "课程目录",
+    "noContent": "暂无内容描述",
+    "duration": "{{minutes}}分钟",
+    "durationUnknown": "时长未知"
+  }
+}

@@ -15,7 +15,7 @@
     "manifests": ["package.json"]
   },
   "contracts": {
-    "layerRole": "frontend-contract",
+    "layerRole": "contract",
     "publicExports": ["."],
     "providedPorts": [{ "name": "courseAppSdkPort", "export": "." }],
     "requiredPorts": [

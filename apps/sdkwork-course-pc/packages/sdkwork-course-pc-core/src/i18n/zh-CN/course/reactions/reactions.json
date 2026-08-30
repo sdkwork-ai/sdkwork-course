@@ -1,0 +1,11 @@
+{
+  "reactions": {
+    "like": "点赞",
+    "liked": "已点赞",
+    "favorite": "收藏",
+    "favorited": "已收藏",
+    "save": "保存",
+    "saved": "已保存",
+    "share": "分享"
+  }
+}

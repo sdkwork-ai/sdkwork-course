@@ -1,0 +1,12 @@
+{
+  "enrollments": {
+    "title": "My Learning",
+    "subtitle": "View your learning progress and courses",
+    "noEnrollments": "No enrollments yet",
+    "noEnrollmentsDesc": "Explore courses in the course center",
+    "browseCourses": "Browse Courses",
+    "active": "Learning",
+    "completed": "Completed",
+    "enrolledAt": "Enrolled At"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "progress": {
+    "title": "学习进度",
+    "completedLessons": "已完成课时",
+    "totalLessons": "总课时",
+    "watchTime": "学习时长",
+    "startTime": "开始时间",
+    "completionTime": "完成时间",
+    "completed": "恭喜！你已完成本课程的学习",
+    "hours": "小时",
+    "minutes": "分钟"
+  }
+}

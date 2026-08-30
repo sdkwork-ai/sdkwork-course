@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "kind": "sdkwork.app.config",
+  "schemaVersion": 3,
+  "kind": "sdkwork.app",
   "app": {
     "name": "sdkwork-course",
     "displayName": "SDKWork Course",
@@ -13,34 +13,6 @@
     "appType": "APP_HTML",
     "officialWebsiteUrl": "https://sdkwork.com/apps/sdkwork-course"
   },
-  "runtime": {
-    "apiBaseUrl": "http://localhost:8080",
-    "appApiPrefix": "/app/v3/api",
-    "backendApiPrefix": "/backend/v3/api",
-    "supportedDeploymentProfiles": [
-      "standalone",
-      "cloud"
-    ],
-    "defaultDeploymentProfile": "cloud"
-  },
-  "sdk": {
-    "appApiAuthority": "sdkwork-course-app-api",
-    "backendApiAuthority": "sdkwork-course-backend-api",
-    "appSdkFamily": "sdkwork-course-app-sdk",
-    "backendSdkFamily": "sdkwork-course-backend-sdk"
-  },
-  "features": {
-    "categories": true,
-    "courses": true,
-    "lessons": true,
-    "liveSessions": true,
-    "enrollments": true,
-    "progress": true,
-    "comments": true,
-    "reactions": true,
-    "applications": true,
-    "auditLogs": true
-  },
   "backend": {
     "profileKey": "backend-root-admin",
     "accessTokenPermissionScope": [
@@ -51,5 +23,193 @@
     ],
     "tenantId": "100001",
     "organizationId": "0"
+  },
+  "runtime": {
+    "apiBaseUrl": "http://localhost:8080",
+    "appApiPrefix": "/app/v3/api",
+    "backendApiPrefix": "/backend/v3/api",
+    "supportedDeploymentProfiles": [
+      "standalone",
+      "cloud"
+    ],
+    "defaultDeploymentProfile": "cloud",
+    "family": "server",
+    "framework": "rust-axum"
+  },
+  "media": {
+    "icons": {
+      "primary": {
+        "id": "sdkwork-course-primary-icon",
+        "type": "ICON",
+        "purpose": "PRIMARY",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-course/assets/icon-1024.png",
+        "platform": "APP",
+        "locale": "en-US",
+        "width": 1024,
+        "height": 1024,
+        "format": "PNG",
+        "fileSizeBytes": 524288,
+        "alphaChannel": false,
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true
+        }
+      },
+      "platform": [],
+      "metadata": {
+        "generatedPlaceholder": true
+      }
+    },
+    "screenshots": [
+      {
+        "id": "sdkwork-course-web-screenshot",
+        "type": "SCREENSHOT",
+        "purpose": "CATALOG_SCREENSHOT",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-course/media/web-screenshot.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "deviceClass": "BROWSER",
+        "displayType": "WEB_DESKTOP",
+        "width": 1920,
+        "height": 1080,
+        "format": "PNG",
+        "fileSizeBytes": 1048576,
+        "alphaChannel": false,
+        "caption": "SDKWork Course product screenshot.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork Course app screenshot."
+        }
+      }
+    ],
+    "previews": [
+      {
+        "id": "sdkwork-course-catalog-preview",
+        "type": "PREVIEW_IMAGE",
+        "purpose": "CATALOG_PREVIEW",
+        "url": "https://cdn.sdkwork.com/apps/sdkwork-course/media/preview-cover.png",
+        "platform": "WEB",
+        "locale": "en-US",
+        "width": 1600,
+        "height": 900,
+        "format": "PNG",
+        "fileSizeBytes": 786432,
+        "alphaChannel": false,
+        "caption": "SDKWork Course preview.",
+        "sortOrder": 0,
+        "enabled": true,
+        "metadata": {
+          "generatedPlaceholder": true,
+          "altText": "SDKWork Course preview cover."
+        }
+      }
+    ],
+    "metadata": {
+      "assetVersion": "0.1.0",
+      "defaultLocale": "en-US"
+    }
+  },
+  "publish": {
+    "status": "ACTIVE",
+    "platforms": [
+      "WEB"
+    ],
+    "installPlatforms": [
+      "WEB"
+    ],
+    "defaultPackageId": "linux-x64-standalone-server-tar-gz",
+    "installSkill": {
+      "name": "sdkwork-skills-app"
+    },
+    "stores": [],
+    "storeUrl": "https://sdkwork.com/apps/sdkwork-course"
+  },
+  "artifacts": {
+    "installConfig": {
+      "defaultPackageId": "linux-x64-standalone-server-tar-gz",
+      "installCommand": "sdkwork install sdkwork-course",
+      "launchCommand": "sdkwork open sdkwork-course",
+      "uninstallCommand": "sdkwork uninstall sdkwork-course",
+      "packages": [
+        {
+          "id": "linux-x64-standalone-server-tar-gz",
+          "name": "Sdkwork Course standalone server archive",
+          "sourceType": "BINARY_URL",
+          "packageFormat": "TAR_GZ",
+          "platform": "API",
+          "url": "https://cdn.sdkwork.com/apps/sdkwork-course/STABLE/0.1.0/linux-x64-standalone-server-tar-gz-0.1.0.tar.gz",
+          "architecture": "x64",
+          "checksumAlgorithm": "SHA-256",
+          "checksum": "d656b0989a54bfefaf60187ab2f80c027ff1cdf329ba6b83361dde7b5ded2231",
+          "deploymentProfile": "standalone",
+          "runtimeTarget": "server",
+          "profileBinding": "fixed",
+          "enabled": true,
+          "metadata": {
+            "releaseBuildDeferred": false
+          }
+        },
+        {
+          "id": "linux-x64-cloud-server-tar-gz",
+          "name": "Sdkwork Course cloud server archive",
+          "sourceType": "BINARY_URL",
+          "packageFormat": "TAR_GZ",
+          "platform": "API",
+          "url": "https://cdn.sdkwork.com/apps/sdkwork-course/STABLE/0.1.0/linux-x64-cloud-server-tar-gz-0.1.0.tar.gz",
+          "architecture": "x64",
+          "checksumAlgorithm": "SHA-256",
+          "checksum": "6cee4f09283292b68948d5bcb868c9d6ff7c07188e0ca7357d7ca5378d5e3e46",
+          "deploymentProfile": "cloud",
+          "runtimeTarget": "server",
+          "profileBinding": "fixed",
+          "enabled": true,
+          "metadata": {
+            "releaseBuildDeferred": false
+          }
+        }
+      ]
+    }
+  },
+  "release": {
+    "currentVersion": "0.1.0",
+    "defaultChannel": "STABLE",
+    "latest": {
+      "STABLE": "0.1.0"
+    },
+    "notes": [
+      {
+        "version": "0.1.0",
+        "releaseChannel": "STABLE",
+        "title": "SDKWork Course 0.1.0",
+        "summary": "SDKWork Course initialized standard release.",
+        "content": "Initial SDKWork App Standard v3 manifest for SDKWork Course.",
+        "highlights": [
+          "SDKWork App Standard v3 configuration initialized",
+          "platform_app projection metadata standardized",
+          "Download package matrix normalized"
+        ],
+        "packageIds": [
+          "linux-x64-standalone-server-tar-gz",
+          "linux-x64-cloud-server-tar-gz"
+        ],
+        "publishedAt": "2026-05-07T00:00:00Z",
+        "current": true,
+        "forceUpdate": false,
+        "minSupportedVersion": "0.1.0",
+        "metadata": {}
+      }
+    ]
+  },
+  "security": {
+    "checksumRequired": false,
+    "signatureRequired": false,
+    "sbomRequired": false
+  },
+  "metadata": {
+    "deploymentConfig": "etc/sdkwork.deployment.config.json",
+    "standardOwner": "sdkwork-platform"
   }
 }

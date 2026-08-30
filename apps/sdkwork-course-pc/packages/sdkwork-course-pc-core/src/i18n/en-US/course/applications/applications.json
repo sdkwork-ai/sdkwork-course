@@ -1,0 +1,12 @@
+{
+  "applications": {
+    "title": "Course Applications",
+    "submit": "Submit Application",
+    "submitting": "Submitting...",
+    "submitted": "Submitted",
+    "reviewing": "Reviewing",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "converted": "Converted"
+  }
+}

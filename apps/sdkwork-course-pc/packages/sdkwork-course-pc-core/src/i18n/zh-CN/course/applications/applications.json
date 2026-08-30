@@ -1,0 +1,12 @@
+{
+  "applications": {
+    "title": "课程申请",
+    "submit": "提交申请",
+    "submitting": "提交中...",
+    "submitted": "已提交",
+    "reviewing": "审核中",
+    "approved": "已批准",
+    "rejected": "已拒绝",
+    "converted": "已转换"
+  }
+}

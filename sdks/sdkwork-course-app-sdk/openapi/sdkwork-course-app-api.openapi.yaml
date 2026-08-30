@@ -32,7 +32,7 @@
         ],
         "summary": "course Categories list.",
         "description": "course Categories list operation for the course learning domain.",
-        "operationId": "courseCategories.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -171,7 +171,7 @@
         ],
         "summary": "course Categories retrieve.",
         "description": "course Categories retrieve operation for the course learning domain.",
-        "operationId": "courseCategories.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "categoryId",
@@ -272,7 +272,7 @@
         ],
         "summary": "courses list.",
         "description": "courses list operation for the course learning domain.",
-        "operationId": "courses.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -411,7 +411,7 @@
         ],
         "summary": "courses retrieve.",
         "description": "courses retrieve operation for the course learning domain.",
-        "operationId": "courses.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "courseId",
@@ -512,7 +512,7 @@
         ],
         "summary": "course Offerings list.",
         "description": "course Offerings list operation for the course learning domain.",
-        "operationId": "courseOfferings.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -659,7 +659,7 @@
         ],
         "summary": "course Offerings retrieve.",
         "description": "course Offerings retrieve operation for the course learning domain.",
-        "operationId": "courseOfferings.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "offeringId",
@@ -760,7 +760,7 @@
         ],
         "summary": "course Enrollments create.",
         "description": "course Enrollments create operation for the course learning domain.",
-        "operationId": "courseEnrollments.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "offeringId",
@@ -773,11 +773,11 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string",
-              "minLength": 8,
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 128
             },
             "description": "Client retry idempotency key."
           }
@@ -858,7 +858,7 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": null,
-        "x-sdkwork-idempotent": "recommended",
+        "x-sdkwork-idempotent": true,
         "x-sdkwork-source": "apis/app-api/course/operations.json",
         "x-sdkwork-source-route-crate": "sdkwork-routes-course-app-api",
         "x-sdkwork-request-context": "AppRequestContext",
@@ -883,7 +883,7 @@
         ],
         "summary": "course Enrollments current list.",
         "description": "course Enrollments list operation for the course learning domain.",
-        "operationId": "courseEnrollments.current.list",
+        "operationId": "current.list",
         "parameters": [
           {
             "name": "q",
@@ -1022,7 +1022,7 @@
         ],
         "summary": "course Enrollments retrieve.",
         "description": "course Enrollments retrieve operation for the course learning domain.",
-        "operationId": "courseEnrollments.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "enrollmentId",
@@ -1121,7 +1121,7 @@
         ],
         "summary": "course Enrollments delete.",
         "description": "course Enrollments delete operation for the course learning domain.",
-        "operationId": "courseEnrollments.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "enrollmentId",
@@ -1215,7 +1215,7 @@
         ],
         "summary": "course Sections list.",
         "description": "course Sections list operation for the course learning domain.",
-        "operationId": "courseSections.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -1362,7 +1362,7 @@
         ],
         "summary": "course Lessons list.",
         "description": "course Lessons list operation for the course learning domain.",
-        "operationId": "courseLessons.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -1509,7 +1509,7 @@
         ],
         "summary": "course Lessons retrieve.",
         "description": "course Lessons retrieve operation for the course learning domain.",
-        "operationId": "courseLessons.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "lessonId",
@@ -1610,7 +1610,7 @@
         ],
         "summary": "course Lesson Resources list.",
         "description": "course Lesson Resources list operation for the course learning domain.",
-        "operationId": "courseLessonResources.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "lessonId",
@@ -1757,7 +1757,7 @@
         ],
         "summary": "course Progress retrieve.",
         "description": "course Progress retrieve operation for the course learning domain.",
-        "operationId": "courseProgress.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "enrollmentId",
@@ -1858,7 +1858,7 @@
         ],
         "summary": "course Lesson Progress update.",
         "description": "course Lesson Progress update operation for the course learning domain.",
-        "operationId": "courseLessonProgress.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "lessonId",
@@ -1871,11 +1871,11 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string",
-              "minLength": 8,
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 128
             },
             "description": "Client retry idempotency key."
           }
@@ -1956,7 +1956,7 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": null,
-        "x-sdkwork-idempotent": "recommended",
+        "x-sdkwork-idempotent": true,
         "x-sdkwork-source": "apis/app-api/course/operations.json",
         "x-sdkwork-source-route-crate": "sdkwork-routes-course-app-api",
         "x-sdkwork-request-context": "AppRequestContext",
@@ -1981,7 +1981,7 @@
         ],
         "summary": "course Lesson Progress watch Positions update.",
         "description": "course Lesson Progress update operation for the course learning domain.",
-        "operationId": "courseLessonProgress.watchPositions.update",
+        "operationId": "watchPositions.update",
         "parameters": [
           {
             "name": "lessonId",
@@ -2093,7 +2093,7 @@
         ],
         "summary": "course Live Sessions list.",
         "description": "course Live Sessions list operation for the course learning domain.",
-        "operationId": "courseLiveSessions.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "q",
@@ -2232,7 +2232,7 @@
         ],
         "summary": "course Live Sessions retrieve.",
         "description": "course Live Sessions retrieve operation for the course learning domain.",
-        "operationId": "courseLiveSessions.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -2333,7 +2333,7 @@
         ],
         "summary": "course Live Sessions join.",
         "description": "course Live Sessions join operation for the course learning domain.",
-        "operationId": "courseLiveSessions.join",
+        "operationId": "join",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -2346,11 +2346,11 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string",
-              "minLength": 8,
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 128
             },
             "description": "Client retry idempotency key."
           }
@@ -2431,7 +2431,7 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": null,
-        "x-sdkwork-idempotent": "recommended",
+        "x-sdkwork-idempotent": true,
         "x-sdkwork-source": "apis/app-api/course/operations.json",
         "x-sdkwork-source-route-crate": "sdkwork-routes-course-app-api",
         "x-sdkwork-request-context": "AppRequestContext",
@@ -2456,7 +2456,7 @@
         ],
         "summary": "course Live Sessions heartbeat.",
         "description": "course Live Sessions heartbeat operation for the course learning domain.",
-        "operationId": "courseLiveSessions.heartbeat",
+        "operationId": "heartbeat",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -2568,7 +2568,7 @@
         ],
         "summary": "course Live Sessions leave.",
         "description": "course Live Sessions leave operation for the course learning domain.",
-        "operationId": "courseLiveSessions.leave",
+        "operationId": "leave",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -2680,7 +2680,7 @@
         ],
         "summary": "course Live Sessions replay retrieve.",
         "description": "course Live Sessions retrieve operation for the course learning domain.",
-        "operationId": "courseLiveSessions.replay.retrieve",
+        "operationId": "replay.retrieve",
         "parameters": [
           {
             "name": "liveSessionId",
@@ -2781,7 +2781,7 @@
         ],
         "summary": "course Comments list.",
         "description": "course Comments list operation for the course learning domain.",
-        "operationId": "courseComments.list",
+        "operationId": "list",
         "parameters": [
           {
             "name": "courseId",
@@ -2926,7 +2926,7 @@
         ],
         "summary": "course Comments create.",
         "description": "course Comments create operation for the course learning domain.",
-        "operationId": "courseComments.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "courseId",
@@ -2939,11 +2939,11 @@
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string",
-              "minLength": 8,
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 128
             },
             "description": "Client retry idempotency key."
           }
@@ -3024,7 +3024,7 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": null,
-        "x-sdkwork-idempotent": "recommended",
+        "x-sdkwork-idempotent": true,
         "x-sdkwork-source": "apis/app-api/course/operations.json",
         "x-sdkwork-source-route-crate": "sdkwork-routes-course-app-api",
         "x-sdkwork-request-context": "AppRequestContext",
@@ -3049,7 +3049,7 @@
         ],
         "summary": "course Comments delete.",
         "description": "course Comments delete operation for the course learning domain.",
-        "operationId": "courseComments.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "commentId",
@@ -3143,16 +3143,16 @@
         ],
         "summary": "course Reactions update.",
         "description": "course Reactions update operation for the course learning domain.",
-        "operationId": "courseReactions.update",
+        "operationId": "update",
         "parameters": [
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "string",
-              "minLength": 8,
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 128
             },
             "description": "Client retry idempotency key."
           }
@@ -3233,7 +3233,7 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": null,
-        "x-sdkwork-idempotent": "recommended",
+        "x-sdkwork-idempotent": true,
         "x-sdkwork-source": "apis/app-api/course/operations.json",
         "x-sdkwork-source-route-crate": "sdkwork-routes-course-app-api",
         "x-sdkwork-request-context": "AppRequestContext",
@@ -3258,7 +3258,7 @@
         ],
         "summary": "course Reactions delete.",
         "description": "course Reactions delete operation for the course learning domain.",
-        "operationId": "courseReactions.delete",
+        "operationId": "delete",
         "parameters": [
           {
             "name": "reactionId",
@@ -3352,7 +3352,7 @@
         ],
         "summary": "course Applications create.",
         "description": "course Applications create operation for the course learning domain.",
-        "operationId": "courseApplications.create",
+        "operationId": "create",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -3360,8 +3360,8 @@
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 8,
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 128
             },
             "description": "Client retry idempotency key."
           }
@@ -3442,7 +3442,7 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": null,
-        "x-sdkwork-idempotent": "required",
+        "x-sdkwork-idempotent": true,
         "x-sdkwork-source": "apis/app-api/course/operations.json",
         "x-sdkwork-source-route-crate": "sdkwork-routes-course-app-api",
         "x-sdkwork-request-context": "AppRequestContext",
@@ -3465,7 +3465,7 @@
         ],
         "summary": "course Applications current list.",
         "description": "course Applications list operation for the course learning domain.",
-        "operationId": "courseApplications.current.list",
+        "operationId": "current.list",
         "parameters": [
           {
             "name": "q",
@@ -3604,7 +3604,7 @@
         ],
         "summary": "course Applications retrieve.",
         "description": "course Applications retrieve operation for the course learning domain.",
-        "operationId": "courseApplications.retrieve",
+        "operationId": "retrieve",
         "parameters": [
           {
             "name": "applicationId",

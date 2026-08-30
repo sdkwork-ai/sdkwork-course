@@ -1,8 +1,8 @@
 import i18next from 'i18next';
 import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import zhCN from './locales/zh-CN/course.json';
-import enUS from './locales/en-US/course.json';
+import zhCN from './zh-CN/course/course/course.json';
+import enUS from './en-US/course/course/course.json';
 import { tryGetCoursePcSdkPorts } from '../sdkPorts';
 
 const SUPPORTED_LANGUAGES = ['zh-CN', 'en-US'] as const;

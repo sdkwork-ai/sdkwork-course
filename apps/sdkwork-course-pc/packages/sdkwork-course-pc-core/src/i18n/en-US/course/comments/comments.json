@@ -1,0 +1,11 @@
+{
+  "comments": {
+    "title": "Comments",
+    "count": "Comments ({{count}})",
+    "placeholder": "Write your comment...",
+    "submit": "Post Comment",
+    "submitting": "Posting...",
+    "noComments": "No comments yet. Be the first to comment!",
+    "anonymous": "Anonymous"
+  }
+}

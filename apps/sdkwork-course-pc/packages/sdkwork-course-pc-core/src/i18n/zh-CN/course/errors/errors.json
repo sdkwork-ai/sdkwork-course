@@ -1,0 +1,13 @@
+{
+  "errors": {
+    "networkError": "网络错误，请检查网络连接",
+    "serverError": "服务器错误，请稍后再试",
+    "notFound": "请求的资源不存在",
+    "unauthorized": "请先登录",
+    "forbidden": "没有权限执行此操作",
+    "timeout": "请求超时，请稍后再试",
+    "unknown": "未知错误",
+    "pageError": "页面遇到了一个错误",
+    "pageErrorDesc": "抱歉，页面遇到了一个错误。请刷新页面重试。"
+  }
+}

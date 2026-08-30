@@ -1,0 +1,19 @@
+{
+  "live": {
+    "title": "Live Sessions",
+    "subtitle": "Participate in interactive learning",
+    "noSessions": "No live sessions",
+    "noSessionsDesc": "No upcoming live sessions",
+    "liveNow": "Live Now",
+    "scheduled": "Upcoming",
+    "ended": "Ended",
+    "joinLive": "Join Live",
+    "setReminder": "Set Reminder",
+    "watchReplay": "Watch Replay",
+    "liveDetail": "Live Session Details",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "actualStart": "Actual Start",
+    "description": "Description"
+  }
+}

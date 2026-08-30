@@ -1,0 +1,11 @@
+{
+  "comments": {
+    "title": "评论",
+    "count": "评论 ({{count}})",
+    "placeholder": "写下你的评论...",
+    "submit": "发表评论",
+    "submitting": "发送中...",
+    "noComments": "暂无评论，快来发表第一条评论吧",
+    "anonymous": "匿名用户"
+  }
+}

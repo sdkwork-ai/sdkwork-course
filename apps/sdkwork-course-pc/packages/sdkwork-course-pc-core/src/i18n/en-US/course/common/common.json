@@ -1,0 +1,23 @@
+{
+  "common": {
+    "appName": "SDKWork Course",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "refresh": "Refresh page",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "noData": "No data",
+    "noResults": "No results found",
+    "success": "Success",
+    "failed": "Failed"
+  }
+}
