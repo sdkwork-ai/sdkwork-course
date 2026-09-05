@@ -81,12 +81,12 @@ export function CourseListPage() {
           placeholder="搜索课程..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 dark:placeholder-zinc-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 border border-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">所有分类</option>
           <option value="programming">编程开发</option>

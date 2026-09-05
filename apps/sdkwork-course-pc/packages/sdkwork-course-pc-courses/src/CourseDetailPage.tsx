@@ -77,42 +77,42 @@ export function CourseDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 mb-6">
             <div className="h-64 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg mb-4 relative">
               {course.thumbnail && (
                 <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover rounded-lg" />
               )}
             </div>
             <h2 className="text-xl font-semibold mb-2">课程简介</h2>
-            <p className="text-gray-600">{course.description || '暂无简介'}</p>
+            <p className="text-gray-600 dark:text-zinc-300">{course.description || '暂无简介'}</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6">
             <h2 className="text-xl font-semibold mb-4">课程目录</h2>
-            <p className="text-gray-600">课程内容加载中...</p>
+            <p className="text-gray-600 dark:text-zinc-300">课程内容加载中...</p>
           </div>
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6 sticky top-4">
+          <div className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 sticky top-4">
             <div className="text-center mb-4">
-              <div className="text-3xl font-bold text-blue-600 mb-2">
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
                 {course.ratingScore || '暂无评分'}
               </div>
-              <div className="text-sm text-gray-500">课程评分</div>
+              <div className="text-sm text-gray-500 dark:text-zinc-400">课程评分</div>
             </div>
 
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
-                <span className="text-gray-600">课时数</span>
+                <span className="text-gray-600 dark:text-zinc-300">课时数</span>
                 <span className="font-semibold">{course.lessonsCount} 课时</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">学习人数</span>
+                <span className="text-gray-600 dark:text-zinc-300">学习人数</span>
                 <span className="font-semibold">{course.studentsCount} 人</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">课程状态</span>
+                <span className="text-gray-600 dark:text-zinc-300">课程状态</span>
                 <span className="font-semibold">{course.publishStatus}</span>
               </div>
             </div>
@@ -120,7 +120,7 @@ export function CourseDetailPage() {
             {enrollFeedback && (
               <p
                 className={`mb-3 text-sm ${
-                  enrollFeedback.tone === 'success' ? 'text-green-600' : 'text-red-600'
+                  enrollFeedback.tone === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 }`}
               >
                 {enrollFeedback.message}

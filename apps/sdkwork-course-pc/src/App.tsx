@@ -48,9 +48,9 @@ function App() {
                         <a href="/" className="text-xl font-bold text-blue-600">SDKWork Course</a>
                       </div>
                       <nav className="flex items-center space-x-4">
-                        <a href="/" className="text-gray-600 hover:text-gray-900">首页</a>
-                        <a href="/courses" className="text-gray-600 hover:text-gray-900">课程</a>
-                        <a href="/live" className="text-gray-600 hover:text-gray-900">直播</a>
+                        <a href="/" className="text-gray-600 dark:text-zinc-300 hover:text-gray-900 dark:hover:text-zinc-100">首页</a>
+                        <a href="/courses" className="text-gray-600 dark:text-zinc-300 hover:text-gray-900 dark:hover:text-zinc-100">课程</a>
+                        <a href="/live" className="text-gray-600 dark:text-zinc-300 hover:text-gray-900 dark:hover:text-zinc-100">直播</a>
                         {isAuthenticated ? (
                           <>
                             <a href="/my" className="text-gray-600 hover:text-gray-900">我的学习</a>
@@ -109,23 +109,23 @@ function HomePage() {
     <div>
       <h2 className="text-2xl font-bold mb-6">欢迎来到在线课程平台</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <a href="/courses" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+        <a href="/courses" className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 hover:shadow-lg dark:hover:shadow-none transition-shadow">
           <h3 className="text-lg font-semibold mb-2">热门课程</h3>
-          <p className="text-gray-600">探索我们的精品课程</p>
+          <p className="text-gray-600 dark:text-zinc-300">探索我们的精品课程</p>
         </a>
-        <a href="/live" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+        <a href="/live" className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 hover:shadow-lg dark:hover:shadow-none transition-shadow">
           <h3 className="text-lg font-semibold mb-2">直播课堂</h3>
-          <p className="text-gray-600">参与实时互动学习</p>
+          <p className="text-gray-600 dark:text-zinc-300">参与实时互动学习</p>
         </a>
         {isAuthenticated ? (
-          <a href="/my" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+          <a href="/my" className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 hover:shadow-lg dark:hover:shadow-none transition-shadow">
             <h3 className="text-lg font-semibold mb-2">我的学习</h3>
-            <p className="text-gray-600">查看学习进度</p>
+            <p className="text-gray-600 dark:text-zinc-300">查看学习进度</p>
           </a>
         ) : (
-          <a href="/register" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+          <a href="/register" className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 hover:shadow-lg dark:hover:shadow-none transition-shadow">
             <h3 className="text-lg font-semibold mb-2">立即注册</h3>
-            <p className="text-gray-600">开始你的学习之旅</p>
+            <p className="text-gray-600 dark:text-zinc-300">开始你的学习之旅</p>
           </a>
         )}
       </div>

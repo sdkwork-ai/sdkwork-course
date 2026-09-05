@@ -60,17 +60,17 @@ export function MyLearningPage() {
           {enrollments.map((enrollment) => (
             <div
               key={enrollment.id}
-              className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-4 cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow"
               onClick={() => navigate(`/courses/${enrollment.courseId}`)}
             >
               <div className="flex items-center justify-between mb-3">
                 <span
                   className={`px-2 py-1 rounded text-xs font-semibold ${
                     enrollment.enrollmentStatus === 'active'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-100 dark:bg-green-950/40 text-green-800 dark:text-green-400'
                       : enrollment.enrollmentStatus === 'completed'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
+                        ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400'
+                        : 'bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-zinc-200'
                   }`}
                 >
                   {enrollment.enrollmentStatus === 'active'
@@ -79,7 +79,7 @@ export function MyLearningPage() {
                       ? '已完成'
                       : enrollment.enrollmentStatus}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-zinc-400">
                   {new Date(enrollment.enrolledAt).toLocaleDateString()}
                 </span>
               </div>

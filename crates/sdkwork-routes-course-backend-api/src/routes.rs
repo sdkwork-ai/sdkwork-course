@@ -5,10 +5,7 @@ use axum::{
     Router,
 };
 
-use sdkwork_routes_course_http_auth::with_dual_token_request_context;
-
 use crate::http_handlers;
-use crate::http_route_manifest::course_backend_api_http_route_manifest;
 use crate::service_state::CourseBackendApiState;
 
 pub fn build_sdkwork_course_backend_api_router(
@@ -66,7 +63,12 @@ pub fn build_sdkwork_course_backend_api_router(
         .route(format!("{prefix}/course_audit_logs/{{auditLogId}}").as_str(), get(http_handlers::course_audit_logs_retrieve))
         .with_state(CourseBackendApiState::new(service));
 
-    with_dual_token_request_context(router, course_backend_api_http_route_manifest())
+    // Bare API router for gateway-owned Web Framework hosts (API_ASSEMBLY_SPEC
+    // §4.1.1): the composed host's canonical pipeline (standalone gateway or
+    // platform cloud gateway) owns classification, authentication,
+    // authorization, and domain context injection, so the assembly path must
+    // not self-wrap an interceptor pipeline.
+    router
 }
 
 pub fn build_router(

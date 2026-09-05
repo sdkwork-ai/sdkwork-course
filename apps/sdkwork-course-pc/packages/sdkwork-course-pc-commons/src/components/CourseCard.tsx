@@ -25,7 +25,7 @@ export function CourseCard({
 }: CourseCardProps) {
   return (
     <div
-      className="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+      className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none overflow-hidden cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow"
       onClick={() => onClick?.(id)}
     >
       <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-500 relative">
@@ -41,9 +41,9 @@ export function CourseCard({
       <div className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
         {description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{description}</p>
+          <p className="text-gray-600 dark:text-zinc-300 text-sm mb-3 line-clamp-2">{description}</p>
         )}
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-zinc-400">
           {instructor && <span>{instructor}</span>}
           <div className="flex gap-2">
             {lessonsCount != null && <span>{lessonsCount} 课时</span>}

@@ -88,22 +88,22 @@ export function LiveSessionDetailPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6">
             <h2 className="text-xl font-semibold mb-4">直播详情</h2>
-            <p className="text-gray-600">{session.description || '暂无详情描述'}</p>
+            <p className="text-gray-600 dark:text-zinc-300">{session.description || '暂无详情描述'}</p>
           </div>
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6 sticky top-4">
+          <div className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none p-6 sticky top-4">
             <div className="text-center mb-4">
               <span
                 className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
                   isLive
-                    ? 'bg-red-100 text-red-800'
+                    ? 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-400'
                     : isScheduled
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400'
+                      : 'bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-zinc-200'
                 }`}
               >
                 {isLive ? '直播中' : isScheduled ? '即将开始' : '已结束'}
@@ -116,12 +116,12 @@ export function LiveSessionDetailPage() {
                 <p className="font-semibold">{new Date(session.scheduledStartAt).toLocaleString()}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">结束时间</span>
+                <span className="text-sm text-gray-500 dark:text-zinc-400">结束时间</span>
                 <p className="font-semibold">{new Date(session.scheduledEndAt).toLocaleString()}</p>
               </div>
               {session.actualStartAt && (
                 <div>
-                  <span className="text-sm text-gray-500">实际开始</span>
+                  <span className="text-sm text-gray-500 dark:text-zinc-400">实际开始</span>
                   <p className="font-semibold">{new Date(session.actualStartAt).toLocaleString()}</p>
                 </div>
               )}

@@ -55,7 +55,7 @@ export function LiveSessionListPage() {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="bg-white rounded-lg shadow overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none overflow-hidden cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow"
               onClick={() => navigate(`/live/${session.id}`)}
             >
               <div className="h-40 bg-gradient-to-r from-red-500 to-pink-500 relative">
@@ -80,9 +80,9 @@ export function LiveSessionListPage() {
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{session.title}</h3>
                 {session.description && (
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">{session.description}</p>
+                  <p className="text-gray-600 dark:text-zinc-300 text-sm mb-2 line-clamp-2">{session.description}</p>
                 )}
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-zinc-400">
                   <p>开始时间: {new Date(session.scheduledStartAt).toLocaleString()}</p>
                   <p>结束时间: {new Date(session.scheduledEndAt).toLocaleString()}</p>
                 </div>

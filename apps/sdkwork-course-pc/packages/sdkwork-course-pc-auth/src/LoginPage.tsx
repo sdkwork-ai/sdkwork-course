@@ -39,13 +39,13 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-zinc-100">
             登录您的账户
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-300">
             或者{' '}
             <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
               注册新账户
@@ -54,7 +54,7 @@ export function LoginPage() {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 px-4 py-3 rounded">
               {error}
             </div>
           )}
@@ -71,7 +71,7 @@ export function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:placeholder-zinc-500 dark:text-zinc-100 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="邮箱地址"
               />
             </div>
@@ -87,7 +87,7 @@ export function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:placeholder-zinc-500 dark:text-zinc-100 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="密码"
               />
             </div>
