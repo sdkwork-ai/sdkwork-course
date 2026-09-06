@@ -4,6 +4,6 @@ environment = "test"
 
 [[http.server]]
 listen = ["80"]
-serverName = ["course-test.sdkwork.com", "course-test.birdcoder.com", "course-test.dtupay.com", "course-test.sdkwork.cn", "course-test.birdcoder.cn", "course-test.dtupay.cn", "course-test.skubc.com", "course-test.skubc.cn", "course-test.zowalk.com", "course-test.zowalk.cn", "course-test.offer86.com", "course-test.offer86.cn", "course-test.86offer.com", "course-test.86offer.cn"]
+serverName = ["course-test.sdkwork.com", "course-test.birdcoder.com", "course-test.dtupay.com", "course-test.noaper.com", "course-test.sdkwork.cn", "course-test.birdcoder.cn", "course-test.dtupay.cn", "course-test.noaper.cn", "course-test.skubc.com", "course-test.skubc.cn", "course-test.zowalk.com", "course-test.zowalk.cn", "course-test.offer86.com", "course-test.offer86.cn", "course-test.86offer.com", "course-test.86offer.cn"]
 include = ["snippets/gateway-locations.nonproduction.conf"]
 
