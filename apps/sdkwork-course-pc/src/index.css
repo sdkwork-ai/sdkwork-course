@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* `:is` (not `:where`) gives dark utilities the `.dark` class specificity so
+   they beat plain light utilities from ANY sheet that loads later — the
+   embedded BirdCoder document carries several sibling tailwind sheets whose
+   `.bg-white`-class rules would otherwise outrank this sheet's dark variants
+   on cascade order alone. Matching is identical in the standalone app. */
+@custom-variant dark (&:is(.dark, .dark *));
 
 /* Custom styles */
 :root {
