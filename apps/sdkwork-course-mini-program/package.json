@@ -4,12 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs"
   },
   "dependencies": {
+    "@sdkwork/sdk-common": "workspace:*",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "esbuild": "^0.28.1",
     "typescript": "^5.0.0"
   },
   "exports": {

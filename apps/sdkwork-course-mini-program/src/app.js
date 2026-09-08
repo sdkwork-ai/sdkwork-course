@@ -1,7 +1,9 @@
+const { resolveCourseAppSdkBaseUrl } = require('./config/resolveAppSdkBaseUrl');
+
 App({
   globalData: {
     userInfo: null,
-    baseUrl: 'http://localhost:8080',
+    baseUrl: resolveCourseAppSdkBaseUrl(),
     apiPrefix: '/app/v3/api'
   },
 
