@@ -1,4 +1,4 @@
-import { createTokenManager, type AuthTokenManager } from '@sdkwork/sdk-common';
+import { createTokenManager, resolveBaseUrl, type AuthTokenManager } from '@sdkwork/sdk-common';
 import { isBlank, trim } from '@sdkwork/utils/string';
 
 export interface CourseSessionUser {
@@ -75,10 +75,7 @@ export function resolveAppApiBaseUrl(): string {
   if (!isBlank(configured)) {
     return configured.replace(/\/+$/, '');
   }
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin.replace(/\/+$/, '');
-  }
-  return 'http://localhost:8080';
+  return resolveBaseUrl().url;
 }
 
 export function getCourseGlobalTokenManager(): AuthTokenManager {
