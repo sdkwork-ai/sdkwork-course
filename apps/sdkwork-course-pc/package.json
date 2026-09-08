@@ -29,6 +29,7 @@
     "@sdkwork/sdkwork-course-pc-lessons": "workspace:*",
     "@sdkwork/sdkwork-course-pc-live": "workspace:*",
     "@sdkwork/sdkwork-course-pc-progress": "workspace:*",
+    "@sdkwork/sdk-common": "workspace:*",
     "@tailwindcss/vite": "^4.0.0",
     "@tanstack/react-query": "^5.0.0",
     "react": "^19.0.0",
