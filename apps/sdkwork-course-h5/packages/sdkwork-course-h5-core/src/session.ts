@@ -1,4 +1,4 @@
-import { createTokenManager, resolveBaseUrl, type AuthTokenManager } from '@sdkwork/sdk-common';
+import {createTokenManager, resolveBaseUrlWithAlignProtocol, type AuthTokenManager} from '@sdkwork/sdk-common';
 import { isBlank, trim } from '@sdkwork/utils/string';
 
 export interface CourseSessionUser {
@@ -75,7 +75,7 @@ export function resolveAppApiBaseUrl(): string {
   if (!isBlank(configured)) {
     return configured.replace(/\/+$/, '');
   }
-  return resolveBaseUrl().url;
+  return resolveBaseUrlWithAlignProtocol().url;
 }
 
 export function getCourseGlobalTokenManager(): AuthTokenManager {
