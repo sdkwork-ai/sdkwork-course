@@ -1,4 +1,4 @@
-﻿import { resolveBaseUrl } from '@sdkwork/sdk-common'
+﻿import { resolveBaseUrlWithAlignProtocol } from '@sdkwork/sdk-common'
 
 export interface RuntimeConfig {
   apiBaseUrl: string
@@ -8,7 +8,11 @@ export interface RuntimeConfig {
 
 export function loadRuntimeConfig(): RuntimeConfig {
   return {
-    apiBaseUrl: import.meta.env.VITE_API_BASE_URL || resolveBaseUrl().url,
+    // Single-call §6.3 resolution: the explicit Vite override wins as a
+    // candidate, and the returned origin always follows the page scheme.
+    apiBaseUrl: resolveBaseUrlWithAlignProtocol({
+      baseUrls: import.meta.env.VITE_API_BASE_URL || undefined,
+    }).url,
     appApiPrefix: '/app/v3/api',
     environment: (import.meta.env.MODE as RuntimeConfig['environment']) || 'development',
   }
