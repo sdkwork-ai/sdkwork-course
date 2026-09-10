@@ -1,4 +1,4 @@
-import { createTokenManager, type AuthTokenManager } from '@sdkwork/sdk-common';
+import { alignBaseUrlToPageProtocol, createTokenManager, type AuthTokenManager } from '@sdkwork/sdk-common';
 import { isBlank, trim } from '@sdkwork/utils/string';
 
 export interface CourseSessionUser {
@@ -73,7 +73,9 @@ export function saveCourseSession(session: CourseSession | null): void {
 export function resolveAppApiBaseUrl(): string {
   const configured = trim(import.meta.env.VITE_API_BASE_URL ?? '');
   if (!isBlank(configured)) {
-    return configured.replace(/\/+$/, '');
+    // §6.3 protocol adaptation: the explicit override's scheme follows the
+    // page scheme on the shared dual-scheme edge.
+    return alignBaseUrlToPageProtocol(configured.replace(/\/+$/, ''));
   }
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin.replace(/\/+$/, '');
