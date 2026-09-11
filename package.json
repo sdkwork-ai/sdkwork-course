@@ -6,13 +6,19 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "stop": "node ../sdkwork-specs/tools/stop-sdkwork-workspace-processes.mjs --workspace .",
-    "test": "node --test scripts/course-workspace-boundary.test.mjs",
+    "stop": "pnpm exec sdkwork-app stop",
+    "dev": "pnpm dev:standalone",
+    "dev:standalone": "pnpm exec sdkwork-app dev --deployment-profile standalone",
+    "dev:cloud": "pnpm exec sdkwork-app dev --deployment-profile cloud",
+    "build": "pnpm exec sdkwork-app build",
+    "test": "pnpm exec sdkwork-app test",
+    "check": "pnpm exec sdkwork-app check",
+    "verify": "pnpm exec sdkwork-app verify",
+    "clean": "pnpm exec sdkwork-app clean",
     "test:design": "node --test scripts/course-design-contract.test.mjs",
     "test:contracts": "node --test sdks/_shared/course-contracts/tests/course-contracts.test.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:apps": "pnpm --filter @sdkwork/sdkwork-course-pc typecheck && pnpm --filter @sdkwork/sdkwork-course-h5 typecheck",
-    "verify": "pnpm run test && pnpm run test:design && pnpm run test:contracts && pnpm run test:contract:database && pnpm run test:route-integration && pnpm run check:api-envelope && pnpm run check:openapi-drift && pnpm run check:app-composition && pnpm run typecheck:apps && cargo test --workspace && pnpm check:cors-standard",
     "check:api-envelope": "node ../sdkwork-specs/tools/check-api-response-envelope.mjs --workspace .",
     "check:cors-standard": "node ../sdkwork-specs/tools/check-cors-standard.mjs --root .",
     "db:materialize:contract": "node ../sdkwork-specs/tools/materialize-database-contract-from-baseline.mjs --root . --baseline database/ddl/baseline/postgres/0001_course_baseline.sql --module-id course --owner course-platform --prefixes course_ --engines postgres",
@@ -55,13 +61,19 @@
     "build:pc:staging:cloud": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment staging --deployment-profile cloud",
     "build:pc:demo:cloud": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment demo --deployment-profile cloud",
     "build:pc:prod:cloud": "node ../sdkwork-specs/tools/build-browser-client.mjs --root . --architecture pc --environment prod --deployment-profile cloud",
-    "topology:validate": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs validate --root . --spec specs/topology.spec.json"
+    "topology:validate": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs validate --root . --spec specs/topology.spec.json",
+    "_sdkwork:test": "node --test scripts/course-workspace-boundary.test.mjs",
+    "_sdkwork:check": "pnpm run check:api-envelope && pnpm run check:app-composition && pnpm run check:browser-build-scripts && pnpm run check:cors-standard && pnpm run check:openapi-drift",
+    "_sdkwork:verify": "pnpm run test && pnpm run test:design && pnpm run test:contracts && pnpm run test:contract:database && pnpm run test:route-integration && pnpm run check:api-envelope && pnpm run check:openapi-drift && pnpm run check:app-composition && pnpm run typecheck:apps && cargo test --workspace && pnpm check:cors-standard",
+    "_sdkwork:clean": "cargo clean",
+    "_sdkwork:build": "cargo build --workspace --release && pnpm --dir apps/sdkwork-course-pc run build:prod && pnpm --dir apps/sdkwork-course-h5 run build:prod && pnpm --dir apps/sdkwork-course-mini-program build"
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
     "typescript": "^6.0.2",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "@sdkwork/app-topology": "workspace:*"
   },
   "exports": {
     ".": {
