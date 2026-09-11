@@ -1,9 +1,13 @@
 [package]
+rust-version.workspace = true
 name = "sdkwork-api-course-standalone-gateway"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+
+[lints]
+workspace = true
 [dependencies]
 sdkwork-api-course-assembly.workspace = true
 sdkwork-iam-web-adapter.workspace = true

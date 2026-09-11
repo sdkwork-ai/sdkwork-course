@@ -1,10 +1,14 @@
 [package]
+rust-version.workspace = true
 name = "sdkwork-course-embedded-bootstrap"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Embedded course application bootstrap for unified-process platform consumers."
 
+
+[lints]
+workspace = true
 [lib]
 name = "sdkwork_course_embedded_bootstrap"
 

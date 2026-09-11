@@ -1,10 +1,14 @@
 [package]
+rust-version.workspace = true
 name = "sdkwork-course-database-host"
 edition = "2021"
 license = "Apache-2.0"
 version = "0.1.0"
 description = "SDKWork Course database lifecycle bootstrap."
 
+
+[lints]
+workspace = true
 [lib]
 name = "sdkwork_course_database_host"
 path = "src/lib.rs"
