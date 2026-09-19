@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "appId": "sdkwork-course",
+  "declarations": [
+    {
+      "appResourceType": "course.media_asset",
+      "appResourceIdKind": "entity",
+      "scene": "course-media",
+      "source": "sdkwork-course-pc",
+      "uploadProfileCode": "attachment",
+      "retention": "long_term",
+      "purpose": "Course media file (cover image, lesson video, audio, or handout) uploaded to the Drive node bound to a course offering."
+    }
+  ]
+}

@@ -57,6 +57,14 @@ export {
   CourseEnrollmentError,
 } from './courseEnrollment';
 
+export {
+  COURSE_PC_APP_ID,
+  COURSE_PC_MEDIA_ASSET_UPLOAD,
+  COURSE_PC_UPLOAD_DECLARATIONS,
+  COURSE_PC_UPLOAD_SOURCE,
+} from './uploadDeclaration';
+export type { CourseUploadDeclarationEntry } from './uploadDeclaration';
+
 export { restoreCourseAuthState, useAppStore } from './store';
 
 export { default as i18n } from './i18n';

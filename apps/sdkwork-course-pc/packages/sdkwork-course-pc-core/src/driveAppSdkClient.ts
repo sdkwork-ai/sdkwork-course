@@ -4,6 +4,7 @@ import {
   type SdkworkAppConfig,
 } from '@sdkwork/drive-app-sdk';
 import { uuid } from '@sdkwork/utils/id';
+import { COURSE_PC_MEDIA_ASSET_UPLOAD } from './uploadDeclaration';
 
 import {
   getCourseGlobalTokenManager,
@@ -55,8 +56,11 @@ export async function uploadCourseMediaFile(file: File): Promise<CourseDriveUplo
   const appResourceId = uuid();
   const uploadResult = await driveClient.uploader.upload({
     file,
-    appResourceType: 'course_media',
+    appResourceType: COURSE_PC_MEDIA_ASSET_UPLOAD.appResourceType,
     appResourceId,
+    scene: COURSE_PC_MEDIA_ASSET_UPLOAD.scene,
+    source: COURSE_PC_MEDIA_ASSET_UPLOAD.source,
+    uploadProfileCode: COURSE_PC_MEDIA_ASSET_UPLOAD.uploadProfileCode,
     originalFileName: file.name,
     contentType: file.type || 'application/octet-stream',
   });
