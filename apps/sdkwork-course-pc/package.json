@@ -21,6 +21,7 @@
     "build:prod:cloud": "node ../../../sdkwork-specs/tools/build-browser-client.mjs --app-root . --environment prod --deployment-profile cloud"
   },
   "dependencies": {
+    "@sdkwork/iam-credential-entry": "workspace:*",
     "@sdkwork/sdkwork-course-pc-auth": "workspace:*",
     "@sdkwork/sdkwork-course-pc-commons": "workspace:*",
     "@sdkwork/sdkwork-course-pc-community": "workspace:*",

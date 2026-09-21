@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@capacitor/core": "^6.0.0",
+    "@sdkwork/iam-credential-entry": "workspace:*",
     "@sdkwork/sdkwork-course-h5-auth": "workspace:*",
     "@sdkwork/sdkwork-course-h5-core": "workspace:*",
     "@tailwindcss/vite": "^4.0.0",
