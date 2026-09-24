@@ -64,8 +64,6 @@ Thumbs.db
 **/src/index.d.ts.map
 
 # TypeScript compiled outputs in src directories
-**/src/**/*.js
-**/src/**/*.d.ts
 **/src/**/*.js.map
 **/src/**/*.d.ts.map
 
@@ -87,3 +85,9 @@ Thumbs.db
 etc/**/*.local.*
 /etc/secrets/
 
+# Compiler emit is ignored only where the file is emit BY DEFINITION. The broad
+# `**/src/**/*.js` / `**/src/**/*.d.ts` globs are gone: `.gitignore` cannot express "ignore
+# this only when a same-stem .ts sibling exists", so they also hid authored declarations
+# (`vite-env.d.ts`, `styles.d.ts`, module shims) and real mini-program source under `src/`.
+# The sibling rule is enforced against tracked files by
+# `sdkwork-specs/tools/check-repository-baseline-content.mjs` instead.
