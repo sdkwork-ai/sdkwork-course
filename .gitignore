@@ -91,3 +91,12 @@ etc/**/*.local.*
 # (`vite-env.d.ts`, `styles.d.ts`, module shims) and real mini-program source under `src/`.
 # The sibling rule is enforced against tracked files by
 # `sdkwork-specs/tools/check-repository-baseline-content.mjs` instead.
+
+# TS emit that lands beside its .ts/.tsx sources in the pc-course package. That
+# package's src tree has no authored .js/.d.ts, so the sibling rule IS
+# expressible here as a path-scoped ignore (unlike the retired broad
+# `**/src/**/*.js` globs, which would also hide authored declarations).
+/apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.js
+/apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.d.ts
+/apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.js.map
+/apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.d.ts.map
