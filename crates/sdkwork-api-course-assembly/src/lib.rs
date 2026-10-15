@@ -5,7 +5,11 @@
 mod bootstrap;
 mod generated;
 
-pub use bootstrap::{assemble_api_router, ApiAssembly, assemble_api_router_with_pool, web_module, web_module_with_pool};
+pub use bootstrap::{
+    assemble_api_router, assemble_api_router_with_pool, assemble_backend_business_router_from_env,
+    assemble_backend_business_router_with_pool, web_module, web_module_with_pool, ApiAssembly,
+    BusinessRouterAssembly,
+};
 
 pub fn assembly_route_count() -> usize {
     generated::ROUTE_CRATE_COUNT
