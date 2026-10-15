@@ -46,7 +46,7 @@ export class HttpClient extends BaseHttpClient {
     return Object.keys(mergedHeaders).length > 0 ? mergedHeaders : undefined;
   }
 
-  protected buildHeaders(config: any, skipAuth = false): Record<string, string> {
+  protected override buildHeaders(config: any, skipAuth = false): Record<string, string> {
     const headers = super.buildHeaders(config, skipAuth);
     if (!skipAuth && !config?.skipAuth) {
       return headers;
@@ -201,7 +201,7 @@ export class HttpClient extends BaseHttpClient {
     }
     params.append(key, String(value));
   }
-  setAuthToken(token: string): void {
+  override setAuthToken(token: string): void {
     super.setAuthToken(token);
   }
   setAccessToken(token: string): void {
