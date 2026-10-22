@@ -5,19 +5,19 @@
 //! fails loudly when its source marker is missing.
 
 use serde_json::Value;
-use sqlx::Row;
+use sqlx::{PgPool, Row};
 
 use sdkwork_content_course_service::domain::models::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
-    CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseError, CourseItem, CourseLessonItem,
-    CoursePage, CourseQuery, CourseResult, CourseSectionItem, CourseStudioDetail,
+    CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseError,
+    CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult, CourseSectionItem,
+    CourseStudioDetail,
 };
 use sdkwork_content_course_service::ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseEnrollmentRepository,
-    CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
-    CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-    CourseResourceRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository, CourseInstructorRepository,
+    CourseLessonRepository, CourseLiveSessionRepository, CourseOfferingRepository,
+    CourseProgressRepository, CourseReactionRepository, CourseResourceRepository,
 };
 use sdkwork_content_course_service::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
@@ -941,6 +941,55 @@ impl CourseResourceRepository for PostgresCourseRepository {
 
 // ── Reaction ────────────────────────────────────────────────────────
 
+/// Counts course discussions owned by the comments module.
+///
+/// The comments tables are optional from the course module's perspective:
+/// standalone course deployments and older schemas do not have them. Their
+/// absence must not fail the engagement endpoint, so a missing comments schema
+/// yields zero discussions instead of a 500.
+async fn course_discussion_count(
+    pool: &PgPool,
+    tenant_id: &str,
+    course_id: &str,
+) -> CourseResult<i64> {
+    let available: bool = sqlx::query_scalar(
+        "SELECT to_regclass('comments_thread') IS NOT NULL
+            AND to_regclass('comments_comment') IS NOT NULL",
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(sqlx_storage_error)?;
+    if !available {
+        return Ok(0);
+    }
+
+    // Comments tables use BIGINT tenant ids, while course tables use TEXT.
+    // Bind a separate typed parameter instead of reusing the TEXT $1, which
+    // would make PostgreSQL reject the mixed comparison at runtime.
+    let Ok(tenant_id) = tenant_id.parse::<i64>() else {
+        return Ok(0);
+    };
+    let count: i64 = sqlx::query_scalar(
+        r#"
+        SELECT COUNT(*)
+        FROM comments_comment cc
+        JOIN comments_thread ct
+          ON ct.id = cc.thread_id AND ct.tenant_id = cc.tenant_id
+        WHERE ct.tenant_id = $1
+          AND ct.owner_kind = 'course'
+          AND ct.owner_id = $2
+          AND cc.status = 'published'
+          AND cc.deleted_at IS NULL
+        "#,
+    )
+    .bind(tenant_id)
+    .bind(course_id)
+    .fetch_one(pool)
+    .await
+    .map_err(sqlx_storage_error)?;
+    Ok(count)
+}
+
 #[async_trait::async_trait]
 impl CourseReactionRepository for PostgresCourseRepository {
     async fn course_engagement(
@@ -964,11 +1013,6 @@ impl CourseReactionRepository for PostgresCourseRepository {
                 WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
                   AND reaction_type = 'share' AND reaction_value = 'true'
                   AND status = 'active' AND deleted_at IS NULL) AS shares,
-              (SELECT COUNT(*) FROM comments_comment cc
-                JOIN comments_thread ct
-                  ON ct.id = cc.thread_id AND ct.tenant_id = cc.tenant_id
-                WHERE ct.tenant_id = $1 AND ct.owner_kind = 'course' AND ct.owner_id = $2
-                  AND cc.status = 'published' AND cc.deleted_at IS NULL) AS discussions,
               EXISTS (
                 SELECT 1 FROM course_reaction
                 WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
@@ -999,7 +1043,23 @@ impl CourseReactionRepository for PostgresCourseRepository {
         let likes: i64 = row.try_get("likes").map_err(sqlx_storage_error)?;
         let favorites: i64 = row.try_get("favorites").map_err(sqlx_storage_error)?;
         let shares: i64 = row.try_get("shares").map_err(sqlx_storage_error)?;
-        let discussions: i64 = row.try_get("discussions").map_err(sqlx_storage_error)?;
+        let discussions =
+            match course_discussion_count(self.pool(), &context.tenant_id, &course_id).await {
+                Ok(count) => count,
+                Err(error) => {
+                    // Discussions are auxiliary data owned by the comments
+                    // module. A missing or incompatible comments schema must
+                    // not turn the whole engagement endpoint into a 500.
+                    tracing::warn!(
+                        tenant_id = %context.tenant_id,
+                        course_id = %course_id,
+                        trace_id = ?context.trace_id,
+                        error = %error,
+                        "course engagement discussions unavailable; returning 0"
+                    );
+                    0
+                }
+            };
         let viewer_liked: bool = row.try_get("viewer_liked").map_err(sqlx_storage_error)?;
         let viewer_favorited: bool = row
             .try_get("viewer_favorited")

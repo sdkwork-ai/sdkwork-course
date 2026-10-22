@@ -16,6 +16,7 @@
     "verify": "pnpm exec sdkwork-app verify",
     "clean": "pnpm exec sdkwork-app clean",
     "test:design": "node --test scripts/course-design-contract.test.mjs",
+    "test:engagement": "node --test scripts/course-engagement-contract.test.mjs",
     "test:sdk-contract": "node --test scripts/course-sdk-contract.test.mjs",
     "test:contracts": "node --test sdks/_shared/course-contracts/tests/course-contracts.test.mjs",
     "typecheck": "tsc --noEmit",

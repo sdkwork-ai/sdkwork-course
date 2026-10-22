@@ -21,6 +21,7 @@ sdkwork_content_course_service.workspace = true
 chrono = { version = "0.4", features = ["serde"] }
 serde_json = "1.0"
 sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "postgres"] }
+tracing.workspace = true
 uuid = { version = "1.0", features = ["v4"] }
 
 [dev-dependencies]
