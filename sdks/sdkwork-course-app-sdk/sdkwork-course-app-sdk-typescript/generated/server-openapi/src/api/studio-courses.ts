@@ -4,19 +4,31 @@ import type { ApiRequestOptions, HttpClient } from '../http/client';
 import type { CourseCommandBody, SdkWorkPageData } from '../types';
 
 
-export interface CourseCommentsListParams {
+export interface StudioCoursesListParams {
   q?: string;
-  cursor?: string;
   page?: number;
   pageSize?: number;
   status?: string;
+  kind?: string;
 }
 
-export interface CourseCommentsCreateParams {
+export interface StudioCoursesCreateParams {
   idempotencyKey?: string;
 }
 
-export class CourseCommentsApi {
+export interface StudioCoursesUpdateParams {
+  idempotencyKey?: string;
+}
+
+export interface StudioCoursesSubmitParams {
+  idempotencyKey?: string;
+}
+
+export interface StudioCoursesWithdrawParams {
+  idempotencyKey?: string;
+}
+
+export class StudioCoursesApi {
   private client: HttpClient;
 
   constructor(client: HttpClient) {
@@ -24,37 +36,75 @@ export class CourseCommentsApi {
   }
 
 
-/** course Comments list. */
-  async list(courseId: string, params?: CourseCommentsListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+/** studio Courses list. */
+  async list(params?: StudioCoursesListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
-      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
+      { name: 'kind', value: params?.kind, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.request<SdkWorkPageData>(appendQueryString(appApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/comments`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
+    return this.client.request<SdkWorkPageData>(appendQueryString(appApiPath(`/studio/courses`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
-/** course Comments create. */
-  async create(courseId: string, body: CourseCommandBody, params?: CourseCommentsCreateParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+/** studio Courses create. */
+  async create(body: CourseCommandBody, params?: StudioCoursesCreateParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.request<Record<string, unknown>>(appApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/comments`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
+    return this.client.request<Record<string, unknown>>(appApiPath(`/studio/courses`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 
-/** course Comments delete. */
-  async delete(commentId: string, requestOptions?: ApiRequestOptions): Promise<void> {
-    return this.client.request<void>(appApiPath(`/course_comments/${serializePathParameter(commentId, { name: 'commentId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'DELETE' as any });
+/** studio Courses retrieve. */
+  async retrieve(courseId: string, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(appApiPath(`/studio/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+  }
+
+/** studio Courses update. */
+  async update(courseId: string, body: CourseCommandBody, params?: StudioCoursesUpdateParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.request<Record<string, unknown>>(appApiPath(`/studio/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PUT' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
+  }
+
+/** studio Courses delete. */
+  async delete(courseId: string, requestOptions?: ApiRequestOptions): Promise<void> {
+    return this.client.request<void>(appApiPath(`/studio/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'DELETE' as any });
+  }
+
+/** studio Courses submit. */
+  async submit(courseId: string, body: CourseCommandBody, params?: StudioCoursesSubmitParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.request<Record<string, unknown>>(appApiPath(`/studio/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/submit`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
+  }
+
+/** studio Courses withdraw. */
+  async withdraw(courseId: string, body: CourseCommandBody, params?: StudioCoursesWithdrawParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.request<Record<string, unknown>>(appApiPath(`/studio/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/withdraw`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
-export function createCourseCommentsApi(client: HttpClient): CourseCommentsApi {
-  return new CourseCommentsApi(client);
+export function createStudioCoursesApi(client: HttpClient): StudioCoursesApi {
+  return new StudioCoursesApi(client);
 }
 
 function appendQueryString(path: string, rawQueryString: string): string {

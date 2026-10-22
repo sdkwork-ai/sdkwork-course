@@ -656,49 +656,6 @@ pub async fn course_lesson_progress_repair(
 
 // ── Comments ────────────────────────────────────────────────────────
 
-pub async fn course_comments_list(
-    service: &dyn CourseApplicationService,
-    context: &CourseServiceContext,
-    query: CourseQuery,
-) -> CourseRouteResult<Value> {
-    let items = service.list_comments(context, query).await?;
-    Ok(ok(serde_json::to_value(items).unwrap_or_default()))
-}
-
-pub async fn course_comments_moderate(
-    service: &dyn CourseApplicationService,
-    context: &CourseServiceContext,
-    comment_id: String,
-    body: Value,
-) -> CourseRouteResult<Value> {
-    let request = sdkwork_content_course_service::CourseCommentModerationRequest {
-        status: body
-            .get("status")
-            .and_then(|v| v.as_str())
-            .unwrap_or("visible")
-            .to_string(),
-        moderation_note: body
-            .get("moderationNote")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string()),
-    };
-    let items = service
-        .moderate_comment(context, comment_id, request)
-        .await?;
-    Ok(ok(serde_json::to_value(items).unwrap_or_default()))
-}
-
-pub async fn course_comments_delete(
-    service: &dyn CourseApplicationService,
-    context: &CourseServiceContext,
-    comment_id: String,
-) -> CourseRouteResult<Value> {
-    service.delete_comment(context, comment_id).await?;
-    Ok(ok(serde_json::json!(null)))
-}
-
-// ── Reactions ───────────────────────────────────────────────────────
-
 pub async fn course_reactions_list(
     service: &dyn CourseApplicationService,
     context: &CourseServiceContext,
@@ -741,16 +698,32 @@ pub async fn course_applications_review(
     application_id: String,
     body: Value,
 ) -> CourseRouteResult<Value> {
+    let status = body
+        .get("status")
+        .or_else(|| body.get("reviewStatus"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    if !matches!(status.as_str(), "approved" | "rejected") {
+        return Err(CourseRouteError::invalid(
+            "status must be approved or rejected".to_string(),
+        ));
+    }
+    let review_note = body
+        .get("reviewNote")
+        .or_else(|| body.get("review_note"))
+        .and_then(|v| v.as_str())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned);
+    if status == "rejected" && review_note.is_none() {
+        return Err(CourseRouteError::invalid(
+            "A review note is required when rejecting an application".to_string(),
+        ));
+    }
     let request = sdkwork_content_course_service::CourseApplicationReviewRequest {
-        status: body
-            .get("status")
-            .and_then(|v| v.as_str())
-            .unwrap_or("approved")
-            .to_string(),
-        review_note: body
-            .get("reviewNote")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string()),
+        status,
+        review_note,
     };
     let item = service
         .review_application(context, application_id, request)
@@ -818,4 +791,78 @@ pub async fn course_audit_logs_retrieve(
         Some(audit_log) => Ok(ok(serde_json::to_value(audit_log).unwrap_or_default())),
         None => Ok(ok(serde_json::json!(null))),
     }
+}
+// ── Review workflow ─────────────────────────────────────────────────
+
+pub async fn course_reviews_list(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    query: CourseQuery,
+) -> CourseRouteResult<Value> {
+    let page = service.list_review_courses(context, query).await?;
+    Ok(ok(serde_json::to_value(page).unwrap_or_default()))
+}
+
+pub async fn course_reviews_stats(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+) -> CourseRouteResult<Value> {
+    let stats = service.review_stats(context).await?;
+    Ok(ok(stats))
+}
+
+pub async fn course_reviews_retrieve(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let detail = service.retrieve_review_course(context, course_id).await?;
+    match detail {
+        Some(detail) => Ok(ok(serde_json::to_value(detail).unwrap_or_default())),
+        None => Err(CourseRouteError::not_found("Course not found")),
+    }
+}
+
+pub async fn course_reviews_review(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let decision = body
+        .get("decision")
+        .and_then(|value| value.as_str())
+        .unwrap_or("")
+        .to_string();
+    if decision.is_empty() {
+        return Err(CourseRouteError::invalid(
+            "decision is required".to_string(),
+        ));
+    }
+    let note = body
+        .get("note")
+        .and_then(|value| value.as_str())
+        .map(str::to_owned);
+    let item = service
+        .review_course(
+            context,
+            course_id,
+            sdkwork_content_course_service::CourseReviewDecisionCommand { decision, note },
+        )
+        .await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+}
+
+pub async fn courses_offline(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let note = body
+        .get("note")
+        .and_then(|value| value.as_str())
+        .map(str::to_owned);
+    let item = service.offline_course(context, course_id, note).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
 }

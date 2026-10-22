@@ -42,9 +42,6 @@ tables:
   - name: course_lesson_progress
     lifecycle_status: active
     owner: course-platform
-  - name: course_comment
-    lifecycle_status: active
-    owner: course-platform
   - name: course_reaction
     lifecycle_status: active
     owner: course-platform
@@ -52,5 +49,8 @@ tables:
     lifecycle_status: active
     owner: course-platform
   - name: course_audit_log
+    lifecycle_status: active
+    owner: course-platform
+  - name: course_catalog_link
     lifecycle_status: active
     owner: course-platform

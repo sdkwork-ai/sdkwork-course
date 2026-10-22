@@ -1,0 +1,26 @@
+{
+  "name": "@sdkwork/sdkwork-course-pc-studio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sdkwork/sdkwork-course-pc-commons": "workspace:*",
+    "@sdkwork/sdkwork-course-pc-core": "workspace:*",
+    "@sdkwork/sdkwork-course-pc-courses": "workspace:*",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-router-dom": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0 <20.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  }
+}

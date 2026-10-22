@@ -39,6 +39,7 @@ export function CourseHome() {
 
   const [categories, setCategories] = useState<CourseCategoryTab[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [activeKind, setActiveKind] = useState("all");
   const [courses, setCourses] = useState<CourseData[]>([]);
   const [liveSessions, setLiveSessions] = useState<CourseLiveSessionUI[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -53,7 +54,7 @@ export function CourseHome() {
   const requestSeq = useRef(0);
 
   const fetchCourses = useCallback(
-    async (categoryId: string, page: number, append: boolean) => {
+    async (categoryId: string, kind: string, page: number, append: boolean) => {
       const seq = ++requestSeq.current;
       setLoadState((prev) => ({
         ...prev,
@@ -64,6 +65,7 @@ export function CourseHome() {
       try {
         const rows = await CourseService.getCourses({
           categoryId: categoryId === "all" ? undefined : categoryId,
+          kind: kind === "all" ? undefined : kind,
           page,
           pageSize: COURSE_PAGE_SIZE,
         });
@@ -119,7 +121,7 @@ export function CourseHome() {
   }, [t]);
 
   useEffect(() => {
-    void fetchCourses("all", 1, false);
+    void fetchCourses("all", "all", 1, false);
     return () => {
       requestSeq.current += 1;
     };
@@ -127,13 +129,18 @@ export function CourseHome() {
 
   const handleTabChange = (id: string) => {
     setActiveCategory(id);
-    void fetchCourses(id, 1, false);
+    void fetchCourses(id, activeKind, 1, false);
+  };
+
+  const handleKindChange = (kind: string) => {
+    setActiveKind(kind);
+    void fetchCourses(activeCategory, kind, 1, false);
   };
 
   const handleLoadMore = () => {
     if (loadState.loadingMore || !hasMore) return;
     const nextPage = Math.floor(courses.length / COURSE_PAGE_SIZE) + 1;
-    void fetchCourses(activeCategory, nextPage, true);
+    void fetchCourses(activeCategory, activeKind, nextPage, true);
   };
 
   if (unavailable) {
@@ -151,7 +158,7 @@ export function CourseHome() {
   ];
 
   const retryInitial = () => {
-    void fetchCourses(activeCategory, 1, false);
+    void fetchCourses(activeCategory, activeKind, 1, false);
   };
 
   return (
@@ -168,6 +175,28 @@ export function CourseHome() {
         </button>
       }
     >
+
+      <div className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1">
+        {[
+          { id: "all", label: t("course.all", "全部") },
+          { id: "standard", label: t("course.kindStandard", "课程") },
+          { id: "column", label: t("course.kindColumn", "专栏") },
+          { id: "collection", label: t("course.kindCollection", "合集") },
+        ].map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => handleKindChange(item.id)}
+            className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold transition-colors ${
+              activeKind === item.id
+                ? "bg-slate-900 text-white"
+                : "bg-white text-text-sub dark:bg-[#1C1C1E]"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       <CourseCategoryTabs
         categories={shownCategories}

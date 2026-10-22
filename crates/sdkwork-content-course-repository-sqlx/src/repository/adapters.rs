@@ -3,13 +3,13 @@ use sqlx::Row;
 
 use sdkwork_content_course_service::domain::models::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
-    CourseAuditLogItem, CourseCategoryItem, CourseCommentItem, CourseCommentModerationRequest,
+    CourseAuditLogItem, CourseCategoryItem,
     CourseError, CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult,
     CourseSectionItem,
 };
 use sdkwork_content_course_service::ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseCommentRepository, CourseEnrollmentRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository,
     CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
     CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
     CourseResourceRepository,

@@ -23,6 +23,7 @@ pub fn build_sdkwork_course_backend_api_router(
         .route(format!("{prefix}/courses/{{courseId}}").as_str(), get(http_handlers::courses_retrieve).patch(http_handlers::courses_update).delete(http_handlers::courses_delete))
         .route(format!("{prefix}/courses/{{courseId}}/publish").as_str(), post(http_handlers::courses_publish))
         .route(format!("{prefix}/courses/{{courseId}}/unpublish").as_str(), post(http_handlers::courses_unpublish))
+        .route(format!("{prefix}/courses/{{courseId}}/offline").as_str(), post(http_handlers::courses_offline))
         .route(format!("{prefix}/courses/{{courseId}}/offerings").as_str(), get(http_handlers::course_offerings_list).post(http_handlers::course_offerings_create))
         .route(format!("{prefix}/course_offerings/{{offeringId}}").as_str(), get(http_handlers::course_offerings_retrieve).patch(http_handlers::course_offerings_update).delete(http_handlers::course_offerings_delete))
         .route(format!("{prefix}/course_offerings/{{offeringId}}/publish").as_str(), post(http_handlers::course_offerings_publish))
@@ -48,9 +49,6 @@ pub fn build_sdkwork_course_backend_api_router(
         .route(format!("{prefix}/course_progress").as_str(), get(http_handlers::course_progress_list))
         .route(format!("{prefix}/course_enrollments/{{enrollmentId}}/progress").as_str(), get(http_handlers::course_progress_retrieve))
         .route(format!("{prefix}/course_lesson_progress/{{lessonProgressId}}").as_str(), patch(http_handlers::course_lesson_progress_repair))
-        .route(format!("{prefix}/course_comments").as_str(), get(http_handlers::course_comments_list))
-        .route(format!("{prefix}/course_comments/{{commentId}}/moderation").as_str(), patch(http_handlers::course_comments_moderate))
-        .route(format!("{prefix}/course_comments/{{commentId}}").as_str(), delete(http_handlers::course_comments_delete))
         .route(format!("{prefix}/course_reactions").as_str(), get(http_handlers::course_reactions_list))
         .route(format!("{prefix}/course_applications").as_str(), get(http_handlers::course_applications_list))
         .route(format!("{prefix}/course_applications/{{applicationId}}").as_str(), get(http_handlers::course_applications_retrieve))
@@ -61,6 +59,10 @@ pub fn build_sdkwork_course_backend_api_router(
         .route(format!("{prefix}/course_reports/live_sessions").as_str(), get(http_handlers::course_reports_live_sessions_list))
         .route(format!("{prefix}/course_audit_logs").as_str(), get(http_handlers::course_audit_logs_list))
         .route(format!("{prefix}/course_audit_logs/{{auditLogId}}").as_str(), get(http_handlers::course_audit_logs_retrieve))
+        .route(format!("{prefix}/course_reviews").as_str(), get(http_handlers::course_reviews_list))
+        .route(format!("{prefix}/course_reviews/stats").as_str(), get(http_handlers::course_reviews_stats))
+        .route(format!("{prefix}/course_reviews/{{courseId}}").as_str(), get(http_handlers::course_reviews_retrieve))
+        .route(format!("{prefix}/course_reviews/{{courseId}}/review").as_str(), post(http_handlers::course_reviews_review))
         .with_state(CourseBackendApiState::new(service));
 
     // Bare API router for gateway-owned Web Framework hosts (API_ASSEMBLY_SPEC

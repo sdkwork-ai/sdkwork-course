@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader, LoadingSpinner, EmptyState } from '@sdkwork/sdkwork-course-pc-commons'
@@ -24,6 +24,7 @@ export function LiveSessionListPage() {
     liveStatus: readEntityString(record, 'liveStatus', 'live_status', 'status') || 'scheduled',
     scheduledStartAt: readEntityString(record, 'scheduledStartAt', 'scheduled_start_at') || new Date().toISOString(),
     scheduledEndAt: readEntityString(record, 'scheduledEndAt', 'scheduled_end_at') || new Date().toISOString(),
+    coverUrl: `https://picsum.photos/seed/${encodeURIComponent(readEntityString(record, 'id', 'liveSessionId'))}/960/540`,
   }))
 
   if (isLoading) {
@@ -55,11 +56,21 @@ export function LiveSessionListPage() {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className="bg-white dark:bg-zinc-800 dark:ring-1 dark:ring-zinc-700/60 rounded-lg shadow dark:shadow-none overflow-hidden cursor-pointer hover:shadow-lg dark:hover:shadow-none transition-shadow"
+              className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden cursor-pointer hover:shadow-lg  transition-shadow"
               onClick={() => navigate(`/live/${session.id}`)}
             >
-              <div className="h-40 bg-gradient-to-r from-red-500 to-pink-500 relative">
-                <div className="absolute top-2 left-2">
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400">
+                <img
+                  src={session.coverUrl}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover opacity-45 mix-blend-overlay transition duration-500 hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
+                <span className="pointer-events-none absolute bottom-3 right-4 text-3xl font-black tracking-widest text-white/20">
+                  LIVE
+                </span>
+                <div className="absolute left-2 top-2">
                   {session.liveStatus === 'live' && (
                     <span className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold animate-pulse">
                       直播中
@@ -80,9 +91,9 @@ export function LiveSessionListPage() {
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{session.title}</h3>
                 {session.description && (
-                  <p className="text-gray-600 dark:text-zinc-300 text-sm mb-2 line-clamp-2">{session.description}</p>
+                  <p className="text-slate-600 text-sm mb-2 line-clamp-2">{session.description}</p>
                 )}
-                <div className="text-sm text-gray-500 dark:text-zinc-400">
+                <div className="text-sm text-slate-500">
                   <p>开始时间: {new Date(session.scheduledStartAt).toLocaleString()}</p>
                   <p>结束时间: {new Date(session.scheduledEndAt).toLocaleString()}</p>
                 </div>
@@ -94,3 +105,4 @@ export function LiveSessionListPage() {
     </div>
   )
 }
+

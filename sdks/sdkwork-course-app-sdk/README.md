@@ -13,12 +13,13 @@ contract for `/app/v3/api`.
 - Generated language: TypeScript
 - OpenAPI authority: `openapi/sdkwork-course-app-api.openapi.yaml`
 - Generator input: `openapi/sdkwork-course-app-api.sdkgen.yaml`
-- Owner-only operations: `31`
+- Owner-only operations: `41`
+- Generated resource classes: `17`
 - SDK dependencies: `[]`
 
 Clients call generated resource methods for course categories, courses,
 offerings, enrollments, sections, lessons, lesson resources, live sessions,
-progress, comments, reactions, and author applications. Auth tokens are
+progress, comments, engagement, reactions, and author applications. Auth tokens are
 supplied through generated SDK auth/bootstrap APIs; clients must not send
 `X-Request-Id`.
 

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { alignOpenApiOperationPatterns } from "../../sdkwork-specs/tools/lib/align-api-operation-patterns.mjs";
 import {
   isCreateOperation,
   sdkWorkEnvelopeComponentSchemas,
@@ -46,19 +47,23 @@ for (const surface of surfaces) {
   validateOperationPlan(operationPlan, surface);
 
   const routeManifest = buildRouteManifest(operationPlan, surface);
-  const openApi = buildOpenApi(operationPlan, surface);
+  const sdkgen = buildOpenApi(operationPlan, surface);
+  // The published authority document is the pattern-aligned projection; the
+  // generator consumes the raw sdkgen input so it keeps the canonical
+  // `resource.action` operation ids.
+  const openApi = alignOpenApiOperationPatterns(structuredClone(sdkgen)).document;
 
   if (checkOnly) {
     assertNoDrift(surface.routeManifestPath, routeManifest);
     assertNoDrift(surface.authorityPath, openApi);
-    assertNoDrift(surface.sdkgenPath, openApi);
+    assertNoDrift(surface.sdkgenPath, sdkgen);
     assertAssemblyCount(surface.assemblyPath, operationPlan.operations.length);
     continue;
   }
 
   writeJson(surface.routeManifestPath, routeManifest);
   writeJson(surface.authorityPath, openApi);
-  writeJson(surface.sdkgenPath, openApi);
+  writeJson(surface.sdkgenPath, sdkgen);
   syncAssemblyCount(surface.assemblyPath, operationPlan.operations.length);
 }
 
@@ -271,7 +276,7 @@ function buildOpenApiOperation(operationPlan, surface, operation) {
       ...idempotencyParameters(operation),
     ],
     responses,
-    security: [{ AuthToken: [], AccessToken: [] }],
+    security: operation.authMode === "anonymous" ? [] : [{ AuthToken: [], AccessToken: [] }],
     "x-sdkwork-owner": operationPlan.owner,
     "x-sdkwork-api-authority": operationPlan.apiAuthority,
     "x-sdkwork-domain": operationPlan.domain,
@@ -422,13 +427,24 @@ function queryParameters(operation) {
     return [];
   }
 
-  return [
-    { name: "q", in: "query", required: false, schema: { type: "string" } },
-    { name: "cursor", in: "query", required: false, schema: { type: "string" } },
-    { name: "page", in: "query", required: false, schema: { type: "integer", format: "int32", minimum: 1 } },
-    { name: "page_size", in: "query", required: false, schema: { type: "integer", format: "int32", minimum: 1, maximum: 200, default: 20 } },
-    { name: "status", in: "query", required: false, schema: { type: "string" } },
-  ];
+  const declared = Array.isArray(operation.query) && operation.query.length > 0
+    ? operation.query
+    : ["q", "cursor", "page", "page_size", "status"];
+
+  return declared.map((name) => {
+    if (name === "page") {
+      return { name, in: "query", required: false, schema: { type: "integer", format: "int32", minimum: 1 } };
+    }
+    if (name === "page_size") {
+      return {
+        name,
+        in: "query",
+        required: false,
+        schema: { type: "integer", format: "int32", minimum: 1, maximum: 200, default: 20 },
+      };
+    }
+    return { name, in: "query", required: false, schema: { type: "string" } };
+  });
 }
 
 function idempotencyParameters(operation) {

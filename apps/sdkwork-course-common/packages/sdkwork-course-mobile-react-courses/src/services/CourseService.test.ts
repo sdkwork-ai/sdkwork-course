@@ -42,6 +42,9 @@ function createFakePort(): CourseAppSdkPort {
           type: "vod",
         };
       },
+      async collectionItems() {
+        return [];
+      },
     },
     offerings: {
       async list(courseId) {

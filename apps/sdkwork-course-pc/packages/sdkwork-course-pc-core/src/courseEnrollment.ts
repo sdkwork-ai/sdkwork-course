@@ -13,6 +13,7 @@ export class CourseEnrollmentError extends Error {
 export async function enrollInFirstCourseOffering(
   sdk: CourseAppSdkClient,
   courseId: string,
+  source: 'self_service' | 'commerce' = 'self_service',
 ): Promise<string> {
   const offeringsResponse = await sdk.courseOfferings.list(courseId);
   const offerings = extractSdkListItems<{ id?: string }>(offeringsResponse);
@@ -24,7 +25,7 @@ export async function enrollInFirstCourseOffering(
 
   await sdk.courseEnrollments.create(
     offeringId,
-    { source: 'self_service' },
+    { source },
     { idempotencyKey: uuid() },
   );
 

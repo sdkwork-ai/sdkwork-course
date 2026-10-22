@@ -1,7 +1,7 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
-import type { CourseCommandBody, SdkWorkPageData } from '../types';
+import type { CourseCommandBody, SdkWorkCommandData, SdkWorkPageData } from '../types';
 
 
 export interface CourseSectionsListParams {
@@ -21,7 +21,7 @@ export class CourseSectionsApi {
 
 
 /** course Sections list. */
-  async list(courseId: string, params?: CourseSectionsListParams): Promise<SdkWorkPageData> {
+  async list(courseId: string, params?: CourseSectionsListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
@@ -29,22 +29,27 @@ export class CourseSectionsApi {
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/sections`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/sections`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** course Sections create. */
-  async create(courseId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.post<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/sections`), body, undefined, undefined, 'application/json');
+  async create(courseId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/sections`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Sections update. */
-  async update(sectionId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.patch<Record<string, unknown>>(backendApiPath(`/course_sections/${serializePathParameter(sectionId, { name: 'sectionId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(sectionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_sections/${serializePathParameter(sectionId, { name: 'sectionId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Sections delete. */
-  async delete(sectionId: string): Promise<void> {
-    return this.client.delete<void>(backendApiPath(`/course_sections/${serializePathParameter(sectionId, { name: 'sectionId', style: 'simple', explode: false })}`));
+  async delete(sectionId: string, requestOptions?: ApiRequestOptions): Promise<void> {
+    return this.client.request<void>(backendApiPath(`/course_sections/${serializePathParameter(sectionId, { name: 'sectionId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'DELETE' as any });
+  }
+
+/** course Sections reorder. */
+  async reorder(courseId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/sections/reorder`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PUT' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 }
 

@@ -13,6 +13,6 @@ import msg_progress from '../en-US/course/progress/progress.json';
 import msg_reactions from '../en-US/course/reactions/reactions.json';
 import msg_reports from '../en-US/course/reports/reports.json';
 
-const messages = Object.assign({}, ...msg_applications, ...msg_auth, ...msg_comments, ...msg_common, ...msg_courses, ...msg_enrollments, ...msg_errors, ...msg_lessons, ...msg_live, ...msg_nav, ...msg_progress, ...msg_reactions, ...msg_reports);
+const messages = Object.assign({}, msg_applications, msg_auth, msg_comments, msg_common, msg_courses, msg_enrollments, msg_errors, msg_lessons, msg_live, msg_nav, msg_progress, msg_reactions, msg_reports);
 
 export default messages;

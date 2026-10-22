@@ -12,6 +12,7 @@
     "@sdkwork/sdkwork-course-pc-commons": "workspace:*",
     "@sdkwork/sdkwork-course-pc-community": "workspace:*",
     "@sdkwork/sdkwork-course-pc-core": "workspace:*",
+    "@sdkwork/sdkwork-course-pc-courses": "workspace:*",
     "@tanstack/react-query": "^5.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

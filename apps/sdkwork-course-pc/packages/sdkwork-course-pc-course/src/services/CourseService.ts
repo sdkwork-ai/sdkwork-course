@@ -199,7 +199,7 @@ class SdkworkCourseService {
   }
 
   async getCourses(): Promise<Course[]> {
-    const response = await this.client().courses.list({ status: 'published' });
+    const response = await this.client().courses.list();
     return extractCourseItems(response)
       .map((record) => mapCourseSummary(record))
       .filter((course): course is Course => course != null);
@@ -218,10 +218,9 @@ class SdkworkCourseService {
       return null;
     }
 
-    const [sectionsResponse, lessonsResponse, commentsResponse, liveSessionsResponse] = await Promise.all([
+    const [sectionsResponse, lessonsResponse, liveSessionsResponse] = await Promise.all([
       this.client().courseSections.list(courseId),
       this.client().courseLessons.list(courseId),
-      this.client().courseComments.list(courseId),
       this.client().courseLiveSessions.list(),
     ]);
 
@@ -229,7 +228,6 @@ class SdkworkCourseService {
       extractCourseItems(sectionsResponse),
       extractCourseItems(lessonsResponse),
     );
-    const comments = extractCourseItems(commentsResponse).map((record, index) => mapComment(record, index));
     const liveSessions = extractCourseItems(liveSessionsResponse);
     const activeLive = liveSessions.find((session) => {
       const linkedCourseId = readString(session, 'courseId', 'course_id');
@@ -241,7 +239,6 @@ class SdkworkCourseService {
       type: activeLive ? 'live' : summary.type,
       viewers: readNumber(activeLive ?? {}, 'viewerCount', 'viewer_count') ?? summary.viewers,
       chapters: chapters.length > 0 ? chapters : summary.chapters,
-      comments: comments.length > 0 ? comments : summary.comments,
     };
   }
 }

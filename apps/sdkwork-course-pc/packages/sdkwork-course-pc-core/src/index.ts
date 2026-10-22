@@ -4,11 +4,23 @@ export {
   resetCourseAppSdkClient,
   createCourseAppSdkClientConfig,
   createCourseSdk,
+  retrieveCourseEngagement,
+  type CourseEngagement,
   type CourseAppSdkClient,
   type CourseAppSdkClientConfig,
   type CourseSdk,
   type CourseSdkConfig,
 } from './courseAppSdkClient';
+
+export {
+  getCourseBackendSdkClient,
+  getCourseBackendSdkClientWithSession,
+  initCourseBackendSdkClient,
+  resetCourseBackendSdkClient,
+  createCourseBackendSdkClientConfig,
+  type CourseBackendSdkClient,
+  type CourseBackendSdkClientConfig,
+} from './courseBackendSdkClient';
 
 export { CourseSdkProvider, useCourseSdk } from './context';
 export type { CourseSdkProviderProps } from './context';
@@ -41,6 +53,7 @@ export {
 export {
   getDriveAppSdkClient,
   resetDriveAppSdkClient,
+  configureCourseDriveApiBaseUrl,
   uploadCourseMediaFile,
   type CourseDriveUploadResult,
 } from './driveAppSdkClient';
@@ -58,6 +71,24 @@ export {
 } from './courseEnrollment';
 
 export {
+  createCourseCheckout,
+  CoursePurchaseUnavailableError,
+  retrieveCoursePaymentStatus,
+  retrieveCoursePurchaseOption,
+} from './courseCheckoutAdapter';
+export type {
+  CourseCheckoutPayment,
+  CoursePurchaseOption,
+} from './courseCheckoutAdapter';
+
+export {
+  ensureCommentsThread,
+  getCommentsClient,
+  resolveCommentsBaseUrl,
+} from './commentsAppSdk';
+
+
+export {
   COURSE_PC_APP_ID,
   COURSE_PC_MEDIA_ASSET_UPLOAD,
   COURSE_PC_UPLOAD_DECLARATIONS,
@@ -66,5 +97,6 @@ export {
 export type { CourseUploadDeclarationEntry } from './uploadDeclaration';
 
 export { restoreCourseAuthState, useAppStore } from './store';
+export type { CourseTheme } from './store';
 
 export { default as i18n } from './i18n';

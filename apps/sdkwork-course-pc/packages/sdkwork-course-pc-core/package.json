@@ -10,7 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "@sdkwork/comments-app-sdk": "workspace:*",
     "@sdkwork/course-app-sdk": "workspace:*",
+    "@sdkwork/course-backend-sdk": "workspace:*",
     "@sdkwork/drive-app-sdk": "workspace:*",
     "@sdkwork/iam-app-sdk": "workspace:*",
     "@sdkwork/sdk-common": "workspace:*",

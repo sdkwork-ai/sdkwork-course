@@ -25,6 +25,247 @@ body {
 }
 
 html.dark body {
-  background-color: #0b0b0d;
-  color: #f4f4f5;
+  background-color: #151517;
+  color: #f9fafb;
 }
+
+/* Console theme aliases used by the tenant admin console package. They match
+   the standalone app palette and can be overridden by an embedding host. */
+@theme {
+  --color-console-bg-panel: #ffffff;
+  --color-console-bg-root: #f8fafc;
+  --color-console-bg-hover: #f1f5f9;
+  --color-console-border: #e2e8f0;
+  --color-console-text-main: #0f172a;
+  --color-console-text-muted: #64748b;
+  --color-console-input-bg: #ffffff;
+}
+
+html.dark {
+  color-scheme: dark;
+  --color-console-bg-panel: #18181b;
+  --color-console-bg-root: #09090b;
+  --color-console-bg-hover: #27272a;
+  --color-console-border: #3f3f46;
+  --color-console-text-main: #f4f4f5;
+  --color-console-text-muted: #a1a1aa;
+  --color-console-input-bg: #18181b;
+}
+
+/* Course discovery surfaces use semantic tokens, not raw slate/white, so the
+   standalone app and the embedded SDKWork host can switch themes without
+   duplicating every component. */
+:root {
+  --course-bg: #ffffff;
+  --course-surface: #ffffff;
+  --course-muted: #f5f6f8;
+  --course-border: rgba(15, 17, 21, 0.08);
+  --course-text: #0f1115;
+  --course-subtext: #5b5e63;
+  --course-faint: #7d8187;
+  --course-brand: #4f46e5;
+}
+
+html.dark {
+  --course-bg: #151517;
+  --course-surface: #232324;
+  --course-muted: #2c2c2e;
+  --course-border: rgba(255, 255, 255, 0.08);
+  --course-text: #f9fafb;
+  --course-subtext: #cfd3d6;
+  --course-faint: #adb2b8;
+  --course-brand: #818cf8;
+}
+
+@theme inline {
+  --color-course-bg: var(--course-bg);
+  --color-course-surface: var(--course-surface);
+  --color-course-muted: var(--course-muted);
+  --color-course-border: var(--course-border);
+  --color-course-text: var(--course-text);
+  --color-course-subtext: var(--course-subtext);
+  --color-course-faint: var(--course-faint);
+  --color-course-brand: var(--course-brand);
+}
+
+.course-app-surface {
+  --course-bg: var(--dsw-alias-bg-base, #ffffff);
+  --course-surface: var(--dsw-alias-bg-layer-1, #ffffff);
+  --course-muted: var(--dsw-alias-bg-layer-2, #f5f6f8);
+  --course-border: var(--dsw-alias-border-l1, rgba(15, 17, 21, 0.08));
+  --course-text: var(--dsw-alias-label-primary, #0f1115);
+  --course-subtext: var(--dsw-alias-label-secondary, #5b5e63);
+  --course-faint: var(--dsw-alias-label-tertiary, #7d8187);
+  background-color: var(--course-bg);
+  color: var(--course-text);
+}
+
+html.dark .course-app-surface header {
+  background-color: var(--course-bg) !important;
+}
+
+.course-primary {
+  background-color: var(--dsw-alias-button-primary-fill, var(--course-brand));
+  color: var(--dsw-alias-label-primary-foreground, #ffffff);
+}
+
+.course-primary:hover {
+  background-color: var(--dsw-alias-button-primary-hover, var(--course-brand));
+}
+
+/* Scoped dark overrides cover the many legacy slate/white utilities in the
+   learner, studio, and console surfaces without changing their layout. */
+html.dark .course-app-surface .bg-white,
+html.dark .course-app-surface .bg-white\/90,
+html.dark .course-app-surface .bg-white\/80,
+html.dark .course-app-surface .bg-white\/70 {
+  background-color: var(--course-surface) !important;
+}
+
+html.dark .course-app-surface .bg-slate-50,
+html.dark .course-app-surface .bg-slate-100,
+html.dark .course-app-surface .bg-slate-200 {
+  background-color: var(--course-muted) !important;
+}
+
+html.dark .course-app-surface .bg-slate-100\/80 {
+  background-color: color-mix(in srgb, var(--course-muted) 80%, transparent) !important;
+}
+
+html.dark .course-app-surface .bg-slate-900 {
+  background-color: var(--dsw-alias-bg-module-platform, #353638) !important;
+}
+
+html.dark .course-app-surface .bg-slate-950 {
+  background-color: var(--course-bg) !important;
+}
+
+html.dark .course-app-surface .text-slate-900,
+html.dark .course-app-surface .text-slate-800 {
+  color: var(--course-text) !important;
+}
+
+html.dark .course-app-surface .text-slate-700,
+html.dark .course-app-surface .text-slate-600 {
+  color: var(--course-subtext) !important;
+}
+
+html.dark .course-app-surface .text-slate-500,
+html.dark .course-app-surface .text-slate-400 {
+  color: var(--course-faint) !important;
+}
+
+html.dark .course-app-surface .border-slate-100,
+html.dark .course-app-surface .border-slate-200,
+html.dark .course-app-surface .border-slate-200\/70,
+html.dark .course-app-surface .border-slate-300 {
+  border-color: var(--course-border) !important;
+}
+
+html.dark .course-app-surface .hover\:bg-slate-50:hover,
+html.dark .course-app-surface .hover\:bg-slate-100:hover {
+  background-color: var(--course-muted) !important;
+}
+
+html.dark .course-app-surface .hover\:bg-white:hover {
+  background-color: var(--course-surface) !important;
+}
+
+html.dark .course-app-surface .bg-indigo-50 {
+  background-color: color-mix(in srgb, #6366f1 18%, transparent) !important;
+}
+
+html.dark .course-app-surface .text-indigo-700,
+html.dark .course-app-surface .text-indigo-600 {
+  color: #a5b4fc !important;
+}
+
+html.dark .course-app-surface .bg-emerald-50,
+html.dark .course-app-surface .bg-emerald-50\/60 {
+  background-color: color-mix(in srgb, #10b981 16%, transparent) !important;
+}
+
+html.dark .course-app-surface .bg-sky-50 {
+  background-color: color-mix(in srgb, #0ea5e9 16%, transparent) !important;
+}
+
+html.dark .course-app-surface .bg-sky-100,
+html.dark .course-app-surface .bg-emerald-100,
+html.dark .course-app-surface .bg-amber-100,
+html.dark .course-app-surface .bg-rose-100 {
+  background-color: color-mix(in srgb, currentColor 14%, transparent) !important;
+}
+
+html.dark .course-app-surface .bg-amber-50,
+html.dark .course-app-surface .bg-amber-50\/60,
+html.dark .course-app-surface .bg-amber-50\/70 {
+  background-color: color-mix(in srgb, #f59e0b 16%, transparent) !important;
+}
+
+html.dark .course-app-surface .bg-rose-50,
+html.dark .course-app-surface .bg-rose-50\/60 {
+  background-color: color-mix(in srgb, #f43f5e 16%, transparent) !important;
+}
+
+html.dark .course-app-surface .border-sky-200,
+html.dark .course-app-surface .border-emerald-200,
+html.dark .course-app-surface .border-amber-200,
+html.dark .course-app-surface .border-rose-200,
+html.dark .course-app-surface .border-indigo-200 {
+  border-color: color-mix(in srgb, currentColor 28%, transparent) !important;
+}
+
+html.dark .course-app-surface .text-sky-700 {
+  color: #7dd3fc !important;
+}
+
+html.dark .course-app-surface .text-emerald-700,
+html.dark .course-app-surface .text-emerald-600,
+html.dark .course-app-surface .text-emerald-900 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .course-app-surface .text-amber-700,
+html.dark .course-app-surface .text-amber-600 {
+  color: #fcd34d !important;
+}
+
+html.dark .course-app-surface .text-rose-700,
+html.dark .course-app-surface .text-rose-600,
+html.dark .course-app-surface .text-rose-900 {
+  color: #fda4af !important;
+}
+
+html.dark .course-app-surface .text-amber-900,
+html.dark .course-app-surface .text-amber-800 {
+  color: #fcd34d !important;
+}
+
+html.dark .course-app-surface .focus\:bg-white:focus {
+  background-color: var(--course-surface) !important;
+}
+
+html.dark .course-app-surface input,
+html.dark .course-app-surface textarea,
+html.dark .course-app-surface select {
+  color-scheme: dark;
+}
+
+html.dark .course-app-surface ::selection {
+  background-color: #4338ca;
+  color: #eef2ff;
+}
+
+::selection {
+  background-color: #c7d2fe;
+  color: #1e1b4b;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+}
+

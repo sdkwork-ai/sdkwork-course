@@ -3,10 +3,10 @@ use serde_json::Value;
 use crate::error::{CourseRouteError, CourseRouteResult};
 use sdkwork_content_course_service::{
     CourseApplicationService, CourseEnrollmentCommand, CourseLessonProgressCommand, CourseQuery,
-    CourseServiceContext,
+    CourseServiceContext, CourseStudioDraftCommand,
 };
 
-fn ok(data: Value) -> Value {
+pub(crate) fn ok(data: Value) -> Value {
     data
 }
 
@@ -33,8 +33,12 @@ pub async fn course_categories_retrieve(
 pub async fn courses_list(
     service: &dyn CourseApplicationService,
     context: &CourseServiceContext,
-    query: CourseQuery,
+    mut query: CourseQuery,
 ) -> CourseRouteResult<Value> {
+    // The learner catalog never exposes drafts or review state. Authoring has
+    // its own `/studio/courses` surface.
+    query.status = Some("published".to_string());
+    query.author_user_id = None;
     let page = service.list_courses(context, query).await?;
     Ok(ok(serde_json::to_value(page).unwrap_or_default()))
 }
@@ -46,9 +50,44 @@ pub async fn courses_retrieve(
 ) -> CourseRouteResult<Value> {
     let item = service.retrieve_course(context, course_id).await?;
     match item {
-        Some(course) => Ok(ok(serde_json::to_value(course).unwrap_or_default())),
+        Some(course) if course.publish_status == "published" => {
+            Ok(ok(serde_json::to_value(course).unwrap_or_default()))
+        }
+        _ => Err(CourseRouteError::not_found("Course not found")),
+    }
+}
+
+pub async fn course_curriculum_retrieve(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let curriculum = service.retrieve_curriculum(context, course_id).await?;
+    match curriculum {
+        Some(curriculum) => Ok(ok(serde_json::to_value(curriculum).unwrap_or_default())),
         None => Err(CourseRouteError::not_found("Course not found")),
     }
+}
+
+pub async fn course_collection_items_list(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let course = service
+        .retrieve_course(context, course_id.clone())
+        .await?
+        .filter(|course| course.publish_status == "published")
+        .ok_or_else(|| CourseRouteError::not_found("Course not found"))?;
+    if course.kind != "collection" {
+        return Err(CourseRouteError::invalid(
+            "Course is not a collection".to_string(),
+        ));
+    }
+    let items = service
+        .list_collection_items(context, course_id)
+        .await?;
+    Ok(ok(serde_json::to_value(items).unwrap_or_default()))
 }
 
 pub async fn course_offerings_list(
@@ -102,8 +141,20 @@ pub async fn course_enrollments_current_list(
     context: &CourseServiceContext,
     query: CourseQuery,
 ) -> CourseRouteResult<Value> {
+    let user_id = context
+        .user_id
+        .clone()
+        .ok_or_else(|| CourseRouteError::invalid("An authenticated user is required".to_string()))?;
     let items = service.list_enrollments(context, query).await?;
-    Ok(ok(serde_json::to_value(items).unwrap_or_default()))
+    let owned = items
+        .into_iter()
+        .filter(|item| {
+            item.get("userId")
+                .and_then(serde_json::Value::as_str)
+                .is_some_and(|value| value == user_id.as_str())
+        })
+        .collect::<Vec<_>>();
+    Ok(ok(serde_json::to_value(owned).unwrap_or_default()))
 }
 
 pub async fn course_enrollments_retrieve(
@@ -289,32 +340,13 @@ pub async fn course_live_sessions_replay_retrieve(
     }
 }
 
-pub async fn course_comments_list(
+pub async fn course_engagement_retrieve(
     service: &dyn CourseApplicationService,
     context: &CourseServiceContext,
-    query: CourseQuery,
+    course_id: String,
 ) -> CourseRouteResult<Value> {
-    let items = service.list_comments(context, query).await?;
-    Ok(ok(serde_json::to_value(items).unwrap_or_default()))
-}
-
-pub async fn course_comments_create(
-    service: &dyn CourseApplicationService,
-    context: &CourseServiceContext,
-    _course_id: String,
-    body: Value,
-) -> CourseRouteResult<Value> {
-    let item = service.create_comment(context, body).await?;
-    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
-}
-
-pub async fn course_comments_delete(
-    service: &dyn CourseApplicationService,
-    context: &CourseServiceContext,
-    comment_id: String,
-) -> CourseRouteResult<Value> {
-    service.delete_comment(context, comment_id).await?;
-    Ok(ok(serde_json::json!(null)))
+    let item = service.course_engagement(context, course_id).await?;
+    Ok(ok(item))
 }
 
 pub async fn course_reactions_replace(
@@ -382,8 +414,14 @@ pub async fn course_applications_create(
 pub async fn course_applications_current_list(
     service: &dyn CourseApplicationService,
     context: &CourseServiceContext,
-    query: CourseQuery,
+    mut query: CourseQuery,
 ) -> CourseRouteResult<Value> {
+    query.applicant_user_id = context.user_id.clone();
+    if query.applicant_user_id.is_none() {
+        return Err(CourseRouteError::invalid(
+            "An authenticated user is required".to_string(),
+        ));
+    }
     let items = service.list_applications(context, query).await?;
     Ok(ok(serde_json::to_value(items).unwrap_or_default()))
 }
@@ -397,9 +435,97 @@ pub async fn course_applications_retrieve(
         .retrieve_application(context, application_id)
         .await?;
     match result {
-        Some(application) => Ok(ok(
-            serde_json::to_value(application).unwrap_or_default(),
-        )),
-        None => Ok(ok(serde_json::json!(null))),
+        Some(application)
+            if application.applicant_user_id.as_deref() == context.user_id.as_deref() =>
+        {
+            Ok(ok(serde_json::to_value(application).unwrap_or_default()))
+        }
+        _ => Ok(ok(serde_json::json!(null))),
     }
+}
+// ── Studio (creator authoring) ──────────────────────────────────────
+
+pub async fn studio_courses_list(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    mut query: CourseQuery,
+) -> CourseRouteResult<Value> {
+    query.author_user_id = context.user_id.clone();
+    if query.author_user_id.is_none() {
+        return Err(CourseRouteError::invalid(
+            "An authenticated creator is required".to_string(),
+        ));
+    }
+    let page = service.list_courses(context, query).await?;
+    Ok(ok(serde_json::to_value(page).unwrap_or_default()))
+}
+
+pub async fn studio_courses_create(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let mut command: CourseStudioDraftCommand =
+        serde_json::from_value(body).map_err(|e| CourseRouteError::invalid(e.to_string()))?;
+    command.course_id = None;
+    let item = service.save_studio_course(context, command).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+}
+
+pub async fn studio_courses_retrieve(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let detail = service.retrieve_studio_course(context, course_id).await?;
+    match detail {
+        Some(detail) => Ok(ok(serde_json::to_value(detail).unwrap_or_default())),
+        None => Err(CourseRouteError::not_found("Course not found")),
+    }
+}
+
+pub async fn studio_courses_update(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let mut command: CourseStudioDraftCommand =
+        serde_json::from_value(body).map_err(|e| CourseRouteError::invalid(e.to_string()))?;
+    command.course_id = Some(course_id);
+    let item = service.save_studio_course(context, command).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+}
+
+pub async fn studio_courses_delete(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let owned = service
+        .retrieve_studio_course(context, course_id.clone())
+        .await?;
+    if owned.is_none() {
+        return Err(CourseRouteError::not_found("Course not found"));
+    }
+    service.delete_course(context, course_id).await?;
+    Ok(ok(serde_json::json!(null)))
+}
+
+pub async fn studio_courses_submit(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let item = service.submit_course(context, course_id).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+}
+
+pub async fn studio_courses_withdraw(
+    service: &dyn CourseApplicationService,
+    context: &CourseServiceContext,
+    course_id: String,
+) -> CourseRouteResult<Value> {
+    let item = service.withdraw_course(context, course_id).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
 }

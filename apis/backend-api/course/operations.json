@@ -48,7 +48,7 @@
     {
       "method": "PUT",
       "path": "/backend/v3/api/course_categories/reorder",
-      "operationId": "courseCategories.update",
+      "operationId": "courseCategories.reorder",
       "resource": "courseCategories",
       "authMode": "dual-token",
       "permission": "course.categories.write",
@@ -106,7 +106,17 @@
       "resource": "courses",
       "authMode": "dual-token",
       "permission": "course.courses.read",
-      "auditEvent": "course.courses.list"
+      "auditEvent": "course.courses.list",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "status",
+        "kind",
+        "category",
+        "level",
+        "author_user_id"
+      ]
     },
     {
       "method": "POST",
@@ -264,7 +274,7 @@
     {
       "method": "PUT",
       "path": "/backend/v3/api/courses/{courseId}/sections/reorder",
-      "operationId": "courseSections.update",
+      "operationId": "courseSections.reorder",
       "resource": "courseSections",
       "authMode": "dual-token",
       "permission": "course.lessons.write",
@@ -318,7 +328,7 @@
     {
       "method": "PUT",
       "path": "/backend/v3/api/courses/{courseId}/lessons/reorder",
-      "operationId": "courseLessons.update",
+      "operationId": "courseLessons.reorder",
       "resource": "courseLessons",
       "authMode": "dual-token",
       "permission": "course.lessons.write",
@@ -497,33 +507,6 @@
     },
     {
       "method": "GET",
-      "path": "/backend/v3/api/course_comments",
-      "operationId": "courseComments.list",
-      "resource": "courseComments",
-      "authMode": "dual-token",
-      "permission": "course.comments.read",
-      "auditEvent": "course.comments.list"
-    },
-    {
-      "method": "PATCH",
-      "path": "/backend/v3/api/course_comments/{commentId}/moderation",
-      "operationId": "courseComments.update",
-      "resource": "courseComments",
-      "authMode": "dual-token",
-      "permission": "course.comments.moderate",
-      "auditEvent": "course.comment.moderated"
-    },
-    {
-      "method": "DELETE",
-      "path": "/backend/v3/api/course_comments/{commentId}",
-      "operationId": "courseComments.delete",
-      "resource": "courseComments",
-      "authMode": "dual-token",
-      "permission": "course.comments.moderate",
-      "auditEvent": "course.comment.deleted"
-    },
-    {
-      "method": "GET",
       "path": "/backend/v3/api/course_reactions",
       "operationId": "courseReactions.list",
       "resource": "courseReactions",
@@ -611,6 +594,58 @@
       "authMode": "dual-token",
       "permission": "course.audit_logs.read",
       "auditEvent": "course.audit_log.read"
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/course_reviews",
+      "operationId": "courseReviews.list",
+      "resource": "courseReviews",
+      "authMode": "dual-token",
+      "permission": "course.reviews.read",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "status",
+        "kind"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/course_reviews/stats",
+      "operationId": "courseReviews.stats",
+      "resource": "courseReviews",
+      "authMode": "dual-token",
+      "permission": "course.reviews.read",
+      "auditEvent": "course.reviews.stats_read"
+    },
+    {
+      "method": "GET",
+      "path": "/backend/v3/api/course_reviews/{courseId}",
+      "operationId": "courseReviews.retrieve",
+      "resource": "courseReviews",
+      "authMode": "dual-token",
+      "permission": "course.reviews.read"
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/course_reviews/{courseId}/review",
+      "operationId": "courseReviews.review",
+      "resource": "courseReviews",
+      "authMode": "dual-token",
+      "permission": "course.reviews.review",
+      "idempotency": "recommended",
+      "auditEvent": "course.review.decided"
+    },
+    {
+      "method": "POST",
+      "path": "/backend/v3/api/courses/{courseId}/offline",
+      "operationId": "courses.offline",
+      "resource": "courses",
+      "authMode": "dual-token",
+      "permission": "course.courses.publish",
+      "idempotency": "recommended",
+      "auditEvent": "course.course.offlined"
     }
   ]
 }

@@ -69,12 +69,6 @@
       "lifecycle_status": "active"
     },
     {
-      "table_name": "course_comment",
-      "owner": "course-platform",
-      "compliance_level": "L2",
-      "lifecycle_status": "active"
-    },
-    {
       "table_name": "course_reaction",
       "owner": "course-platform",
       "compliance_level": "L2",
@@ -88,6 +82,12 @@
     },
     {
       "table_name": "course_audit_log",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_catalog_link",
       "owner": "course-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"

@@ -100,3 +100,7 @@ etc/**/*.local.*
 /apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.d.ts
 /apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.js.map
 /apps/sdkwork-course-pc/packages/sdkwork-course-pc-course/src/**/*.d.ts.map
+
+# Local backup copy of a previously generated SDK tree (superseded by the
+# tracked `server-openapi` directory). Added by repo-commit sweep; never commit.
+**/server-openapi-old/

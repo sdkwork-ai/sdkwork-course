@@ -71,9 +71,13 @@ const client = new SdkworkAppClient({
 - `client.courseProgress` - course_progress API
 - `client.courseLessonProgress` - course_lesson_progress API
 - `client.courseLiveSessions` - course_live_sessions API
-- `client.courseComments` - course_comments API
+- `client.courseEngagement` - course_engagement API
 - `client.courseReactions` - course_reactions API
 - `client.courseApplications` - course_applications API
+- `client.courseCurriculum` - course_curriculum API
+- `client.courseCollectionItems` - course_collection_items API
+- `client.studioCourses` - studio_courses API
+- `client.courseEntitlements` - course_entitlements API
 
 ## Usage Examples
 
@@ -97,10 +101,11 @@ const result = await client.courseCategories.list(params);
 // courses list.
 const params = {
   q: 'q',
-  cursor: 'cursor',
-  page: 3,
-  page_size: 4,
-  status: 'status',
+  page: 2,
+  page_size: 3,
+  category: 'category',
+  level: 'level',
+  kind: 'kind',
 };
 const result = await client.courses.list(params);
 ```
@@ -196,12 +201,12 @@ const params = {
 const result = await client.courseLiveSessions.list(params);
 ```
 
-### course_comments
+### course_engagement
 
 ```typescript
-// course Comments delete.
-const commentId = '1';
-const result = await client.courseComments.delete(commentId);
+// course Engagement retrieve.
+const courseId = '1';
+const result = await client.courseEngagement.retrieve(courseId);
 ```
 
 ### course_reactions
@@ -228,6 +233,48 @@ const params = {
   status: 'status',
 };
 const result = await client.courseApplications.current.list(params);
+```
+
+### course_curriculum
+
+```typescript
+// course Curriculum retrieve.
+const courseId = '1';
+const result = await client.courseCurriculum.retrieve(courseId);
+```
+
+### course_collection_items
+
+```typescript
+// course Collection Items list.
+const courseId = '1';
+const params = {
+  page: 1,
+  page_size: 2,
+};
+const result = await client.courseCollectionItems.list(courseId, params);
+```
+
+### studio_courses
+
+```typescript
+// studio Courses list.
+const params = {
+  q: 'q',
+  page: 2,
+  page_size: 3,
+  status: 'status',
+  kind: 'kind',
+};
+const result = await client.studioCourses.list(params);
+```
+
+### course_entitlements
+
+```typescript
+// course Entitlements grant.
+const body = {};
+const result = await client.courseEntitlements.grant(body);
 ```
 
 ## Error Handling
@@ -264,7 +311,7 @@ This SDK includes cross-platform publish scripts in `bin/`:
 - `bin/publish.sh`
 - `bin/publish.ps1`
 
-TypeScript check and publish commands use pnpm to materialize workspace dependency versions in a temporary tarball. They reject local-only dependency protocols before npm publication and do not rewrite the source `package.json`.
+TypeScript check and publish commands materialize workspace dependency versions in a temporary tarball with pnpm. They reject local-only dependency protocols before npm publication and do not rewrite the source `package.json`.
 
 ### Check
 

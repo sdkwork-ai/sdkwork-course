@@ -13,7 +13,8 @@ contract for `/backend/v3/api`.
 - Generated language: TypeScript
 - OpenAPI authority: `openapi/sdkwork-course-backend-api.openapi.yaml`
 - Generator input: `openapi/sdkwork-course-backend-api.sdkgen.yaml`
-- Owner-only operations: `67`
+- Owner-only operations: `72`
+- Generated resource classes: `17`
 - SDK dependencies: `[]`
 
 Clients call generated resource methods for course management, instructors,

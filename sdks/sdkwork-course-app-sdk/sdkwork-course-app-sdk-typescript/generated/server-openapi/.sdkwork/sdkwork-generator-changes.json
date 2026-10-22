@@ -9,7 +9,7 @@
     "protocol": "http",
     "packageName": "@sdkwork/course-app-sdk"
   },
-  "changeFingerprint": "bcc7d774c4f48b606be766d4c05795add96d4bdbf569537ff646751a72440b7e",
+  "changeFingerprint": "e37d205da4dce347b31fa3c38be5cf246abd8b0f7e04c82ea546c4f3e2849942",
   "changes": {
     "createdGeneratedFiles": [
       "bin/publish-core.mjs",
@@ -25,8 +25,11 @@
       "src/api/base.ts",
       "src/api/course-applications.ts",
       "src/api/course-categories.ts",
-      "src/api/course-comments.ts",
+      "src/api/course-collection-items.ts",
+      "src/api/course-curriculum.ts",
+      "src/api/course-engagement.ts",
       "src/api/course-enrollments.ts",
+      "src/api/course-entitlements.ts",
       "src/api/course-lesson-progress.ts",
       "src/api/course-lesson-resources.ts",
       "src/api/course-lessons.ts",
@@ -38,6 +41,7 @@
       "src/api/courses.ts",
       "src/api/index.ts",
       "src/api/paths.ts",
+      "src/api/studio-courses.ts",
       "src/auth/index.ts",
       "src/http/client.ts",
       "src/http/index.ts",
@@ -88,8 +92,11 @@
           "src/api/base.ts",
           "src/api/course-applications.ts",
           "src/api/course-categories.ts",
-          "src/api/course-comments.ts",
+          "src/api/course-collection-items.ts",
+          "src/api/course-curriculum.ts",
+          "src/api/course-engagement.ts",
           "src/api/course-enrollments.ts",
+          "src/api/course-entitlements.ts",
           "src/api/course-lesson-progress.ts",
           "src/api/course-lesson-resources.ts",
           "src/api/course-lessons.ts",
@@ -101,6 +108,7 @@
           "src/api/courses.ts",
           "src/api/index.ts",
           "src/api/paths.ts",
+          "src/api/studio-courses.ts",
           "src/http/client.ts",
           "src/sdk.ts"
         ]
@@ -186,7 +194,7 @@
         "title": "Unified package check",
         "required": true,
         "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
+        "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
           "./bin/publish-core.mjs",
@@ -204,7 +212,7 @@
         "title": "Unified package build",
         "required": true,
         "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
+        "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
           "./bin/publish-core.mjs",

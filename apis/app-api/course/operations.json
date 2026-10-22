@@ -28,7 +28,15 @@
       "path": "/app/v3/api/courses",
       "operationId": "courses.list",
       "resource": "courses",
-      "authMode": "dual-token"
+      "authMode": "dual-token",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "category",
+        "level",
+        "kind"
+      ]
     },
     {
       "method": "GET",
@@ -175,24 +183,9 @@
     },
     {
       "method": "GET",
-      "path": "/app/v3/api/courses/{courseId}/comments",
-      "operationId": "courseComments.list",
-      "resource": "courseComments",
-      "authMode": "dual-token"
-    },
-    {
-      "method": "POST",
-      "path": "/app/v3/api/courses/{courseId}/comments",
-      "operationId": "courseComments.create",
-      "resource": "courseComments",
-      "authMode": "dual-token",
-      "idempotency": "recommended"
-    },
-    {
-      "method": "DELETE",
-      "path": "/app/v3/api/course_comments/{commentId}",
-      "operationId": "courseComments.delete",
-      "resource": "courseComments",
+      "path": "/app/v3/api/courses/{courseId}/engagement",
+      "operationId": "courseEngagement.retrieve",
+      "resource": "courseEngagement",
       "authMode": "dual-token"
     },
     {
@@ -231,6 +224,96 @@
       "operationId": "courseApplications.retrieve",
       "resource": "courseApplications",
       "authMode": "dual-token"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/courses/{courseId}/curriculum",
+      "operationId": "courseCurriculum.retrieve",
+      "resource": "courseCurriculum",
+      "authMode": "dual-token"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/courses/{courseId}/items",
+      "operationId": "courseCollectionItems.list",
+      "resource": "courseCollectionItems",
+      "authMode": "dual-token",
+      "query": [
+        "page",
+        "page_size"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/studio/courses",
+      "operationId": "studioCourses.list",
+      "resource": "studioCourses",
+      "authMode": "dual-token",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "status",
+        "kind"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/studio/courses",
+      "operationId": "studioCourses.create",
+      "resource": "studioCourses",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.studio.course_created"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/studio/courses/{courseId}",
+      "operationId": "studioCourses.retrieve",
+      "resource": "studioCourses",
+      "authMode": "dual-token"
+    },
+    {
+      "method": "PUT",
+      "path": "/app/v3/api/studio/courses/{courseId}",
+      "operationId": "studioCourses.update",
+      "resource": "studioCourses",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.studio.course_updated"
+    },
+    {
+      "method": "DELETE",
+      "path": "/app/v3/api/studio/courses/{courseId}",
+      "operationId": "studioCourses.delete",
+      "resource": "studioCourses",
+      "authMode": "dual-token",
+      "auditEvent": "course.studio.course_deleted"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/studio/courses/{courseId}/submit",
+      "operationId": "studioCourses.submit",
+      "resource": "studioCourses",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.studio.course_submitted"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/studio/courses/{courseId}/withdraw",
+      "operationId": "studioCourses.withdraw",
+      "resource": "studioCourses",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.studio.course_withdrawn"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/course_entitlements/grant",
+      "operationId": "courseEntitlements.grant",
+      "resource": "courseEntitlements",
+      "authMode": "anonymous"
     }
   ]
 }

@@ -27,6 +27,8 @@
         "common/002_default_category.sql",
         "common/003_top_level_categories.sql",
         "common/004_bilibili_ai_courses.sql",
+        "common/005_course_center_showcase.sql",
+        "common/006_live_sessions.sql",
         "common/001_bootstrap.sql"
       ],
       "locales": {

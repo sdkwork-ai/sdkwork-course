@@ -13,11 +13,11 @@ import { CourseLiveSessionsApi, createCourseLiveSessionsApi } from './api/course
 import { CourseEnrollmentsApi, createCourseEnrollmentsApi } from './api/course-enrollments';
 import { CourseProgressApi, createCourseProgressApi } from './api/course-progress';
 import { CourseLessonProgressApi, createCourseLessonProgressApi } from './api/course-lesson-progress';
-import { CourseCommentsApi, createCourseCommentsApi } from './api/course-comments';
 import { CourseReactionsApi, createCourseReactionsApi } from './api/course-reactions';
 import { CourseApplicationsApi, createCourseApplicationsApi } from './api/course-applications';
 import { CourseReportsApi, createCourseReportsApi } from './api/course-reports';
 import { CourseAuditLogsApi, createCourseAuditLogsApi } from './api/course-audit-logs';
+import { CourseReviewsApi, createCourseReviewsApi } from './api/course-reviews';
 
 export class SdkworkBackendClient {
   private httpClient: HttpClient;
@@ -33,11 +33,11 @@ export class SdkworkBackendClient {
   public readonly courseEnrollments: CourseEnrollmentsApi;
   public readonly courseProgress: CourseProgressApi;
   public readonly courseLessonProgress: CourseLessonProgressApi;
-  public readonly courseComments: CourseCommentsApi;
   public readonly courseReactions: CourseReactionsApi;
   public readonly courseApplications: CourseApplicationsApi;
   public readonly courseReports: CourseReportsApi;
   public readonly courseAuditLogs: CourseAuditLogsApi;
+  public readonly courseReviews: CourseReviewsApi;
 
   constructor(config: SdkworkBackendConfig) {
     this.httpClient = createHttpClient(config);
@@ -63,8 +63,6 @@ export class SdkworkBackendClient {
 
     this.courseLessonProgress = createCourseLessonProgressApi(this.httpClient);
 
-    this.courseComments = createCourseCommentsApi(this.httpClient);
-
     this.courseReactions = createCourseReactionsApi(this.httpClient);
 
     this.courseApplications = createCourseApplicationsApi(this.httpClient);
@@ -72,6 +70,8 @@ export class SdkworkBackendClient {
     this.courseReports = createCourseReportsApi(this.httpClient);
 
     this.courseAuditLogs = createCourseAuditLogsApi(this.httpClient);
+
+    this.courseReviews = createCourseReviewsApi(this.httpClient);
   }
   setAuthToken(token: string): this {
     this.httpClient.setAuthToken(token);

@@ -21,10 +21,12 @@ test("course contract exposes learning content and governance operations", () =>
   assert.ok(COURSE_APP_API_OPERATION_IDS.includes("courseLessonProgress.watchPositions.update"));
   assert.ok(COURSE_BACKEND_API_OPERATION_IDS.includes("courseLiveSessions.replay.publish"));
   assert.ok(COURSE_BACKEND_API_OPERATION_IDS.includes("courseReports.liveSessions.list"));
-  assert.equal(COURSE_APP_API_OPERATION_IDS.length, 31);
-  assert.equal(COURSE_BACKEND_API_OPERATION_IDS.length, 64);
+  assert.equal(COURSE_APP_API_OPERATION_IDS.length, 40);
+  assert.equal(COURSE_BACKEND_API_OPERATION_IDS.length, 72);
   assert.equal(SDKWORK_COURSE_APP_OPERATIONS.courseApplicationsCreate.operationId, "courseApplications.create");
   assert.equal(SDKWORK_COURSE_BACKEND_OPERATIONS.courseApplicationsConvert.operationId, "courseApplications.convert");
+  assert.equal(SDKWORK_COURSE_APP_OPERATIONS.studioCoursesSubmit.operationId, "studioCourses.submit");
+  assert.equal(SDKWORK_COURSE_BACKEND_OPERATIONS.courseReviewsReview.operationId, "courseReviews.review");
 });
 
 test("course contract owns only course tables", () => {
@@ -32,6 +34,7 @@ test("course contract owns only course tables", () => {
     "course_application",
     "course_audit_log",
     "course_catalog",
+    "course_catalog_link",
     "course_category",
     "course_comment",
     "course_enrollment",

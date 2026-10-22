@@ -1,15 +1,22 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { CourseCommandBody, SdkWorkCommandData, SdkWorkPageData } from '../types';
 
 
 export interface CoursesListParams {
   q?: string;
-  cursor?: string;
   page?: number;
   pageSize?: number;
   status?: string;
+  kind?: string;
+  category?: string;
+  level?: string;
+  authorUserId?: string;
+}
+
+export interface CoursesOfflineParams {
+  idempotencyKey?: string;
 }
 
 export class CoursesApi {
@@ -21,45 +28,59 @@ export class CoursesApi {
 
 
 /** courses list. */
-  async list(params?: CoursesListParams): Promise<SdkWorkPageData> {
+  async list(params?: CoursesListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
-      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
+      { name: 'kind', value: params?.kind, style: 'form', explode: true, allowReserved: false },
+      { name: 'category', value: params?.category, style: 'form', explode: true, allowReserved: false },
+      { name: 'level', value: params?.level, style: 'form', explode: true, allowReserved: false },
+      { name: 'author_user_id', value: params?.authorUserId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/courses`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/courses`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** courses create. */
-  async create(body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.post<Record<string, unknown>>(backendApiPath(`/courses`), body, undefined, undefined, 'application/json');
+  async create(body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/courses`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** courses retrieve. */
-  async retrieve(courseId: string): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`));
+  async retrieve(courseId: string, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** courses update. */
-  async update(courseId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.patch<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(courseId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** courses delete. */
-  async delete(courseId: string): Promise<void> {
-    return this.client.delete<void>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`));
+  async delete(courseId: string, requestOptions?: ApiRequestOptions): Promise<void> {
+    return this.client.request<void>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'DELETE' as any });
   }
 
 /** courses publish. */
-  async publish(courseId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/publish`), body, undefined, undefined, 'application/json');
+  async publish(courseId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/publish`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 
 /** courses unpublish. */
-  async unpublish(courseId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/unpublish`), body, undefined, undefined, 'application/json');
+  async unpublish(courseId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/unpublish`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
+  }
+
+/** courses offline. */
+  async offline(courseId: string, body: CourseCommandBody, params?: CoursesOfflineParams, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/offline`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -297,4 +318,79 @@ function encodeQueryValue(value: string, allowReserved: boolean): string {
     .replace(/%2C/gi, ',')
     .replace(/%3B/gi, ';')
     .replace(/%3D/gi, '=');
+}
+function buildRequestHeaders(
+  headers: Record<string, HeaderParameterSpec | undefined>,
+  cookies: Record<string, HeaderParameterSpec | undefined> = {},
+): Record<string, string> | undefined {
+  const requestHeaders: Record<string, string> = {};
+
+  for (const [name, parameter] of Object.entries(headers)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      requestHeaders[name] = serialized;
+    }
+  }
+
+  const cookieHeader = buildCookieHeader(cookies);
+  if (cookieHeader) {
+    requestHeaders.Cookie = requestHeaders.Cookie
+      ? `${requestHeaders.Cookie}; ${cookieHeader}`
+      : cookieHeader;
+  }
+
+  return Object.keys(requestHeaders).length > 0 ? requestHeaders : undefined;
+}
+
+interface HeaderParameterSpec {
+  value: unknown;
+  style: string;
+  explode: boolean;
+  contentType?: string;
+}
+
+function buildCookieHeader(cookies: Record<string, HeaderParameterSpec | undefined>): string | undefined {
+  const pairs: string[] = [];
+  for (const [name, parameter] of Object.entries(cookies)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(serialized)}`);
+    }
+  }
+  return pairs.length > 0 ? pairs.join('; ') : undefined;
+}
+
+function serializeParameterValue(parameter: HeaderParameterSpec | undefined): string | undefined {
+  const value = parameter?.value;
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (parameter?.contentType) {
+    return JSON.stringify(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeHeaderPrimitive(item)).join(',');
+  }
+  if (typeof value === 'object' && value !== null) {
+    return serializeHeaderObject(value as Record<string, unknown>, parameter?.explode === true);
+  }
+  return serializeHeaderPrimitive(value);
+}
+
+function serializeHeaderObject(value: Record<string, unknown>, explode: boolean): string {
+  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+  if (explode) {
+    return entries.map(([key, entryValue]) => `${key}=${serializeHeaderPrimitive(entryValue)}`).join(',');
+  }
+  return entries.flatMap(([key, entryValue]) => [key, serializeHeaderPrimitive(entryValue)]).join(',');
+}
+
+function serializeHeaderPrimitive(value: unknown): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return String(value);
 }

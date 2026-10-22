@@ -51,6 +51,15 @@ export const COURSE_APP_API_OPERATION_IDS = [
   "courseSections.list",
   "courses.list",
   "courses.retrieve",
+  "courseCurriculum.retrieve",
+  "courseCollectionItems.list",
+  "studioCourses.create",
+  "studioCourses.delete",
+  "studioCourses.list",
+  "studioCourses.retrieve",
+  "studioCourses.submit",
+  "studioCourses.update",
+  "studioCourses.withdraw",
 ] as const;
 
 export type CourseAppOperationId = (typeof COURSE_APP_API_OPERATION_IDS)[number];
@@ -65,6 +74,7 @@ export const COURSE_BACKEND_API_OPERATION_IDS = [
   "courseCategories.create",
   "courseCategories.delete",
   "courseCategories.list",
+  "courseCategories.reorder",
   "courseCategories.update",
   "courseComments.delete",
   "courseComments.list",
@@ -82,6 +92,7 @@ export const COURSE_BACKEND_API_OPERATION_IDS = [
   "courseLessons.delete",
   "courseLessons.list",
   "courseLessons.retrieve",
+  "courseLessons.reorder",
   "courseLessons.update",
   "courseLiveSessions.cancel",
   "courseLiveSessions.create",
@@ -112,14 +123,20 @@ export const COURSE_BACKEND_API_OPERATION_IDS = [
   "courseSections.create",
   "courseSections.delete",
   "courseSections.list",
+  "courseSections.reorder",
   "courseSections.update",
   "courses.create",
   "courses.delete",
   "courses.list",
   "courses.publish",
+  "courses.offline",
   "courses.retrieve",
   "courses.unpublish",
   "courses.update",
+  "courseReviews.list",
+  "courseReviews.retrieve",
+  "courseReviews.review",
+  "courseReviews.stats",
 ] as const;
 
 export type CourseBackendOperationId = (typeof COURSE_BACKEND_API_OPERATION_IDS)[number];

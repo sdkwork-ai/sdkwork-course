@@ -8,15 +8,18 @@ pub mod test_support;
 pub use domain::commands::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
     CourseLessonKind, CourseLessonProgressCommand, CourseLiveJoinGrant, CourseLiveSessionCommand,
-    CourseMediaResourceRef, CourseOfferingCommand, CourseOfferingType, CourseProgressStatus,
-    CourseServiceContext,
+    CourseMediaResourceRef, CourseOfflineCommand, CourseOfferingCommand, CourseOfferingType,
+    CourseProgressStatus, CourseReviewDecisionCommand, CourseServiceContext,
+    CourseStudioDraftCommand, CourseStudioLessonDraft, CourseStudioResourceDraft,
+    CourseStudioSectionDraft, COURSE_KIND_COLLECTION, COURSE_KIND_COLUMN, COURSE_KIND_STANDARD,
+    is_supported_course_kind, normalize_course_kind,
 };
 pub use domain::models::{
-    CourseApplicationCreateRequest, CourseApplicationItem,
-    CourseApplicationReviewRequest, CourseAuditLogItem, CourseCategoryItem, CourseCommentItem,
-    CourseCommentModerationRequest, CourseEngagementItem, CourseError, CourseItem,
-    CourseLessonItem, CourseLessonMutationRequest, CourseMutationRequest, CoursePage, CourseQuery,
-    CourseResult, CourseSectionItem, CourseSectionMutationRequest,
+    CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
+    CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseEngagementItem, CourseError,
+    CourseItem, CourseLessonItem, CourseLessonMutationRequest, CourseMutationRequest, CoursePage,
+    CourseQuery, CourseResourceItem, CourseResult, CourseSectionItem, CourseSectionMutationRequest,
+    CourseStudioDetail,
 };
 pub use ports::provider::{
     CourseAuditEventPort, CourseDrivePort, CourseEntitlementPort, CourseLiveProviderPort,
@@ -24,7 +27,7 @@ pub use ports::provider::{
 };
 pub use ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseCommentRepository, CourseEnrollmentRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository,
     CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
     CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
     CourseResourceRepository,

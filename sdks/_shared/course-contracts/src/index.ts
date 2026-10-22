@@ -16,6 +16,7 @@ export type CourseSdkNamespace =
   | "courseApplications"
   | "courseAuditLogs"
   | "courseCategories"
+  | "courseCollectionItems"
   | "courseComments"
   | "courseEnrollments"
   | "courseInstructors"
@@ -28,13 +29,16 @@ export type CourseSdkNamespace =
   | "courseReactions"
   | "courseReports"
   | "courseResources"
+  | "courseReviews"
   | "courseSections"
-  | "courses";
+  | "courses"
+  | "studioCourses";
 
 export const SDKWORK_COURSE_TABLES = {
   application: "course_application",
   auditLog: "course_audit_log",
   catalog: "course_catalog",
+  catalogLink: "course_catalog_link",
   category: "course_category",
   comment: "course_comment",
   enrollment: "course_enrollment",
@@ -87,6 +91,15 @@ export const SDKWORK_COURSE_APP_OPERATIONS = {
   courseApplicationsCreate: operation("app", "POST", "/app/v3/api/course_applications", "courseApplications.create", "courseApplications"),
   courseApplicationsCurrentList: operation("app", "GET", "/app/v3/api/course_applications", "courseApplications.current.list", "courseApplications"),
   courseApplicationsRetrieve: operation("app", "GET", "/app/v3/api/course_applications/{applicationId}", "courseApplications.retrieve", "courseApplications"),
+  coursesCurriculumRetrieve: operation("app", "GET", "/app/v3/api/courses/{courseId}/curriculum", "courseCurriculum.retrieve", "courses"),
+  courseCollectionItemsList: operation("app", "GET", "/app/v3/api/courses/{courseId}/items", "courseCollectionItems.list", "courseCollectionItems"),
+  studioCoursesList: operation("app", "GET", "/app/v3/api/studio/courses", "studioCourses.list", "studioCourses"),
+  studioCoursesCreate: operation("app", "POST", "/app/v3/api/studio/courses", "studioCourses.create", "studioCourses"),
+  studioCoursesRetrieve: operation("app", "GET", "/app/v3/api/studio/courses/{courseId}", "studioCourses.retrieve", "studioCourses"),
+  studioCoursesUpdate: operation("app", "PUT", "/app/v3/api/studio/courses/{courseId}", "studioCourses.update", "studioCourses"),
+  studioCoursesDelete: operation("app", "DELETE", "/app/v3/api/studio/courses/{courseId}", "studioCourses.delete", "studioCourses"),
+  studioCoursesSubmit: operation("app", "POST", "/app/v3/api/studio/courses/{courseId}/submit", "studioCourses.submit", "studioCourses"),
+  studioCoursesWithdraw: operation("app", "POST", "/app/v3/api/studio/courses/{courseId}/withdraw", "studioCourses.withdraw", "studioCourses"),
 };
 
 export const SDKWORK_COURSE_BACKEND_OPERATIONS = {
@@ -94,7 +107,7 @@ export const SDKWORK_COURSE_BACKEND_OPERATIONS = {
   courseCategoriesCreate: operation("backend", "POST", "/backend/v3/api/course_categories", "courseCategories.create", "courseCategories"),
   courseCategoriesUpdate: operation("backend", "PATCH", "/backend/v3/api/course_categories/{categoryId}", "courseCategories.update", "courseCategories"),
   courseCategoriesDelete: operation("backend", "DELETE", "/backend/v3/api/course_categories/{categoryId}", "courseCategories.delete", "courseCategories"),
-  courseCategoriesUpdateReorder: operation("backend", "PUT", "/backend/v3/api/course_categories/reorder", "courseCategories.update", "courseCategories"),
+  courseCategoriesUpdateReorder: operation("backend", "PUT", "/backend/v3/api/course_categories/reorder", "courseCategories.reorder", "courseCategories"),
   courseInstructorsList: operation("backend", "GET", "/backend/v3/api/course_instructors", "courseInstructors.list", "courseInstructors"),
   courseInstructorsCreate: operation("backend", "POST", "/backend/v3/api/course_instructors", "courseInstructors.create", "courseInstructors"),
   courseInstructorsRetrieve: operation("backend", "GET", "/backend/v3/api/course_instructors/{instructorId}", "courseInstructors.retrieve", "courseInstructors"),
@@ -118,13 +131,13 @@ export const SDKWORK_COURSE_BACKEND_OPERATIONS = {
   courseSectionsCreate: operation("backend", "POST", "/backend/v3/api/courses/{courseId}/sections", "courseSections.create", "courseSections"),
   courseSectionsUpdate: operation("backend", "PATCH", "/backend/v3/api/course_sections/{sectionId}", "courseSections.update", "courseSections"),
   courseSectionsDelete: operation("backend", "DELETE", "/backend/v3/api/course_sections/{sectionId}", "courseSections.delete", "courseSections"),
-  courseSectionsUpdateReorder: operation("backend", "PUT", "/backend/v3/api/courses/{courseId}/sections/reorder", "courseSections.update", "courseSections"),
+  courseSectionsUpdateReorder: operation("backend", "PUT", "/backend/v3/api/courses/{courseId}/sections/reorder", "courseSections.reorder", "courseSections"),
   courseLessonsList: operation("backend", "GET", "/backend/v3/api/courses/{courseId}/lessons", "courseLessons.list", "courseLessons"),
   courseLessonsCreate: operation("backend", "POST", "/backend/v3/api/courses/{courseId}/lessons", "courseLessons.create", "courseLessons"),
   courseLessonsRetrieve: operation("backend", "GET", "/backend/v3/api/course_lessons/{lessonId}", "courseLessons.retrieve", "courseLessons"),
   courseLessonsUpdate: operation("backend", "PATCH", "/backend/v3/api/course_lessons/{lessonId}", "courseLessons.update", "courseLessons"),
   courseLessonsDelete: operation("backend", "DELETE", "/backend/v3/api/course_lessons/{lessonId}", "courseLessons.delete", "courseLessons"),
-  courseLessonsUpdateReorder: operation("backend", "PUT", "/backend/v3/api/courses/{courseId}/lessons/reorder", "courseLessons.update", "courseLessons"),
+  courseLessonsUpdateReorder: operation("backend", "PUT", "/backend/v3/api/courses/{courseId}/lessons/reorder", "courseLessons.reorder", "courseLessons"),
   courseResourcesList: operation("backend", "GET", "/backend/v3/api/course_lessons/{lessonId}/resources", "courseResources.list", "courseResources"),
   courseResourcesCreate: operation("backend", "POST", "/backend/v3/api/course_lessons/{lessonId}/resources", "courseResources.create", "courseResources"),
   courseResourcesUpdate: operation("backend", "PATCH", "/backend/v3/api/course_resources/{resourceRefId}", "courseResources.update", "courseResources"),
@@ -157,6 +170,11 @@ export const SDKWORK_COURSE_BACKEND_OPERATIONS = {
   courseReportsLiveSessionsList: operation("backend", "GET", "/backend/v3/api/course_reports/live_sessions", "courseReports.liveSessions.list", "courseReports"),
   courseAuditLogsList: operation("backend", "GET", "/backend/v3/api/course_audit_logs", "courseAuditLogs.list", "courseAuditLogs"),
   courseAuditLogsRetrieve: operation("backend", "GET", "/backend/v3/api/course_audit_logs/{auditLogId}", "courseAuditLogs.retrieve", "courseAuditLogs"),
+  courseReviewsList: operation("backend", "GET", "/backend/v3/api/course_reviews", "courseReviews.list", "courseReviews"),
+  courseReviewsStats: operation("backend", "GET", "/backend/v3/api/course_reviews/stats", "courseReviews.stats", "courseReviews"),
+  courseReviewsRetrieve: operation("backend", "GET", "/backend/v3/api/course_reviews/{courseId}", "courseReviews.retrieve", "courseReviews"),
+  courseReviewsReview: operation("backend", "POST", "/backend/v3/api/course_reviews/{courseId}/review", "courseReviews.review", "courseReviews"),
+  coursesOffline: operation("backend", "POST", "/backend/v3/api/courses/{courseId}/offline", "courses.offline", "courses"),
 };
 
 export const SDKWORK_COURSE_STANDARD = {

@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { CourseCommandBody, SdkWorkCommandData, SdkWorkPageData } from '../types';
 
@@ -21,7 +21,7 @@ export class CourseOfferingsApi {
 
 
 /** course Offerings list. */
-  async list(courseId: string, params?: CourseOfferingsListParams): Promise<SdkWorkPageData> {
+  async list(courseId: string, params?: CourseOfferingsListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
@@ -29,37 +29,37 @@ export class CourseOfferingsApi {
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/offerings`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/offerings`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** course Offerings create. */
-  async create(courseId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.post<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/offerings`), body, undefined, undefined, 'application/json');
+  async create(courseId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/courses/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/offerings`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Offerings retrieve. */
-  async retrieve(offeringId: string): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}`));
+  async retrieve(offeringId: string, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** course Offerings update. */
-  async update(offeringId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.patch<Record<string, unknown>>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(offeringId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Offerings delete. */
-  async delete(offeringId: string): Promise<void> {
-    return this.client.delete<void>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}`));
+  async delete(offeringId: string, requestOptions?: ApiRequestOptions): Promise<void> {
+    return this.client.request<void>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'DELETE' as any });
   }
 
 /** course Offerings publish. */
-  async publish(offeringId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}/publish`), body, undefined, undefined, 'application/json');
+  async publish(offeringId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}/publish`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 
 /** course Offerings close. */
-  async close(offeringId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}/close`), body, undefined, undefined, 'application/json');
+  async close(offeringId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_offerings/${serializePathParameter(offeringId, { name: 'offeringId', style: 'simple', explode: false })}/close`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 }
 

@@ -12,7 +12,7 @@
   "generatedFiles": [
     {
       "path": "bin/publish-core.mjs",
-      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+      "sha256": "a47e95119bf3eafcbcb2102f7024c147f967924e4e3f343d1a29effb4b6765df"
     },
     {
       "path": "bin/publish.ps1",
@@ -40,11 +40,11 @@
     },
     {
       "path": "package.json",
-      "sha256": "3c1a75099b72e32de268f9106478a620dc3c273e9d6be6ab13c4e81bb79eeb36"
+      "sha256": "4a426ac2552989a00977625f6ffe92e4f8af16e554a445d9971fe8e1b5890b49"
     },
     {
       "path": "README.md",
-      "sha256": "4d859f80b688744885b775b6b97ab66adf168b68331cc0fba2eda099a1bfdb9b"
+      "sha256": "826472888777d3988dc50575ad9a2fdd425e18fdbf0ffc8b161643a16553db85"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -52,75 +52,75 @@
     },
     {
       "path": "src/api/base.ts",
-      "sha256": "02ad25e6bf331ff241ba387c2947ddf1900dd849038e08c2757416a3aa788a04"
+      "sha256": "94d136c54a008dfe7602e373a0b2c79176bbf2fc6e7c899fc23b1f12f750380f"
     },
     {
       "path": "src/api/course-applications.ts",
-      "sha256": "05c18b330c1294099e4c0d5277337d5c29c00abbe6b9bfc0e762ce9c000e36c1"
+      "sha256": "789cd080507bebcbaae35469529cca948813acea22e9f7242309c57f83aeff78"
     },
     {
       "path": "src/api/course-audit-logs.ts",
-      "sha256": "4b125a2c30a13d169b73fdb470f60e2c53937fd6440a200837b1ee9e871b6e74"
+      "sha256": "29f76d555531348896a7c11e22d4e3ec2bbcd5d3994173968ad1e8a8668cebe7"
     },
     {
       "path": "src/api/course-categories.ts",
-      "sha256": "6f86d0ea2f6e9a5a6bc827d26b78594837484ca5de5940de4279becc0780c527"
-    },
-    {
-      "path": "src/api/course-comments.ts",
-      "sha256": "035f2ccc3f08224ac0f451a42fa9d2306065c32fa1bd87ec7518d83237c2c493"
+      "sha256": "329d2447d907766b015664deeea763aa434be385cee46abf422afc4896b6f057"
     },
     {
       "path": "src/api/course-enrollments.ts",
-      "sha256": "d277092ae58ada5c94980a1a1745c4ace338efb2175d92cfa01c929cb30712eb"
+      "sha256": "1f672b4e45f40ccfbe4fb97a239a642cafde789f1cbf6c8e3a8c770c1b7988f8"
     },
     {
       "path": "src/api/course-instructors.ts",
-      "sha256": "485d4a14187f856002f44aa21f0fdeb1649a9e625e4eebd8d474c1b35ba23681"
+      "sha256": "192a3092607632f39b4b10f027967f48276a8a88748fb784dbfa5b1aa9833065"
     },
     {
       "path": "src/api/course-lesson-progress.ts",
-      "sha256": "fe6be4b910f558ef8fc93a0e8e3921d85a6a5c98c5fed9a7da82a4ba313a7ad2"
+      "sha256": "82857f5bb194f4b62d57804b3d1e20aeefff9e912238b419716acd629a466f72"
     },
     {
       "path": "src/api/course-lessons.ts",
-      "sha256": "40a1bff34581ba9e3878872084fdee231126c23bc4783c3c2fd1127407858cf4"
+      "sha256": "c9a0886878ae1e07ee7d1f7616f849f7254cb69fc0e94c8a97f2fbe8685b65bb"
     },
     {
       "path": "src/api/course-live-sessions.ts",
-      "sha256": "4c4504479bcce316be2e11808c993626799d1102e9ffa195ac1f5dfd1670bb23"
+      "sha256": "813dde8179f31af667e9069fa2a042814dca7dfd8a615b879f4a465d41b96ae2"
     },
     {
       "path": "src/api/course-offerings.ts",
-      "sha256": "5d21aec36d64eb84dda77862cc7643799d86212f8c0c89d57a6b4ef7d4c6b7d0"
+      "sha256": "0f7d0b4f494721ef17bf26b750761422541b602b0482e91332195e0ab95fd778"
     },
     {
       "path": "src/api/course-progress.ts",
-      "sha256": "66ecd7e807e321eceffe2883c0c19473f84f0b17edf8fb6f9098ed505bc501fe"
+      "sha256": "0e649cdc13e0dd329c8b9c8fd307843ddae65e2453f8e44ff3527b8eeb46a56f"
     },
     {
       "path": "src/api/course-reactions.ts",
-      "sha256": "f2a928f05211b1d4222aeba5633fbdc50363c44ae97a235dea97dea80c53e85a"
+      "sha256": "63cdf7822d5414d2b0101350250344ee2fe1f5e1a9bf177e4049b5bc396bb8d8"
     },
     {
       "path": "src/api/course-reports.ts",
-      "sha256": "7514a41068299a6a1b3364202bb39b4cf96f087d6c66dc0f594320bb71cb35bc"
+      "sha256": "d679a97f81a0e223749765b8e8ffb7f86876edffedb009acfa8f4110be0bbda4"
     },
     {
       "path": "src/api/course-resources.ts",
-      "sha256": "b7f3abff6c5899d22b3adba296aa9754f4e729e741e350cb727ecba0a3b7d163"
+      "sha256": "1827d75430649cbefb87f3e5a17a503d89b4d6091044d9c468a4beb623cf2466"
+    },
+    {
+      "path": "src/api/course-reviews.ts",
+      "sha256": "fa1989529340ce984da75a480e8c1432627a3f3a32d9309370fce7120351c9d4"
     },
     {
       "path": "src/api/course-sections.ts",
-      "sha256": "964517afc70d320e37dc669b68ac2170381258305a620f9a785a4797103c77e5"
+      "sha256": "3153c79758e368fd52c8529e887ff1e048d0ef76c0c4097e99f1c7c1cf546434"
     },
     {
       "path": "src/api/courses.ts",
-      "sha256": "a03dee165317ff874184fb404f7e06036d99de74cba59b8ea6c968001f97f8d5"
+      "sha256": "4670a2d8fb469ec0a3978064b0b164666973897ed44795338865c5e616434c60"
     },
     {
       "path": "src/api/index.ts",
-      "sha256": "51eee1218b194fa64876460f98a1f52999344d8f3b30afeb024cec0338e1eb46"
+      "sha256": "e748d754bdbf863ba80abc7b42f04c4d4b9493b026938534f1edecf7480d2495"
     },
     {
       "path": "src/api/paths.ts",
@@ -132,7 +132,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "6e389d5c14fb5845365972b6776af185d8af8eb8da7bb398e59be6c29e394ddf"
+      "sha256": "f1ea217a297c06829738cc98bb177cd4427b0e5c647dab6accf2047134ce9765"
     },
     {
       "path": "src/http/index.ts",
@@ -144,7 +144,7 @@
     },
     {
       "path": "src/sdk.ts",
-      "sha256": "a44a6740543bffffac0e55b12926fc40a14f41d99bca4a81ea6bc608b80ab2d9"
+      "sha256": "9c28148fae1213b51b8a28158548753727318ed13df9bdb0bc69dd0f609bd9bb"
     },
     {
       "path": "src/types/common.ts",
@@ -204,7 +204,7 @@
     },
     {
       "path": "tsconfig.json",
-      "sha256": "7c8a6c2b00fb208ec28e1e6045194487d1b3e563d6c44cef4783fd4fe0e8ffad"
+      "sha256": "35f6f0baf03ca4245339f0a532b02c6b0c8e64d66852a2f77d38ae063b2024b8"
     }
   ],
   "scaffoldFiles": [

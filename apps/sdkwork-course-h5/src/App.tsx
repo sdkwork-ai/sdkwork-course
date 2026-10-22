@@ -29,12 +29,12 @@ class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { 
   render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-8 gap-3">
+        <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col items-center justify-center px-8 gap-3">
           <div className="text-4xl">⚠️</div>
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
             页面渲染失败，请刷新重试
           </p>
-          <p className="text-xs text-gray-400 text-center break-all max-w-xs">
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center break-all max-w-xs">
             {String(this.state.error?.message ?? this.state.error)}
           </p>
           <button
@@ -54,24 +54,24 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAppStore()
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col">
       <main className="flex-1 pb-16">{children}</main>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 z-50">
-        <Link to="/course" className="flex flex-col items-center text-xs text-gray-600 active:text-blue-600">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1C1C1E] border-t dark:border-white/10 flex justify-around py-2 z-50">
+        <Link to="/course" className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 active:text-blue-600 dark:active:text-blue-400">
           <span className="text-lg">📚</span>
           <span>课程</span>
         </Link>
-        <Link to="/course" className="flex flex-col items-center text-xs text-gray-600 active:text-blue-600">
-          <span className="text-lg">📺</span>
-          <span>直播</span>
+        <Link to="/course/search" className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 active:text-blue-600 dark:active:text-blue-400">
+          <span className="text-lg">🔍</span>
+          <span>搜索</span>
         </Link>
         {isAuthenticated ? (
-          <Link to="/course/my" className="flex flex-col items-center text-xs text-gray-600 active:text-blue-600">
+          <Link to="/course/my" className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 active:text-blue-600 dark:active:text-blue-400">
             <span className="text-lg">👤</span>
             <span>我的</span>
           </Link>
         ) : (
-          <Link to="/login" className="flex flex-col items-center text-xs text-gray-600 active:text-blue-600">
+          <Link to="/login" className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 active:text-blue-600 dark:active:text-blue-400">
             <span className="text-lg">👤</span>
             <span>登录</span>
           </Link>
@@ -87,7 +87,7 @@ function App() {
       <AuthGate>
         <AppShell>
           <AppErrorBoundary>
-          <Suspense fallback={<div className="p-8 text-center text-gray-500 text-sm">加载中...</div>}>
+          <Suspense fallback={<div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm">加载中...</div>}>
             <Routes>
               <Route path="/" element={<Navigate to="/course" replace />} />
               <Route path="/login" element={<MobileLoginPage />} />

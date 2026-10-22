@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import {
   getCourseAppSdkClient,
   initCourseAppSdkClient,
@@ -10,12 +10,14 @@ const CourseSdkContext = createContext<CourseAppSdkClient | null>(null);
 
 export interface CourseSdkProviderProps {
   children: React.ReactNode;
+  /** Pre-built client supplied by an embedding host (SDKWork plugin, IM, ...). */
+  client?: CourseAppSdkClient;
 }
 
-export function CourseSdkProvider({ children }: CourseSdkProviderProps) {
+export function CourseSdkProvider({ children, client }: CourseSdkProviderProps) {
   const sdk = useMemo(
-    () => initCourseAppSdkClient(createCourseAppSdkClientConfig()),
-    [],
+    () => client ?? initCourseAppSdkClient(createCourseAppSdkClientConfig()),
+    [client],
   );
   return (
     <CourseSdkContext.Provider value={sdk}>

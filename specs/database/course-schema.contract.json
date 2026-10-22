@@ -94,6 +94,11 @@
       "tenant",
       "organization",
       "private"
+    ],
+    "course_kind": [
+      "standard",
+      "column",
+      "collection"
     ]
   },
   "tables": [
@@ -569,6 +574,88 @@
           "default": 0
         },
         {
+          "name": "body_content",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "price_amount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "original_price_amount",
+          "type": "decimal",
+          "required": false
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "required": false,
+          "maxLength": 8
+        },
+        {
+          "name": "is_free",
+          "type": "bool",
+          "required": true,
+          "default": true
+        },
+        {
+          "name": "is_collection",
+          "type": "bool",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "course_kind",
+          "type": "enum",
+          "required": true,
+          "values": [
+            "standard",
+            "column",
+            "collection"
+          ],
+          "default": "standard"
+        },
+        {
+          "name": "author_user_id",
+          "type": "id",
+          "required": false
+        },
+        {
+          "name": "author_display_name",
+          "type": "string",
+          "required": false,
+          "maxLength": 120
+        },
+        {
+          "name": "review_note",
+          "type": "string",
+          "required": false,
+          "maxLength": 1000
+        },
+        {
+          "name": "submitted_at",
+          "type": "instant",
+          "required": false
+        },
+        {
+          "name": "reviewed_at",
+          "type": "instant",
+          "required": false
+        },
+        {
+          "name": "reviewed_by",
+          "type": "id",
+          "required": false
+        },
+        {
+          "name": "review_round",
+          "type": "int64",
+          "required": true,
+          "default": 0
+        },
+        {
           "name": "visibility",
           "type": "enum",
           "required": true,
@@ -678,6 +765,32 @@
             "tenant_id",
             "organization_id",
             "visibility",
+            "publish_status"
+          ]
+        },
+        {
+          "name": "idx_course_catalog_review_queue",
+          "columns": [
+            "tenant_id",
+            "organization_id",
+            "publish_status",
+            "submitted_at"
+          ]
+        },
+        {
+          "name": "idx_course_catalog_author",
+          "columns": [
+            "tenant_id",
+            "author_user_id",
+            "updated_at"
+          ]
+        },
+        {
+          "name": "idx_course_catalog_kind_status",
+          "columns": [
+            "tenant_id",
+            "organization_id",
+            "course_kind",
             "publish_status"
           ]
         }
@@ -2244,173 +2357,6 @@
       ]
     },
     {
-      "name": "course_comment",
-      "title": "Course comment and discussion",
-      "profile": "user_entity",
-      "complianceLevel": "L2",
-      "systemOfRecord": true,
-      "writeOwner": "course-service",
-      "lifecycle": "soft_delete",
-      "columns": [
-        {
-          "name": "id",
-          "type": "id",
-          "required": true,
-          "primaryKey": true
-        },
-        {
-          "name": "uuid",
-          "type": "string",
-          "required": true,
-          "unique": true,
-          "maxLength": 64
-        },
-        {
-          "name": "tenant_id",
-          "type": "id",
-          "required": true
-        },
-        {
-          "name": "organization_id",
-          "type": "id",
-          "required": false
-        },
-        {
-          "name": "target_type",
-          "type": "enum",
-          "required": true,
-          "values": [
-            "course",
-            "lesson",
-            "live_session"
-          ]
-        },
-        {
-          "name": "target_id",
-          "type": "id",
-          "required": true
-        },
-        {
-          "name": "parent_id",
-          "type": "id",
-          "required": false
-        },
-        {
-          "name": "author_user_id",
-          "type": "id",
-          "required": true
-        },
-        {
-          "name": "author_snapshot",
-          "type": "json",
-          "required": false
-        },
-        {
-          "name": "content",
-          "type": "string",
-          "required": true,
-          "maxLength": 4000
-        },
-        {
-          "name": "content_format",
-          "type": "enum",
-          "required": true,
-          "values": [
-            "plain",
-            "markdown"
-          ],
-          "default": "plain"
-        },
-        {
-          "name": "moderation_status",
-          "type": "enum",
-          "required": true,
-          "values": [
-            "visible",
-            "pending",
-            "hidden",
-            "rejected"
-          ]
-        },
-        {
-          "name": "moderation_note",
-          "type": "string",
-          "required": false,
-          "maxLength": 1000
-        },
-        {
-          "name": "like_count_snapshot",
-          "type": "int64",
-          "required": true,
-          "default": 0
-        },
-        {
-          "name": "status",
-          "type": "enum",
-          "required": true,
-          "values": [
-            "active",
-            "deleted"
-          ]
-        },
-        {
-          "name": "created_at",
-          "type": "instant",
-          "required": true
-        },
-        {
-          "name": "created_by",
-          "type": "id",
-          "required": false
-        },
-        {
-          "name": "updated_at",
-          "type": "instant",
-          "required": true
-        },
-        {
-          "name": "updated_by",
-          "type": "id",
-          "required": false
-        },
-        {
-          "name": "version",
-          "type": "int64",
-          "required": true,
-          "default": 0
-        },
-        {
-          "name": "deleted_at",
-          "type": "instant",
-          "required": false
-        },
-        {
-          "name": "deleted_by",
-          "type": "id",
-          "required": false
-        }
-      ],
-      "indexes": [
-        {
-          "name": "idx_course_comment_target",
-          "columns": [
-            "target_type",
-            "target_id",
-            "moderation_status",
-            "created_at"
-          ]
-        },
-        {
-          "name": "idx_course_comment_author",
-          "columns": [
-            "tenant_id",
-            "author_user_id",
-            "created_at"
-          ]
-        }
-      ]
-    },
-    {
       "name": "course_reaction",
       "title": "Course reaction",
       "profile": "relation_entity",
@@ -2867,6 +2813,102 @@
           "columns": [
             "operation_id",
             "created_at"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "course_catalog_link",
+      "title": "Ordered collection membership between catalog courses",
+      "profile": "relation",
+      "complianceLevel": "L2",
+      "systemOfRecord": true,
+      "writeOwner": "course-service",
+      "lifecycle": "soft_delete",
+      "columns": [
+        {
+          "name": "id",
+          "type": "id",
+          "required": true,
+          "primaryKey": true
+        },
+        {
+          "name": "uuid",
+          "type": "string",
+          "required": true,
+          "unique": true,
+          "maxLength": 64
+        },
+        {
+          "name": "tenant_id",
+          "type": "id",
+          "required": true
+        },
+        {
+          "name": "organization_id",
+          "type": "id",
+          "required": false
+        },
+        {
+          "name": "course_id",
+          "type": "id",
+          "required": true
+        },
+        {
+          "name": "linked_course_id",
+          "type": "id",
+          "required": true
+        },
+        {
+          "name": "link_type",
+          "type": "string",
+          "required": true,
+          "maxLength": 32
+        },
+        {
+          "name": "sort_order",
+          "type": "int64",
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "required": true,
+          "values": [
+            "active",
+            "archived",
+            "deleted"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "instant",
+          "required": true
+        },
+        {
+          "name": "updated_at",
+          "type": "instant",
+          "required": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "uk_course_catalog_link_membership",
+          "unique": true,
+          "columns": [
+            "tenant_id",
+            "course_id",
+            "linked_course_id",
+            "link_type"
+          ]
+        },
+        {
+          "name": "idx_course_catalog_link_course",
+          "columns": [
+            "course_id",
+            "link_type",
+            "sort_order"
           ]
         }
       ]

@@ -164,6 +164,16 @@
         "code": "course.resources.write",
         "description": "Permission course.resources.write",
         "source": "openapi"
+      },
+      {
+        "code": "course.reviews.read",
+        "description": "Permission course.reviews.read",
+        "source": "openapi"
+      },
+      {
+        "code": "course.reviews.review",
+        "description": "Permission course.reviews.review",
+        "source": "openapi"
       }
     ]
   }

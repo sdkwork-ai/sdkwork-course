@@ -1,14 +1,14 @@
 [package]
-rust-version.workspace = true
 name = "sdkwork-api-course-assembly"
+rust-version.workspace = true
 edition.workspace = true
 license.workspace = true
 version.workspace = true
 description = "Generated API assembly for sdkwork-course application HTTP plane."
 
-
 [lints]
 workspace = true
+
 [lib]
 name = "sdkwork_api_course_assembly"
 path = "src/lib.rs"
@@ -20,5 +20,5 @@ sdkwork-web-bootstrap.workspace = true
 sdkwork-web-core.workspace = true
 sdkwork-database-sqlx.workspace = true
 sdkwork_course_embedded_bootstrap.workspace = true
-sdkwork_routes_course_app_api = { workspace = true }
-sdkwork_routes_course_backend_api = { workspace = true }
+sdkwork_routes_course_app_api.workspace = true
+sdkwork_routes_course_backend_api.workspace = true

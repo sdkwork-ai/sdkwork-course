@@ -518,8 +518,8 @@
         "tags": [
           "courseCategories"
         ],
-        "summary": "course Categories update.",
-        "description": "course Categories update operation for the course learning domain.",
+        "summary": "course Categories reorder.",
+        "description": "course Categories reorder operation for the course learning domain.",
         "operationId": "update",
         "parameters": [],
         "responses": {
@@ -528,7 +528,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/SdkWorkCommandResponse"
                 }
               }
             }
@@ -616,7 +616,7 @@
         "x-sdkwork-permission": "course.categories.write",
         "requestBody": {
           "required": true,
-          "description": "Typed command body for courseCategories.update.",
+          "description": "Typed command body for courseCategories.reorder.",
           "content": {
             "application/json": {
               "schema": {
@@ -1263,14 +1263,6 @@
             }
           },
           {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "page",
             "in": "query",
             "required": false,
@@ -1294,6 +1286,38 @@
           },
           {
             "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "author_user_id",
             "in": "query",
             "required": false,
             "schema": {
@@ -3460,8 +3484,8 @@
         "tags": [
           "courseSections"
         ],
-        "summary": "course Sections update.",
-        "description": "course Sections update operation for the course learning domain.",
+        "summary": "course Sections reorder.",
+        "description": "course Sections reorder operation for the course learning domain.",
         "operationId": "update",
         "parameters": [
           {
@@ -3479,7 +3503,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/SdkWorkCommandResponse"
                 }
               }
             }
@@ -3567,7 +3591,7 @@
         "x-sdkwork-permission": "course.lessons.write",
         "requestBody": {
           "required": true,
-          "description": "Typed command body for courseSections.update.",
+          "description": "Typed command body for courseSections.reorder.",
           "content": {
             "application/json": {
               "schema": {
@@ -4198,8 +4222,8 @@
         "tags": [
           "courseLessons"
         ],
-        "summary": "course Lessons update.",
-        "description": "course Lessons update operation for the course learning domain.",
+        "summary": "course Lessons reorder.",
+        "description": "course Lessons reorder operation for the course learning domain.",
         "operationId": "update",
         "parameters": [
           {
@@ -4217,7 +4241,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                  "$ref": "#/components/schemas/SdkWorkCommandResponse"
                 }
               }
             }
@@ -4305,7 +4329,7 @@
         "x-sdkwork-permission": "course.lessons.write",
         "requestBody": {
           "required": true,
-          "description": "Typed command body for courseLessons.update.",
+          "description": "Typed command body for courseLessons.reorder.",
           "content": {
             "application/json": {
               "schema": {
@@ -6703,384 +6727,6 @@
         }
       }
     },
-    "/backend/v3/api/course_comments": {
-      "get": {
-        "tags": [
-          "courseComments"
-        ],
-        "summary": "course Comments list.",
-        "description": "course Comments list operation for the course learning domain.",
-        "operationId": "list",
-        "parameters": [
-          {
-            "name": "q",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 1
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 1,
-              "maximum": 200,
-              "default": 20
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SdkWorkListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Permission denied",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Course resource not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict or idempotency mismatch",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-course",
-        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
-        "x-sdkwork-domain": "content",
-        "x-sdkwork-resource": "courseComments",
-        "x-sdkwork-auth-mode": "dual-token",
-        "x-sdkwork-tenant-scope": "tenant",
-        "x-sdkwork-data-scope": "organization",
-        "x-sdkwork-audit-event": "course.comments.list",
-        "x-sdkwork-idempotent": null,
-        "x-sdkwork-source": "apis/backend-api/course/operations.json",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "course.comments.read"
-      }
-    },
-    "/backend/v3/api/course_comments/{commentId}/moderation": {
-      "patch": {
-        "tags": [
-          "courseComments"
-        ],
-        "summary": "course Comments update.",
-        "description": "course Comments update operation for the course learning domain.",
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "commentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Permission denied",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Course resource not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict or idempotency mismatch",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-course",
-        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
-        "x-sdkwork-domain": "content",
-        "x-sdkwork-resource": "courseComments",
-        "x-sdkwork-auth-mode": "dual-token",
-        "x-sdkwork-tenant-scope": "tenant",
-        "x-sdkwork-data-scope": "organization",
-        "x-sdkwork-audit-event": "course.comment.moderated",
-        "x-sdkwork-idempotent": null,
-        "x-sdkwork-source": "apis/backend-api/course/operations.json",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "course.comments.moderate",
-        "requestBody": {
-          "required": true,
-          "description": "Typed command body for courseComments.update.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CourseCommandBody"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/backend/v3/api/course_comments/{commentId}": {
-      "delete": {
-        "tags": [
-          "courseComments"
-        ],
-        "summary": "course Comments delete.",
-        "description": "course Comments delete operation for the course learning domain.",
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "commentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Deleted"
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Permission denied",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Course resource not found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict or idempotency mismatch",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetail"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "AuthToken": [],
-            "AccessToken": []
-          }
-        ],
-        "x-sdkwork-owner": "sdkwork-course",
-        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
-        "x-sdkwork-domain": "content",
-        "x-sdkwork-resource": "courseComments",
-        "x-sdkwork-auth-mode": "dual-token",
-        "x-sdkwork-tenant-scope": "tenant",
-        "x-sdkwork-data-scope": "organization",
-        "x-sdkwork-audit-event": "course.comment.deleted",
-        "x-sdkwork-idempotent": null,
-        "x-sdkwork-source": "apis/backend-api/course/operations.json",
-        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
-        "x-sdkwork-request-context": "AppRequestContext",
-        "x-sdkwork-server-request-id": true,
-        "x-sdkwork-permission": "course.comments.moderate"
-      }
-    },
     "/backend/v3/api/course_reactions": {
       "get": {
         "tags": [
@@ -8403,6 +8049,639 @@
         "x-sdkwork-server-request-id": true,
         "x-sdkwork-permission": "course.audit_logs.read"
       }
+    },
+    "/backend/v3/api/course_reviews": {
+      "get": {
+        "tags": [
+          "courseReviews"
+        ],
+        "summary": "course Reviews list.",
+        "description": "course Reviews list operation for the course learning domain.",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SdkWorkListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or idempotency mismatch",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-course",
+        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
+        "x-sdkwork-domain": "content",
+        "x-sdkwork-resource": "courseReviews",
+        "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": null,
+        "x-sdkwork-idempotent": null,
+        "x-sdkwork-source": "apis/backend-api/course/operations.json",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "course.reviews.read"
+      }
+    },
+    "/backend/v3/api/course_reviews/stats": {
+      "get": {
+        "tags": [
+          "courseReviews"
+        ],
+        "summary": "course Reviews stats.",
+        "description": "course Reviews stats operation for the course learning domain.",
+        "operationId": "list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or idempotency mismatch",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-course",
+        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
+        "x-sdkwork-domain": "content",
+        "x-sdkwork-resource": "courseReviews",
+        "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "course.reviews.stats_read",
+        "x-sdkwork-idempotent": null,
+        "x-sdkwork-source": "apis/backend-api/course/operations.json",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "course.reviews.read"
+      }
+    },
+    "/backend/v3/api/course_reviews/{courseId}": {
+      "get": {
+        "tags": [
+          "courseReviews"
+        ],
+        "summary": "course Reviews retrieve.",
+        "description": "course Reviews retrieve operation for the course learning domain.",
+        "operationId": "retrieve",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or idempotency mismatch",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-course",
+        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
+        "x-sdkwork-domain": "content",
+        "x-sdkwork-resource": "courseReviews",
+        "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": null,
+        "x-sdkwork-idempotent": null,
+        "x-sdkwork-source": "apis/backend-api/course/operations.json",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "course.reviews.read"
+      }
+    },
+    "/backend/v3/api/course_reviews/{courseId}/review": {
+      "post": {
+        "tags": [
+          "courseReviews"
+        ],
+        "summary": "course Reviews review.",
+        "description": "course Reviews review operation for the course learning domain.",
+        "operationId": "review",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SdkWorkCommandResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or idempotency mismatch",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-course",
+        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
+        "x-sdkwork-domain": "content",
+        "x-sdkwork-resource": "courseReviews",
+        "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "course.review.decided",
+        "x-sdkwork-idempotent": true,
+        "x-sdkwork-source": "apis/backend-api/course/operations.json",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "course.reviews.review",
+        "requestBody": {
+          "required": true,
+          "description": "Typed command body for courseReviews.review.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseCommandBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backend/v3/api/courses/{courseId}/offline": {
+      "post": {
+        "tags": [
+          "courses"
+        ],
+        "summary": "courses offline.",
+        "description": "courses offline operation for the course learning domain.",
+        "operationId": "offline",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Client retry idempotency key."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SdkWorkResourceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course resource not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict or idempotency mismatch",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "x-sdkwork-owner": "sdkwork-course",
+        "x-sdkwork-api-authority": "sdkwork-course-backend-api",
+        "x-sdkwork-domain": "content",
+        "x-sdkwork-resource": "courses",
+        "x-sdkwork-auth-mode": "dual-token",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "course.course.offlined",
+        "x-sdkwork-idempotent": true,
+        "x-sdkwork-source": "apis/backend-api/course/operations.json",
+        "x-sdkwork-source-route-crate": "sdkwork-routes-course-backend-api",
+        "x-sdkwork-request-context": "AppRequestContext",
+        "x-sdkwork-server-request-id": true,
+        "x-sdkwork-permission": "course.courses.publish",
+        "requestBody": {
+          "required": true,
+          "description": "Typed command body for courses.offline.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseCommandBody"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8528,7 +8807,9 @@
           },
           "totalItems": {
             "type": "string",
-            "pattern": "^[0-9]+$"
+            "format": "int64",
+            "pattern": "^[0-9]+$",
+            "x-sdkwork-int64-string": true
           },
           "totalPages": {
             "type": "integer",

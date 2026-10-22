@@ -49,6 +49,10 @@ return (
           {course.type === 'live' ? (
              <div className="absolute top-1.5 left-1.5 bg-red-500/95 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 font-medium shadow-sm">
                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />{course.liveStatus === 'live' ? '正在直播' : '预告'}</div>
+          ) : course.kind === 'column' || course.kind === 'collection' ? (
+            <div className="absolute top-1.5 left-1.5 bg-indigo-600/95 backdrop-blur-sm text-white text-[10px] px-1.5 py-0.5 rounded font-medium shadow-sm">
+              {course.kind === 'column' ? '专栏' : '合集'}
+            </div>
           ) : null}
           <div className="absolute bottom-1.5 right-1.5 bg-black/70 backdrop-blur-md text-white/90 text-[10px] px-1.5 py-0.5 rounded flex items-center gap-0.5 font-medium">
             {course.type === 'recorded' ? <Clock className="w-3 h-3 opacity-80" /> : null}
@@ -59,7 +63,7 @@ return (
           <div className="flex flex-col gap-1.5">
             <h3 className="text-[15px] font-bold text-text-main line-clamp-2 leading-snug">{course.title}</h3>
             <div className="flex items-center text-[12px] text-text-sub gap-2">
-              <span className="truncate max-w-[100px]">{course.instructor}</span>
+              <span className="truncate max-w-[100px]">{course.author || course.instructor}</span>
               <span className="w-1 h-1 rounded-full bg-black/20 dark:bg-white/20 shrink-0" />
               <div className="flex items-center gap-1 shrink-0">
                  <Users className="w-3.5 h-3.5 opacity-70" />

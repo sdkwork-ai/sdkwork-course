@@ -3,13 +3,14 @@ use serde_json::Value;
 use crate::domain::commands::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
     CourseLessonProgressCommand, CourseLiveJoinGrant, CourseLiveSessionCommand,
-    CourseOfferingCommand, CourseServiceContext,
+    CourseOfferingCommand, CourseReviewDecisionCommand, CourseServiceContext,
+    CourseStudioDraftCommand,
 };
 use crate::domain::models::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
-    CourseAuditLogItem, CourseCategoryItem, CourseCommentItem, CourseCommentModerationRequest,
-    CourseError, CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult,
-    CourseSectionItem,
+    CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseError,
+    CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult, CourseSectionItem,
+    CourseStudioDetail,
 };
 use crate::ports::provider::{
     CourseAuditEventPort, CourseDrivePort, CourseEntitlementPort, CourseLiveProviderPort,
@@ -17,7 +18,7 @@ use crate::ports::provider::{
 };
 use crate::ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseCommentRepository, CourseEnrollmentRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository,
     CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
     CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
     CourseResourceRepository,
@@ -33,7 +34,6 @@ pub struct CourseServiceImpl {
     live_session_repo: Box<dyn CourseLiveSessionRepository>,
     enrollment_repo: Box<dyn CourseEnrollmentRepository>,
     progress_repo: Box<dyn CourseProgressRepository>,
-    comment_repo: Box<dyn CourseCommentRepository>,
     application_repo: Box<dyn CourseApplicationRepository>,
     audit_repo: Box<dyn CourseAuditLogRepository>,
     resource_repo: Box<dyn CourseResourceRepository>,
@@ -56,7 +56,6 @@ impl CourseServiceImpl {
         live_session_repo: Box<dyn CourseLiveSessionRepository>,
         enrollment_repo: Box<dyn CourseEnrollmentRepository>,
         progress_repo: Box<dyn CourseProgressRepository>,
-        comment_repo: Box<dyn CourseCommentRepository>,
         application_repo: Box<dyn CourseApplicationRepository>,
         audit_repo: Box<dyn CourseAuditLogRepository>,
         resource_repo: Box<dyn CourseResourceRepository>,
@@ -76,7 +75,6 @@ impl CourseServiceImpl {
             live_session_repo,
             enrollment_repo,
             progress_repo,
-            comment_repo,
             application_repo,
             audit_repo,
             resource_repo,
@@ -87,6 +85,28 @@ impl CourseServiceImpl {
             notification_port,
             audit_event_port,
         }
+    }
+
+    async fn append_course_audit(
+        &self,
+        context: &CourseServiceContext,
+        course_id: &str,
+        operation: &str,
+        before_snapshot: Option<Value>,
+        after_snapshot: Option<Value>,
+    ) -> CourseResult<()> {
+        self.audit_repo
+            .append_audit_log(
+                context,
+                CourseAuditCommand {
+                    target_type: "course".to_string(),
+                    target_id: course_id.to_string(),
+                    operation: operation.to_string(),
+                    before_snapshot,
+                    after_snapshot,
+                },
+            )
+            .await
     }
 }
 
@@ -173,6 +193,70 @@ pub trait CourseApplicationService: Send + Sync {
         context: &CourseServiceContext,
         command: CourseCatalogCommand,
     ) -> CourseResult<CourseItem>;
+
+    async fn save_studio_course(
+        &self,
+        context: &CourseServiceContext,
+        command: CourseStudioDraftCommand,
+    ) -> CourseResult<CourseItem>;
+
+    async fn retrieve_studio_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseStudioDetail>>;
+
+    async fn retrieve_review_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseStudioDetail>>;
+
+    async fn retrieve_curriculum(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseCurriculum>>;
+
+    async fn list_collection_items(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Vec<CourseCollectionItem>>;
+
+    async fn submit_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem>;
+
+    async fn withdraw_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem>;
+
+    async fn review_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        command: CourseReviewDecisionCommand,
+    ) -> CourseResult<CourseItem>;
+
+    async fn offline_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        note: Option<String>,
+    ) -> CourseResult<CourseItem>;
+
+    async fn list_review_courses(
+        &self,
+        context: &CourseServiceContext,
+        query: CourseQuery,
+    ) -> CourseResult<CoursePage>;
+
+    async fn review_stats(&self, context: &CourseServiceContext) -> CourseResult<Value>;
 
     async fn delete_course(
         &self,
@@ -361,6 +445,21 @@ pub trait CourseApplicationService: Send + Sync {
         enrollment_id: String,
     ) -> CourseResult<()>;
 
+    async fn grant_entitlement(
+        &self,
+        context: &CourseServiceContext,
+        offering_id: String,
+        learner_user_id: String,
+        purchase_ref: String,
+    ) -> CourseResult<String>;
+
+    async fn grant_entitlement_by_offering(
+        &self,
+        offering_id: String,
+        learner_user_id: String,
+        purchase_ref: String,
+    ) -> CourseResult<String>;
+
     // Progress
     async fn list_progress(
         &self,
@@ -386,33 +485,13 @@ pub trait CourseApplicationService: Send + Sync {
         live_session_id: String,
     ) -> CourseResult<CourseLiveJoinGrant>;
 
-    // Comments
-    async fn list_comments(
-        &self,
-        context: &CourseServiceContext,
-        query: CourseQuery,
-    ) -> CourseResult<Vec<CourseCommentItem>>;
-
-    async fn create_comment(
-        &self,
-        context: &CourseServiceContext,
-        command: Value,
-    ) -> CourseResult<CourseCommentItem>;
-
-    async fn moderate_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-        request: CourseCommentModerationRequest,
-    ) -> CourseResult<Vec<CourseCommentItem>>;
-
-    async fn delete_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-    ) -> CourseResult<()>;
-
     // Reactions
+    async fn course_engagement(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Value>;
+
     async fn list_reactions(
         &self,
         context: &CourseServiceContext,
@@ -630,10 +709,6 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         query: CourseQuery,
     ) -> CourseResult<CoursePage> {
-        let mut query = query;
-        if context.user_id.is_none() {
-            query.status = Some("published".to_string());
-        }
         self.catalog_repo.list_courses(context, query).await
     }
 
@@ -671,12 +746,290 @@ impl CourseApplicationService for CourseServiceImpl {
         self.catalog_repo.save_course(context, command).await
     }
 
+    async fn save_studio_course(
+        &self,
+        context: &CourseServiceContext,
+        command: CourseStudioDraftCommand,
+    ) -> CourseResult<CourseItem> {
+        require_creator(context)?;
+        validate_studio_draft(&command)?;
+
+        if let Some(ref cover) = command.cover {
+            self.drive_port
+                .validate_resource(context, cover.clone())
+                .await?;
+        }
+        for section in &command.sections {
+            for lesson in &section.lessons {
+                for resource in &lesson.resources {
+                    self.drive_port
+                        .validate_resource(
+                            context,
+                            crate::domain::commands::CourseMediaResourceRef {
+                                drive_resource_id: resource.drive_resource_id.clone(),
+                                role: resource.resource_role.clone(),
+                                mime_type: resource.mime_type.clone(),
+                                duration_seconds: resource.duration_seconds,
+                                metadata: None,
+                            },
+                        )
+                        .await?;
+                }
+            }
+        }
+        self.catalog_repo
+            .save_studio_course(context, command)
+            .await
+    }
+
+    async fn retrieve_studio_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseStudioDetail>> {
+        let Some(user_id) = context.user_id.as_deref() else {
+            return Ok(None);
+        };
+        let detail = self
+            .catalog_repo
+            .retrieve_course_detail(context, course_id)
+            .await?;
+        Ok(detail.filter(|detail| detail.course.author_user_id.as_deref() == Some(user_id)))
+    }
+
+    async fn retrieve_review_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseStudioDetail>> {
+        self.catalog_repo
+            .retrieve_course_detail(context, course_id)
+            .await
+    }
+
+    async fn retrieve_curriculum(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseCurriculum>> {
+        let curriculum = self
+            .catalog_repo
+            .retrieve_curriculum(context, course_id.clone())
+            .await?;
+        let Some(mut curriculum) = curriculum else {
+            return Ok(None);
+        };
+        let course = self.catalog_repo.retrieve_course(context, course_id.clone()).await?;
+        let Some(course) = course else {
+            return Ok(None);
+        };
+        if course.publish_status != "published" {
+            return Ok(None);
+        }
+        if !course.is_free {
+            let user_id = context.user_id.clone().or_else(|| context.actor_id.clone());
+            let enrolled = match user_id {
+                Some(user_id) => {
+                    self.enrollment_repo
+                        .has_active_enrollment(context, course_id.clone(), user_id)
+                        .await?
+                }
+                None => false,
+            };
+            if !enrolled {
+                let free_lesson_ids = curriculum
+                    .lessons
+                    .iter()
+                    .filter(|lesson| lesson.free_preview)
+                    .map(|lesson| lesson.id.clone())
+                    .collect::<std::collections::HashSet<_>>();
+                for lesson in &mut curriculum.lessons {
+                    if !lesson.free_preview {
+                        lesson.content = None;
+                        lesson.external_source_id = None;
+                    }
+                }
+                curriculum.resources.retain(|resource| {
+                    free_lesson_ids.contains(&resource.owner_id)
+                });
+            }
+        }
+        Ok(Some(curriculum))
+    }
+
+    async fn list_collection_items(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Vec<CourseCollectionItem>> {
+        self.catalog_repo
+            .list_collection_items(context, course_id)
+            .await
+    }
+
+    async fn submit_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem> {
+        require_creator(context)?;
+        let detail = self
+            .retrieve_studio_course(context, course_id.clone())
+            .await?
+            .ok_or_else(|| CourseError::not_found("Course not found"))?;
+        if detail.course.publish_status == "reviewing" {
+            return Err(CourseError::invalid("Course is already under review"));
+        }
+        if detail.course.publish_status == "published" {
+            return Err(CourseError::invalid(
+                "Published courses cannot be submitted again; unpublish before revising",
+            ));
+        }
+        validate_submission(&detail)?;
+
+        let item = self.catalog_repo.submit_course(context, course_id.clone()).await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            "submit",
+            Some(serde_json::json!({
+                "publishStatus": detail.course.publish_status,
+            })),
+            Some(serde_json::json!({ "publishStatus": item.publish_status })),
+        )
+        .await?;
+        Ok(item)
+    }
+
+    async fn withdraw_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem> {
+        require_creator(context)?;
+        let item = self
+            .catalog_repo
+            .withdraw_course(context, course_id.clone())
+            .await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            "withdraw",
+            Some(serde_json::json!({ "publishStatus": "reviewing" })),
+            Some(serde_json::json!({ "publishStatus": item.publish_status })),
+        )
+        .await?;
+        Ok(item)
+    }
+
+    async fn review_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        command: CourseReviewDecisionCommand,
+    ) -> CourseResult<CourseItem> {
+        let decision = command.decision.trim().to_ascii_lowercase();
+        if !matches!(
+            decision.as_str(),
+            "approve" | "reject" | "request_changes"
+        ) {
+            return Err(CourseError::invalid(
+                "decision must be approve, reject, or request_changes",
+            ));
+        }
+        let note = command
+            .note
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_owned);
+        if decision != "approve" && note.is_none() {
+            return Err(CourseError::invalid(
+                "A review note is required when a course is not approved",
+            ));
+        }
+        let item = self
+            .catalog_repo
+            .review_course(
+                context,
+                course_id.clone(),
+                CourseReviewDecisionCommand {
+                    decision: decision.clone(),
+                    note: note.clone(),
+                },
+            )
+            .await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            &format!("review_{decision}"),
+            Some(serde_json::json!({ "publishStatus": "reviewing" })),
+            Some(serde_json::json!({
+                "publishStatus": item.publish_status,
+                "note": note,
+                "reviewRound": item.review_round,
+            })),
+        )
+        .await?;
+        Ok(item)
+    }
+
+    async fn offline_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        note: Option<String>,
+    ) -> CourseResult<CourseItem> {
+        let item = self
+            .catalog_repo
+            .offline_course(context, course_id.clone(), note.clone())
+            .await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            "offline",
+            Some(serde_json::json!({ "publishStatus": "published" })),
+            Some(serde_json::json!({
+                "publishStatus": item.publish_status,
+                "note": note,
+            })),
+        )
+        .await?;
+        Ok(item)
+    }
+
+    async fn list_review_courses(
+        &self,
+        context: &CourseServiceContext,
+        query: CourseQuery,
+    ) -> CourseResult<CoursePage> {
+        let mut query = query;
+        if query.status.as_deref().unwrap_or("").is_empty() {
+            query.status = Some("reviewing".to_string());
+        }
+        self.catalog_repo.list_review_courses(context, query).await
+    }
+
+    async fn review_stats(&self, context: &CourseServiceContext) -> CourseResult<Value> {
+        self.catalog_repo.review_stats(context).await
+    }
+
     async fn delete_course(
         &self,
         context: &CourseServiceContext,
         course_id: String,
     ) -> CourseResult<()> {
-        self.catalog_repo.delete_course(context, course_id).await
+        self.catalog_repo
+            .delete_course(context, course_id.clone())
+            .await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            "delete",
+            None,
+            Some(serde_json::json!({ "deleted": true })),
+        )
+        .await
     }
 
     async fn publish_course(
@@ -684,7 +1037,22 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         course_id: String,
     ) -> CourseResult<CourseItem> {
-        self.catalog_repo.publish_course(context, course_id).await
+        let item = self
+            .catalog_repo
+            .publish_course(context, course_id.clone())
+            .await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            "publish",
+            None,
+            Some(serde_json::json!({
+                "publishStatus": item.publish_status,
+                "publishedAt": item.published_at,
+            })),
+        )
+        .await?;
+        Ok(item)
     }
 
     async fn unpublish_course(
@@ -692,7 +1060,19 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         course_id: String,
     ) -> CourseResult<CourseItem> {
-        self.catalog_repo.unpublish_course(context, course_id).await
+        let item = self
+            .catalog_repo
+            .unpublish_course(context, course_id.clone())
+            .await?;
+        self.append_course_audit(
+            context,
+            &course_id,
+            "unpublish",
+            None,
+            Some(serde_json::json!({ "publishStatus": item.publish_status })),
+        )
+        .await?;
+        Ok(item)
     }
 
     // ── Offerings ───────────────────────────────────────────────────
@@ -1000,6 +1380,46 @@ impl CourseApplicationService for CourseServiceImpl {
             .await
     }
 
+    async fn grant_entitlement(
+        &self,
+        context: &CourseServiceContext,
+        offering_id: String,
+        learner_user_id: String,
+        purchase_ref: String,
+    ) -> CourseResult<String> {
+        let command = CourseEnrollmentCommand {
+            offering_id,
+            learner_user_id,
+            source: "commerce".to_owned(),
+            idempotency_key: Some(purchase_ref),
+        };
+        self.enroll(context, command).await
+    }
+
+    async fn grant_entitlement_by_offering(
+        &self,
+        offering_id: String,
+        learner_user_id: String,
+        purchase_ref: String,
+    ) -> CourseResult<String> {
+        let scope = self
+            .offering_repo
+            .find_offering_scope(offering_id.clone())
+            .await?
+            .ok_or_else(|| CourseError::not_found("Offering not found"))?;
+        let context = CourseServiceContext {
+            tenant_id: scope.0,
+            organization_id: scope.1,
+            actor_id: Some(learner_user_id.clone()),
+            user_id: Some(learner_user_id.clone()),
+            request_id: None,
+            trace_id: None,
+            permissions: Vec::new(),
+        };
+        self.grant_entitlement(&context, offering_id, learner_user_id, purchase_ref)
+            .await
+    }
+
     // ── Progress ────────────────────────────────────────────────────
 
     async fn list_progress(
@@ -1045,60 +1465,17 @@ impl CourseApplicationService for CourseServiceImpl {
             .await
     }
 
-    // ── Comments ────────────────────────────────────────────────────
-
-    async fn list_comments(
-        &self,
-        context: &CourseServiceContext,
-        query: CourseQuery,
-    ) -> CourseResult<Vec<CourseCommentItem>> {
-        self.comment_repo.list_comments(context, query).await
-    }
-
-    async fn create_comment(
-        &self,
-        context: &CourseServiceContext,
-        command: Value,
-    ) -> CourseResult<CourseCommentItem> {
-        self.comment_repo.create_comment(context, command).await
-    }
-
-    async fn moderate_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-        request: CourseCommentModerationRequest,
-    ) -> CourseResult<Vec<CourseCommentItem>> {
-        let result = self
-            .comment_repo
-            .moderate_comment(context, comment_id.clone(), request.clone())
-            .await?;
-
-        self.audit_repo
-            .append_audit_log(
-                context,
-                CourseAuditCommand {
-                    target_type: "comment".to_string(),
-                    target_id: comment_id,
-                    operation: "moderate".to_string(),
-                    before_snapshot: None,
-                    after_snapshot: Some(serde_json::to_value(&request).unwrap_or_default()),
-                },
-            )
-            .await?;
-
-        Ok(result)
-    }
-
-    async fn delete_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-    ) -> CourseResult<()> {
-        self.comment_repo.delete_comment(context, comment_id).await
-    }
-
     // ── Reactions ───────────────────────────────────────────────────
+
+    async fn course_engagement(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Value> {
+        self.reaction_repo
+            .course_engagement(context, course_id)
+            .await
+    }
 
     async fn list_reactions(
         &self,
@@ -1322,5 +1699,428 @@ impl CourseApplicationService for CourseServiceImpl {
             .list_live_sessions(context, query)
             .await?;
         Ok(serde_json::json!({ "items": sessions }))
+    }
+}
+fn require_creator(context: &CourseServiceContext) -> CourseResult<()> {
+    match context.user_id.as_deref().map(str::trim) {
+        Some(user_id) if !user_id.is_empty() => Ok(()),
+        _ => Err(CourseError::invalid(
+            "An authenticated creator is required for this operation",
+        )),
+    }
+}
+
+fn validate_price_amount(value: &str) -> bool {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return false;
+    }
+    let mut parts = trimmed.split('.');
+    let whole = parts.next().unwrap_or_default();
+    let fraction = parts.next();
+    if parts.next().is_some() {
+        return false;
+    }
+    if whole.is_empty() || !whole.chars().all(|value| value.is_ascii_digit()) || whole.len() > 9 {
+        return false;
+    }
+    if let Some(fraction) = fraction {
+        if fraction.len() > 2 || !fraction.chars().all(|value| value.is_ascii_digit()) {
+            return false;
+        }
+    }
+    trimmed.chars().any(|value| value != '.' && value != '0')
+}
+
+fn validate_studio_draft(command: &CourseStudioDraftCommand) -> CourseResult<()> {
+    let title = command.title.trim();
+    if title.chars().count() < 2 || title.chars().count() > 120 {
+        return Err(CourseError::invalid(
+            "Course title must be between 2 and 120 characters",
+        ));
+    }
+    let kind = crate::domain::commands::normalize_course_kind(&command.kind)
+        .ok_or_else(|| CourseError::invalid("course kind must be standard, column, or collection"))?;
+    if command.tags.len() > 20
+        || command
+            .tags
+            .iter()
+            .any(|tag| tag.trim().chars().count() > 40)
+    {
+        return Err(CourseError::invalid(
+            "A course may have at most 20 tags of 40 characters each",
+        ));
+    }
+    if !command.is_free {
+        let price = command.price_amount.as_deref().unwrap_or_default();
+        if !validate_price_amount(price) {
+            return Err(CourseError::invalid(
+                "Paid courses require a positive decimal price with at most two decimals",
+            ));
+        }
+        if command.currency.as_deref().unwrap_or("").trim().is_empty() {
+            return Err(CourseError::invalid(
+                "Paid courses require a currency code",
+            ));
+        }
+    }
+    if command.sections.len() > 100 {
+        return Err(CourseError::invalid(
+            "A course may have at most 100 chapters",
+        ));
+    }
+    let mut lesson_total = 0usize;
+    for section in &command.sections {
+        let section_title = section.title.trim();
+        if section_title.is_empty() || section_title.chars().count() > 120 {
+            return Err(CourseError::invalid(
+                "Chapter titles must be between 1 and 120 characters",
+            ));
+        }
+        lesson_total += section.lessons.len();
+        for lesson in &section.lessons {
+            if lesson.title.trim().is_empty() || lesson.title.trim().chars().count() > 160 {
+                return Err(CourseError::invalid(
+                    "Lesson titles must be between 1 and 160 characters",
+                ));
+            }
+            validate_resource_roles(&lesson.resources)?;
+        }
+    }
+    if lesson_total > 500 {
+        return Err(CourseError::invalid(
+            "A course may have at most 500 lessons",
+        ));
+    }
+    if kind == crate::domain::commands::COURSE_KIND_COLLECTION {
+        if !command.sections.is_empty() {
+            return Err(CourseError::invalid(
+                "Collection courses bundle other courses and cannot contain chapters",
+            ));
+        }
+    } else if !command.collection_items.is_empty() {
+        return Err(CourseError::invalid(
+            "Only collection courses can link other courses",
+        ));
+    }
+    let mut seen = std::collections::HashSet::new();
+    for linked in &command.collection_items {
+        if linked.trim().is_empty() {
+            return Err(CourseError::invalid("Collection items cannot be empty"));
+        }
+        if command.course_id.as_deref() == Some(linked.as_str()) {
+            return Err(CourseError::invalid(
+                "A collection cannot include itself",
+            ));
+        }
+        if !seen.insert(linked.as_str()) {
+            return Err(CourseError::invalid(
+                "Collection items must not contain duplicates",
+            ));
+        }
+    }
+    if command.collection_items.len() > 200 {
+        return Err(CourseError::invalid(
+            "A collection may bundle at most 200 courses",
+        ));
+    }
+    Ok(())
+}
+
+fn validate_resource_roles(resources: &[crate::domain::commands::CourseStudioResourceDraft]) -> CourseResult<()> {
+    const ROLES: [&str; 8] = [
+        "cover",
+        "intro_video",
+        "vod_video",
+        "live_replay",
+        "subtitle",
+        "attachment",
+        "handout",
+        "avatar",
+    ];
+    for resource in resources {
+        if resource.drive_resource_id.trim().is_empty() {
+            return Err(CourseError::invalid(
+                "A lesson resource must reference a Drive resource",
+            ));
+        }
+        if !ROLES.contains(&resource.resource_role.as_str()) {
+            return Err(CourseError::invalid(format!(
+                "Unsupported lesson resource role: {}",
+                resource.resource_role
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn validate_submission(detail: &CourseStudioDetail) -> CourseResult<()> {
+    let course = &detail.course;
+    if course.title.trim().chars().count() < 2 {
+        return Err(CourseError::invalid(
+            "A course title must contain at least 2 characters before review",
+        ));
+    }
+    let cover = course.thumbnail.as_deref().unwrap_or("").trim();
+    if cover.is_empty() {
+        return Err(CourseError::invalid(
+            "A cover image is required before submitting for review",
+        ));
+    }
+    if cover.starts_with('{') {
+        let snapshot = serde_json::from_str::<serde_json::Value>(cover)
+            .map_err(|_| CourseError::invalid("The cover resource snapshot is malformed"))?;
+        let mime = snapshot
+            .get("mimeType")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("")
+            .to_ascii_lowercase();
+        if !mime.starts_with("image/") {
+            return Err(CourseError::invalid(
+                "The cover must be an uploaded image resource",
+            ));
+        }
+    }
+    if course.category.as_deref().unwrap_or("").trim().is_empty() {
+        return Err(CourseError::invalid(
+            "A category is required before submitting for review",
+        ));
+    }
+    let summary = course
+        .summary
+        .as_deref()
+        .or(course.description.as_deref())
+        .unwrap_or("")
+        .trim();
+    if summary.chars().count() < 20 {
+        return Err(CourseError::invalid(
+            "The course summary must be at least 20 characters before review",
+        ));
+    }
+    if summary.chars().count() > 2_000 {
+        return Err(CourseError::invalid(
+            "The course summary cannot exceed 2000 characters",
+        ));
+    }
+    if !course.is_free {
+        if !validate_price_amount(course.price_amount.as_deref().unwrap_or_default()) {
+            return Err(CourseError::invalid(
+                "Paid courses require a valid price before review",
+            ));
+        }
+        if course.currency.as_deref().unwrap_or("").trim().is_empty() {
+            return Err(CourseError::invalid(
+                "Paid courses require a currency before review",
+            ));
+        }
+        if let Some(original) = course.original_price_amount.as_deref() {
+            let price = course
+                .price_amount
+                .as_deref()
+                .unwrap_or("0")
+                .parse::<f64>()
+                .unwrap_or(0.0);
+            let original = original.parse::<f64>().unwrap_or(0.0);
+            if original > 0.0 && original < price {
+                return Err(CourseError::invalid(
+                    "The original price cannot be lower than the sale price",
+                ));
+            }
+        }
+    }
+    match course.kind.as_str() {
+        crate::domain::commands::COURSE_KIND_COLLECTION => {
+            if detail.collection_items.is_empty() {
+                return Err(CourseError::invalid(
+                    "A collection must bundle at least one published course",
+                ));
+            }
+        }
+        _ => {
+            if detail.sections.is_empty() {
+                return Err(CourseError::invalid(
+                    "A course must have at least one chapter before review",
+                ));
+            }
+            if detail.lessons.is_empty() {
+                return Err(CourseError::invalid(
+                    "A course must have at least one lesson before review",
+                ));
+            }
+            for lesson in &detail.lessons {
+                if lesson.title.trim().is_empty() {
+                    return Err(CourseError::invalid("Lesson titles cannot be empty"));
+                }
+                let kind = lesson.kind.as_deref().unwrap_or("vod_video");
+                match kind {
+                    "article" => {
+                        if lesson
+                            .content
+                            .as_deref()
+                            .unwrap_or("")
+                            .trim()
+                            .chars()
+                            .count()
+                            < 20
+                        {
+                            return Err(CourseError::invalid(format!(
+                                "Article lesson '{}' needs at least 20 characters of content",
+                                lesson.title
+                            )));
+                        }
+                    }
+                    "vod_video" => {
+                        if lesson.duration_seconds <= 0 {
+                            return Err(CourseError::invalid(format!(
+                                "Video lesson '{}' needs a valid duration",
+                                lesson.title
+                            )));
+                        }
+                        let has_external = !lesson
+                            .external_source_id
+                            .as_deref()
+                            .unwrap_or("")
+                            .trim()
+                            .is_empty()
+                            && !lesson
+                                .source_provider
+                                .as_deref()
+                                .unwrap_or("")
+                                .trim()
+                                .is_empty();
+                        let has_uploaded_video = detail.resources.iter().any(|resource| {
+                            resource.owner_id == lesson.id
+                                && resource.resource_role == "vod_video"
+                                && resource
+                                    .mime_type
+                                    .as_deref()
+                                    .is_some_and(|mime| mime.to_ascii_lowercase().starts_with("video/"))
+                                && resource.file_size_bytes.unwrap_or(0) > 0
+                        });
+                        if !has_external && !has_uploaded_video {
+                            return Err(CourseError::invalid(format!(
+                                "Video lesson '{}' needs an uploaded video file or a verified external source",
+                                lesson.title
+                            )));
+                        }
+                    }
+                    "live_session" => {
+                        let has_external = !lesson
+                            .external_source_id
+                            .as_deref()
+                            .unwrap_or("")
+                            .trim()
+                            .is_empty()
+                            && !lesson
+                                .source_provider
+                                .as_deref()
+                                .unwrap_or("")
+                                .trim()
+                                .is_empty();
+                        let has_replay = detail.resources.iter().any(|resource| {
+                            resource.owner_id == lesson.id
+                                && resource.resource_role == "live_replay"
+                        });
+                        if !has_external && !has_replay {
+                            return Err(CourseError::invalid(format!(
+                                "Live lesson '{}' needs a live source or replay",
+                                lesson.title
+                            )));
+                        }
+                    }
+                    "download" => {
+                        let has_attachment = detail.resources.iter().any(|resource| {
+                            resource.owner_id == lesson.id
+                                && matches!(
+                                    resource.resource_role.as_str(),
+                                    "attachment" | "handout"
+                                )
+                        });
+                        if !has_attachment {
+                            return Err(CourseError::invalid(format!(
+                                "Download lesson '{}' needs an attached file",
+                                lesson.title
+                            )));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod submission_validation_tests {
+    use super::*;
+
+    fn video_resource() -> crate::domain::models::CourseResourceItem {
+        crate::domain::models::CourseResourceItem {
+            owner_type: "lesson".to_owned(),
+            owner_id: "lesson-1".to_owned(),
+            resource_role: "vod_video".to_owned(),
+            drive_resource_id: "drive-video-1".to_owned(),
+            mime_type: Some("video/mp4".to_owned()),
+            file_size_bytes: Some(1024),
+            ..Default::default()
+        }
+    }
+
+    fn base_detail() -> CourseStudioDetail {
+        let mut detail = CourseStudioDetail::default();
+        detail.course.title = "Commercial course".to_owned();
+        detail.course.thumbnail = Some(r#"{"mimeType":"image/png"}"#.to_owned());
+        detail.course.category = Some("course-category-ai".to_owned());
+        detail.course.summary =
+            Some("A complete commercial course summary with enough detail.".to_owned());
+        detail.course.is_free = true;
+        detail.sections = vec![crate::domain::models::CourseSectionItem::default()];
+        detail.lessons = vec![crate::domain::models::CourseLessonItem {
+            id: "lesson-1".to_owned(),
+            title: "Video lesson".to_owned(),
+            duration_seconds: 600,
+            kind: Some("vod_video".to_owned()),
+            ..Default::default()
+        }];
+        detail
+    }
+
+    #[test]
+    fn accepts_a_video_lesson_with_an_uploaded_video() {
+        let mut detail = base_detail();
+        detail.resources = vec![video_resource()];
+        assert!(validate_submission(&detail).is_ok());
+    }
+
+    #[test]
+    fn rejects_an_attachment_masquerading_as_a_video() {
+        let mut detail = base_detail();
+        let mut resource = video_resource();
+        resource.resource_role = "attachment".to_owned();
+        detail.resources = vec![resource];
+        let error = validate_submission(&detail).expect_err("attachment must not satisfy video");
+        assert!(format!("{error:?}").contains("uploaded video file"));
+    }
+
+    #[test]
+    fn rejects_invalid_original_price() {
+        let mut detail = base_detail();
+        detail.resources = vec![video_resource()];
+        detail.course.is_free = false;
+        detail.course.price_amount = Some("100.00".to_owned());
+        detail.course.original_price_amount = Some("50.00".to_owned());
+        detail.course.currency = Some("CNY".to_owned());
+        let error = validate_submission(&detail).expect_err("original price below sale price");
+        assert!(format!("{error:?}").contains("original price"));
+    }
+
+    #[test]
+    fn rejects_non_image_cover_snapshot() {
+        let mut detail = base_detail();
+        detail.resources = vec![video_resource()];
+        detail.course.thumbnail = Some(r#"{"mimeType":"application/pdf"}"#.to_owned());
+        let error = validate_submission(&detail).expect_err("cover must be an image");
+        assert!(format!("{error:?}").contains("uploaded image"));
     }
 }

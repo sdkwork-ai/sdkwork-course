@@ -546,31 +546,6 @@ pub async fn course_lesson_progress_repair(
     course_handler_path_body!(state, app_ctx, lessonProgressId, body, course_lesson_progress_repair)
 }
 
-pub async fn course_comments_list(
-    State(state): State<CourseBackendApiState>,
-    app_ctx: WebRequestContext,
-    query: Query<BTreeMap<String, String>>,
-) -> Response {
-    course_handler_query!(state, app_ctx, query, course_comments_list)
-}
-
-pub async fn course_comments_moderate(
-    State(state): State<CourseBackendApiState>,
-    app_ctx: WebRequestContext,
-    Path(commentId): Path<String>,
-    body: Json<Value>,
-) -> Response {
-    course_handler_path_body!(state, app_ctx, commentId, body, course_comments_moderate)
-}
-
-pub async fn course_comments_delete(
-    State(state): State<CourseBackendApiState>,
-    app_ctx: WebRequestContext,
-    Path(commentId): Path<String>,
-) -> Response {
-    course_handler_path!(state, app_ctx, commentId, course_comments_delete)
-}
-
 pub async fn course_reactions_list(
     State(state): State<CourseBackendApiState>,
     app_ctx: WebRequestContext,
@@ -649,4 +624,45 @@ pub async fn course_audit_logs_retrieve(
     Path(auditLogId): Path<String>,
 ) -> Response {
     course_handler_path!(state, app_ctx, auditLogId, course_audit_logs_retrieve)
+}
+
+pub async fn course_reviews_list(
+    State(state): State<CourseBackendApiState>,
+    app_ctx: WebRequestContext,
+    query: Query<BTreeMap<String, String>>,
+) -> Response {
+    course_handler_query!(state, app_ctx, query, course_reviews_list)
+}
+
+pub async fn course_reviews_stats(
+    State(state): State<CourseBackendApiState>,
+    app_ctx: WebRequestContext,
+) -> Response {
+    course_handler_ctx!(state, app_ctx, course_reviews_stats)
+}
+
+pub async fn course_reviews_retrieve(
+    State(state): State<CourseBackendApiState>,
+    app_ctx: WebRequestContext,
+    Path(courseId): Path<String>,
+) -> Response {
+    course_handler_path!(state, app_ctx, courseId, course_reviews_retrieve)
+}
+
+pub async fn course_reviews_review(
+    State(state): State<CourseBackendApiState>,
+    app_ctx: WebRequestContext,
+    Path(courseId): Path<String>,
+    body: Json<Value>,
+) -> Response {
+    course_handler_path_body!(state, app_ctx, courseId, body, course_reviews_review)
+}
+
+pub async fn courses_offline(
+    State(state): State<CourseBackendApiState>,
+    app_ctx: WebRequestContext,
+    Path(courseId): Path<String>,
+    body: Json<Value>,
+) -> Response {
+    course_handler_path_body!(state, app_ctx, courseId, body, courses_offline)
 }

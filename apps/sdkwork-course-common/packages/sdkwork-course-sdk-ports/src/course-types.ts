@@ -34,12 +34,16 @@ export interface CourseCatalog {
   description?: string;
   thumbnail?: string;
   instructor?: string;
+  author?: string;
   lessonsCount?: number;
   studentsCount?: number;
   ratingScore?: string;
   type?: CourseOfferingType;
+  kind?: string;
   liveStatus?: CourseLiveStatus;
   price?: number;
+  priceAmount?: string;
+  isFree?: boolean;
   originalPrice?: number;
   isPurchased?: boolean;
 }
@@ -139,9 +143,10 @@ export interface CourseReaction {
 export interface CourseListParams {
   q?: string;
   categoryId?: string;
+  kind?: string;
+  level?: string;
   page?: number;
   pageSize?: number;
-  status?: string;
 }
 
 export interface CourseEnrollmentCommand {

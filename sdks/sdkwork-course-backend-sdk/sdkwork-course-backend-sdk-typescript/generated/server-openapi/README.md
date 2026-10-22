@@ -65,11 +65,11 @@ const client = new SdkworkBackendClient({
 - `client.courseEnrollments` - course_enrollments API
 - `client.courseProgress` - course_progress API
 - `client.courseLessonProgress` - course_lesson_progress API
-- `client.courseComments` - course_comments API
 - `client.courseReactions` - course_reactions API
 - `client.courseApplications` - course_applications API
 - `client.courseReports` - course_reports API
 - `client.courseAuditLogs` - course_audit_logs API
+- `client.courseReviews` - course_reviews API
 
 ## Usage Examples
 
@@ -107,10 +107,13 @@ const result = await client.courseInstructors.list(params);
 // courses list.
 const params = {
   q: 'q',
-  cursor: 'cursor',
-  page: 3,
-  page_size: 4,
+  page: 2,
+  page_size: 3,
   status: 'status',
+  kind: 'kind',
+  category: 'category',
+  level: 'level',
+  author_user_id: 'author_user_id',
 };
 const result = await client.courses.list(params);
 ```
@@ -198,20 +201,6 @@ const body = {};
 const result = await client.courseLessonProgress.update(lessonProgressId, body);
 ```
 
-### course_comments
-
-```typescript
-// course Comments list.
-const params = {
-  q: 'q',
-  cursor: 'cursor',
-  page: 3,
-  page_size: 4,
-  status: 'status',
-};
-const result = await client.courseComments.list(params);
-```
-
 ### course_reactions
 
 ```typescript
@@ -261,6 +250,13 @@ const params = {
 const result = await client.courseAuditLogs.list(params);
 ```
 
+### course_reviews
+
+```typescript
+// course Reviews stats.
+const result = await client.courseReviews.stats();
+```
+
 ## Error Handling
 
 ```typescript
@@ -287,6 +283,8 @@ This SDK includes cross-platform publish scripts in `bin/`:
 - `bin/publish-core.mjs`
 - `bin/publish.sh`
 - `bin/publish.ps1`
+
+TypeScript check and publish commands materialize workspace dependency versions in a temporary tarball with pnpm. They reject local-only dependency protocols before npm publication and do not rewrite the source `package.json`.
 
 ### Check
 

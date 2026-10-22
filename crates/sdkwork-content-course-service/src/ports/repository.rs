@@ -1,11 +1,11 @@
 use crate::domain::commands::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
     CourseLessonProgressCommand, CourseLiveSessionCommand, CourseOfferingCommand,
-    CourseServiceContext,
+    CourseReviewDecisionCommand, CourseServiceContext, CourseStudioDraftCommand,
 };
 use crate::domain::models::{
-    CourseApplicationItem, CourseCategoryItem, CourseCommentItem, CourseItem, CourseLessonItem,
-    CoursePage, CourseQuery, CourseResult, CourseSectionItem,
+    CourseApplicationItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult,
+    CourseSectionItem, CourseStudioDetail,
 };
 
 #[async_trait::async_trait]
@@ -106,6 +106,64 @@ pub trait CourseCatalogRepository: Send + Sync {
         context: &CourseServiceContext,
         course_id: String,
     ) -> CourseResult<()>;
+
+    async fn save_studio_course(
+        &self,
+        context: &CourseServiceContext,
+        command: CourseStudioDraftCommand,
+    ) -> CourseResult<CourseItem>;
+
+    async fn retrieve_course_detail(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseStudioDetail>>;
+
+    async fn retrieve_curriculum(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseCurriculum>>;
+
+    async fn list_collection_items(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Vec<CourseCollectionItem>>;
+
+    async fn submit_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem>;
+
+    async fn withdraw_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem>;
+
+    async fn review_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        command: CourseReviewDecisionCommand,
+    ) -> CourseResult<CourseItem>;
+
+    async fn offline_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        note: Option<String>,
+    ) -> CourseResult<CourseItem>;
+
+    async fn list_review_courses(
+        &self,
+        context: &CourseServiceContext,
+        query: CourseQuery,
+    ) -> CourseResult<CoursePage>;
+
+    async fn review_stats(&self, context: &CourseServiceContext) -> CourseResult<serde_json::Value>;
 }
 
 #[async_trait::async_trait]
@@ -140,6 +198,11 @@ pub trait CourseOfferingRepository: Send + Sync {
         context: &CourseServiceContext,
         offering_id: String,
     ) -> CourseResult<()>;
+
+    async fn find_offering_scope(
+        &self,
+        offering_id: String,
+    ) -> CourseResult<Option<(String, String)>>;
 }
 
 #[async_trait::async_trait]
@@ -262,6 +325,14 @@ pub trait CourseEnrollmentRepository: Send + Sync {
         context: &CourseServiceContext,
         query: CourseQuery,
     ) -> CourseResult<Vec<serde_json::Value>>;
+
+    /// Whether a learner has an active enrollment for a course.
+    async fn has_active_enrollment(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        user_id: String,
+    ) -> CourseResult<bool>;
 }
 
 #[async_trait::async_trait]
@@ -290,34 +361,6 @@ pub trait CourseProgressRepository: Send + Sync {
         context: &CourseServiceContext,
         enrollment_id: String,
     ) -> CourseResult<Option<serde_json::Value>>;
-}
-
-#[async_trait::async_trait]
-pub trait CourseCommentRepository: Send + Sync {
-    async fn list_comments(
-        &self,
-        context: &CourseServiceContext,
-        query: CourseQuery,
-    ) -> CourseResult<Vec<CourseCommentItem>>;
-
-    async fn create_comment(
-        &self,
-        context: &CourseServiceContext,
-        command: serde_json::Value,
-    ) -> CourseResult<CourseCommentItem>;
-
-    async fn moderate_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-        request: crate::domain::models::CourseCommentModerationRequest,
-    ) -> CourseResult<Vec<CourseCommentItem>>;
-
-    async fn delete_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-    ) -> CourseResult<()>;
 }
 
 #[async_trait::async_trait]
@@ -399,6 +442,12 @@ pub trait CourseResourceRepository: Send + Sync {
 
 #[async_trait::async_trait]
 pub trait CourseReactionRepository: Send + Sync {
+    async fn course_engagement(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<serde_json::Value>;
+
     async fn list_reactions(
         &self,
         context: &CourseServiceContext,

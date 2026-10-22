@@ -11,7 +11,7 @@ use sqlx::Row;
 use sdkwork_content_course_service::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
     CourseAuditCommand, CourseAuditLogItem, CourseCatalogCommand, CourseCategoryItem,
-    CourseCommentItem, CourseCommentModerationRequest, CourseEnrollmentCommand, CourseError,
+    CourseEnrollmentCommand, CourseError,
     CourseItem, CourseLessonCommand, CourseLessonItem, CourseLessonProgressCommand,
     CourseLiveSessionCommand, CourseOfferingCommand, CoursePage, CourseQuery,
     CourseSectionItem, CourseServiceContext,
@@ -597,27 +597,35 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         Box::pin(async move {
             let limit = query.limit();
             let offset = query.offset();
-            let status_filter = query.status.as_deref().unwrap_or("published");
+            // An empty status means "every publication state" so operator
+            // consoles can see drafts and pending reviews. Learner surfaces set
+            // `status = published` explicitly at the HTTP boundary.
+            let status_filter = query.status.as_deref().unwrap_or("");
+            let kind_filter = query.kind.as_deref().unwrap_or("");
+            let author_filter = query.author_user_id.as_deref().unwrap_or("");
             let q_filter = query.q.as_deref().unwrap_or("");
             let category_filter = query.category.as_deref().unwrap_or("");
             let level_filter = query.level.as_deref().unwrap_or("");
 
-            // Count total
             let total = sqlx::query_scalar::<_, i64>(
                 r#"
-                SELECT COUNT(*) FROM course_catalog 
-                WHERE tenant_id = $1 
+                SELECT COUNT(*) FROM course_catalog
+                WHERE tenant_id = $1
                   AND (organization_id = $2 OR organization_id = '0')
-                  AND publish_status = $3
+                  AND ($3 = '' OR publish_status = $3)
+                  AND ($4 = '' OR course_kind = $4)
+                  AND ($5 = '' OR author_user_id = $5)
                   AND deleted_at IS NULL
-                  AND (title LIKE '%' || $4 || '%' OR $4 = '')
-                  AND (category_id = $5 OR $5 = '')
-                  AND (difficulty_level = $6 OR $6 = '')
+                  AND (title LIKE '%' || $6 || '%' OR $6 = '')
+                  AND (category_id = $7 OR $7 = '')
+                  AND (difficulty_level = $8 OR $8 = '')
                 "#,
             )
             .bind(&context.tenant_id)
             .bind(&context.organization_id)
             .bind(status_filter)
+            .bind(kind_filter)
+            .bind(author_filter)
             .bind(q_filter)
             .bind(category_filter)
             .bind(level_filter)
@@ -625,29 +633,43 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             .await
             .map_err(sqlx_storage_error)?;
 
-            // Fetch courses
             let courses = sqlx::query_as::<_, CourseItem>(
                 r#"
-                SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                       primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                       lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                       student_count_snapshot::bigint as students_count, difficulty_level as level,
-                       category_id as category, tags_json as tags, body_content as content, status
+                SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
                 FROM course_catalog
-                WHERE tenant_id = $1 
+                WHERE tenant_id = $1
                   AND (organization_id = $2 OR organization_id = '0')
-                  AND publish_status = $3
+                  AND ($3 = '' OR publish_status = $3)
+                  AND ($4 = '' OR course_kind = $4)
+                  AND ($5 = '' OR author_user_id = $5)
                   AND deleted_at IS NULL
-                  AND (title LIKE '%' || $4 || '%' OR $4 = '')
-                  AND (category_id = $5 OR $5 = '')
-                  AND (difficulty_level = $6 OR $6 = '')
+                  AND (title LIKE '%' || $6 || '%' OR $6 = '')
+                  AND (category_id = $7 OR $7 = '')
+                  AND (difficulty_level = $8 OR $8 = '')
                 ORDER BY updated_at DESC, id DESC
-                LIMIT $7 OFFSET $8
+                LIMIT $9 OFFSET $10
                 "#
             )
             .bind(&context.tenant_id)
             .bind(&context.organization_id)
             .bind(status_filter)
+            .bind(kind_filter)
+            .bind(author_filter)
             .bind(q_filter)
             .bind(category_filter)
             .bind(level_filter)
@@ -674,12 +696,23 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         Box::pin(async move {
             let course = sqlx::query_as::<_, CourseItem>(
                 r#"
-                SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                       primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                       lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                       student_count_snapshot::bigint as students_count, difficulty_level as level,
-                       category_id as category, tags_json as tags, body_content as content, status
-                FROM course_catalog
+                SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
+            FROM course_catalog
                 WHERE id = $1 
                   AND tenant_id = $2 
                   AND (organization_id = $3 OR organization_id = '0')
@@ -778,12 +811,23 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 // Fetch updated course
                 let course = sqlx::query_as::<_, CourseItem>(
                     r#"
-                    SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                           primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                           lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                           student_count_snapshot::bigint as students_count, difficulty_level as level,
-                           category_id as category, tags_json as tags, body_content as content, status
-                    FROM course_catalog
+                    SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
+            FROM course_catalog
                     WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                     "#
                 )
@@ -833,12 +877,23 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 // Fetch created course
                 let course = sqlx::query_as::<_, CourseItem>(
                     r#"
-                    SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                           primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                           lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                           student_count_snapshot::bigint as students_count, difficulty_level as level,
-                           category_id as category, tags_json as tags, body_content as content, status
-                    FROM course_catalog
+                    SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
+            FROM course_catalog
                     WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                     "#
                 )
@@ -934,12 +989,23 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Fetch updated course
             let course = sqlx::query_as::<_, CourseItem>(
                 r#"
-                SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                       primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                       lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                       student_count_snapshot::bigint as students_count, difficulty_level as level,
-                       category_id as category, tags_json as tags, body_content as content, status
-                FROM course_catalog
+                SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
+            FROM course_catalog
                 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 "#
             )
@@ -987,12 +1053,23 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Fetch updated course
             let course = sqlx::query_as::<_, CourseItem>(
                 r#"
-                SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                       primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                       lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                       student_count_snapshot::bigint as students_count, difficulty_level as level,
-                       category_id as category, tags_json as tags, body_content as content, status
-                FROM course_catalog
+                SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
+            FROM course_catalog
                 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 "#
             )
@@ -1279,38 +1356,73 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         command: Value,
     ) -> CourseRepositoryFuture<'a, CourseSectionItem> {
         Box::pin(async move {
-            let section_id = command
-                .get("id")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            let section_no = command.get("section_no").and_then(|v| v.as_str());
-            let title = command.get("title").and_then(|v| v.as_str()).unwrap_or("");
-            let description = command.get("description").and_then(|v| v.as_str());
-            let sort_order = command
-                .get("sort_order")
-                .and_then(|v| v.as_i64())
-                .unwrap_or(0);
-            let status = command
-                .get("status")
-                .and_then(|v| v.as_str())
-                .unwrap_or("draft");
-            let version = command.get("version").and_then(|v| v.as_i64()).unwrap_or(0);
+            let read_str = |camel: &str, snake: &str| {
+                command
+                    .get(camel)
+                    .or_else(|| command.get(snake))
+                    .and_then(|v| v.as_str())
+            };
+            let read_i64 = |camel: &str, snake: &str, fallback: i64| {
+                command
+                    .get(camel)
+                    .or_else(|| command.get(snake))
+                    .and_then(|v| v.as_i64())
+                    .unwrap_or(fallback)
+            };
 
+            let section_id = read_str("id", "id").map(str::to_owned);
+            let title = read_str("title", "title").unwrap_or("").trim().to_owned();
+            if title.is_empty() {
+                return Err(CourseError::invalid("Section title is required"));
+            }
+            let mut course_id = course_id;
+            if course_id.trim().is_empty() {
+                let Some(id) = section_id.as_deref() else {
+                    return Err(CourseError::invalid("courseId is required"));
+                };
+                course_id = sqlx::query_scalar::<_, String>(
+                    "SELECT course_id FROM course_section WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL",
+                )
+                .bind(id)
+                .bind(&context.tenant_id)
+                .fetch_optional(self.pool())
+                .await
+                .map_err(sqlx_storage_error)?
+                .ok_or_else(|| CourseError::not_found("Section not found"))?;
+            }
+
+            let course_exists = sqlx::query_scalar::<_, bool>(
+                "SELECT EXISTS(SELECT 1 FROM course_catalog WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL)",
+            )
+            .bind(&course_id)
+            .bind(&context.tenant_id)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            if !course_exists {
+                return Err(CourseError::not_found("Course not found"));
+            }
+
+            let description = read_str("description", "description");
+            let sort_order = read_i64("sortWeight", "sort_order", read_i64("sortOrder", "sort_order", 0));
+            let status = read_str("status", "status").unwrap_or("active");
+            let version = read_i64("version", "version", 0);
             let now = chrono::Utc::now().to_rfc3339();
-            let uuid = uuid::Uuid::new_v4().to_string();
 
             if let Some(id) = section_id {
-                // Update existing section
+                let section_no = read_str("sectionNo", "section_no");
                 let result = sqlx::query(
                     r#"
-                    UPDATE course_section 
-                    SET section_no = $1, title = $2, description = $3, sort_order = $4,
-                        status = $5, updated_at = $6, updated_by = $7, version = version + 1
-                    WHERE id = $8 AND course_id = $9 AND tenant_id = $10 AND version = $11 AND deleted_at IS NULL
-                    "#
+                    UPDATE course_section
+                    SET section_no = COALESCE($1, section_no), title = $2, description = $3,
+                        sort_order = $4, status = $5, updated_at = $6, updated_by = $7,
+                        version = version + 1
+                    WHERE id = $8 AND course_id = $9 AND tenant_id = $10
+                      AND ($11 = 0 OR version = $11) AND deleted_at IS NULL
+                    "#,
                 )
                 .bind(section_no)
-                .bind(title)
+                .bind(&title)
                 .bind(description)
                 .bind(sort_order)
                 .bind(status)
@@ -1330,15 +1442,15 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     ));
                 }
 
-                // Fetch updated section
                 let section = sqlx::query_as::<_, CourseSectionItem>(
                     r#"
                     SELECT id, course_id, section_no, title, description,
-                           lesson_count_snapshot::bigint as lesson_count, duration_seconds_snapshot::bigint as duration_seconds,
+                           lesson_count_snapshot::bigint as lesson_count,
+                           duration_seconds_snapshot::bigint as duration_seconds,
                            sort_order::bigint as sort_weight, status
                     FROM course_section
                     WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
-                    "#
+                    "#,
                 )
                 .bind(&id)
                 .bind(&context.tenant_id)
@@ -1348,8 +1460,22 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
 
                 Ok(section)
             } else {
-                // Insert new section
                 let id = uuid::Uuid::new_v4().to_string();
+                let uuid = uuid::Uuid::new_v4().to_string();
+                let section_no = match read_str("sectionNo", "section_no") {
+                    Some(value) if !value.trim().is_empty() => value.to_owned(),
+                    _ => {
+                        let count = sqlx::query_scalar::<_, i64>(
+                            "SELECT COUNT(*) FROM course_section WHERE course_id = $1 AND tenant_id = $2",
+                        )
+                        .bind(&course_id)
+                        .bind(&context.tenant_id)
+                        .fetch_one(self.pool())
+                        .await
+                        .map_err(sqlx_storage_error)?;
+                        format!("S{:04}", count + 1)
+                    }
+                };
 
                 sqlx::query(
                     r#"
@@ -1358,15 +1484,15 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                         description, sort_order, visibility, status, created_at, created_by,
                         updated_at, updated_by, version
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'tenant', $10, $11, $12, $13, $14, 0)
-                    "#
+                    "#,
                 )
                 .bind(&id)
                 .bind(&uuid)
                 .bind(&context.tenant_id)
                 .bind(&context.organization_id)
                 .bind(&course_id)
-                .bind(section_no)
-                .bind(title)
+                .bind(&section_no)
+                .bind(&title)
                 .bind(description)
                 .bind(sort_order)
                 .bind(status)
@@ -1378,15 +1504,15 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .await
                 .map_err(sqlx_storage_error)?;
 
-                // Fetch created section
                 let section = sqlx::query_as::<_, CourseSectionItem>(
                     r#"
                     SELECT id, course_id, section_no, title, description,
-                           lesson_count_snapshot::bigint as lesson_count, duration_seconds_snapshot::bigint as duration_seconds,
+                           lesson_count_snapshot::bigint as lesson_count,
+                           duration_seconds_snapshot::bigint as duration_seconds,
                            sort_order::bigint as sort_weight, status
                     FROM course_section
                     WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
-                    "#
+                    "#,
                 )
                 .bind(&id)
                 .bind(&context.tenant_id)
@@ -2468,93 +2594,6 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         })
     }
 
-    fn list_comments<'a>(
-        &'a self,
-        context: &'a CourseServiceContext,
-        query: CourseQuery,
-    ) -> CourseRepositoryFuture<'a, Vec<CourseCommentItem>> {
-        Box::pin(async move {
-            let limit = query.limit();
-            let offset = query.offset();
-            let status_filter = query.status.as_deref().unwrap_or("visible");
-
-            let comments = sqlx::query_as::<_, CourseCommentItem>(
-                r#"
-                SELECT id, target_id as course_id, author_snapshot as author, content,
-                       moderation_status as status, created_at
-                FROM course_comment
-                WHERE tenant_id = $1 
-                  AND moderation_status = $2
-                  AND deleted_at IS NULL
-                ORDER BY created_at DESC
-                LIMIT $3 OFFSET $4
-                "#,
-            )
-            .bind(&context.tenant_id)
-            .bind(status_filter)
-            .bind(limit)
-            .bind(offset)
-            .fetch_all(self.pool())
-            .await
-            .map_err(sqlx_storage_error)?;
-
-            Ok(comments)
-        })
-    }
-
-    fn moderate_comment<'a>(
-        &'a self,
-        context: &'a CourseServiceContext,
-        comment_id: String,
-        request: CourseCommentModerationRequest,
-    ) -> CourseRepositoryFuture<'a, Vec<CourseCommentItem>> {
-        Box::pin(async move {
-            let now = chrono::Utc::now().to_rfc3339();
-
-            // Update comment moderation status
-            let result = sqlx::query(
-                r#"
-                UPDATE course_comment 
-                SET moderation_status = $1, moderation_note = $2, updated_at = $3,
-                    updated_by = $4, version = version + 1
-                WHERE id = $5 AND tenant_id = $6 AND deleted_at IS NULL
-                "#,
-            )
-            .bind(&request.status)
-            .bind(&request.moderation_note)
-            .bind(&now)
-            .bind(&context.actor_id)
-            .bind(&comment_id)
-            .bind(&context.tenant_id)
-            .execute(self.pool())
-            .await
-            .map_err(sqlx_storage_error)?;
-
-            if result.rows_affected() == 0 {
-                return Err(CourseError::invalid("Comment not found"));
-            }
-
-            // Return updated moderation queue
-            let comments = sqlx::query_as::<_, CourseCommentItem>(
-                r#"
-                SELECT id, target_id as course_id, author_snapshot as author, content,
-                       moderation_status as status, created_at
-                FROM course_comment
-                WHERE tenant_id = $1 
-                  AND moderation_status = 'pending'
-                  AND deleted_at IS NULL
-                ORDER BY created_at DESC
-                "#,
-            )
-            .bind(&context.tenant_id)
-            .fetch_all(self.pool())
-            .await
-            .map_err(sqlx_storage_error)?;
-
-            Ok(comments)
-        })
-    }
-
     fn submit_application<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -2618,8 +2657,8 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Fetch created application
             let application = sqlx::query_as::<_, CourseApplicationItem>(
                 r#"
-                SELECT id, title, category_id as category, application_status as status,
-                       contact_name, created_at as submitted_at, reviewed_at
+                SELECT id, title, category_id as category_id, category_id as category, application_status as status,
+                       applicant_user_id, contact_name, created_at as submitted_at, reviewed_at
                 FROM course_application
                 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 "#,
@@ -2642,22 +2681,25 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         Box::pin(async move {
             let limit = query.limit();
             let offset = query.offset();
-            let status_filter = query.status.as_deref().unwrap_or("submitted");
+            let status_filter = query.status.as_deref().unwrap_or("");
+            let applicant_filter = query.applicant_user_id.as_deref().unwrap_or("");
 
             let applications = sqlx::query_as::<_, CourseApplicationItem>(
                 r#"
-                SELECT id, title, category_id as category, application_status as status,
-                       contact_name, created_at as submitted_at, reviewed_at
+                SELECT id, title, category_id as category_id, category_id as category, application_status as status,
+                       applicant_user_id, contact_name, created_at as submitted_at, reviewed_at
                 FROM course_application
-                WHERE tenant_id = $1 
-                  AND application_status = $2
+                WHERE tenant_id = $1
+                  AND ($2 = '' OR application_status = $2)
+                  AND ($3 = '' OR applicant_user_id = $3)
                   AND deleted_at IS NULL
                 ORDER BY created_at DESC
-                LIMIT $3 OFFSET $4
+                LIMIT $4 OFFSET $5
                 "#,
             )
             .bind(&context.tenant_id)
             .bind(status_filter)
+            .bind(applicant_filter)
             .bind(limit)
             .bind(offset)
             .fetch_all(self.pool())
@@ -2708,8 +2750,8 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Fetch updated application
             let application = sqlx::query_as::<_, CourseApplicationItem>(
                 r#"
-                SELECT id, title, category_id as category, application_status as status,
-                       contact_name, created_at as submitted_at, reviewed_at
+                SELECT id, title, category_id as category_id, category_id as category, application_status as status,
+                       applicant_user_id, contact_name, created_at as submitted_at, reviewed_at
                 FROM course_application
                 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 "#,
@@ -2848,6 +2890,8 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     String,
                     String,
                     String,
+                    String,
+                    String,
                     Option<String>,
                     Option<String>,
                     String,
@@ -2855,7 +2899,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             >(
                 r#"
                 SELECT id, offering_code, title, offering_type, delivery_mode,
-                       start_at, end_at, status
+                       access_mode, access_policy_json, start_at, end_at, status
                 FROM course_offering
                 WHERE course_id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 ORDER BY created_at DESC
@@ -2870,13 +2914,15 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             let items: Vec<Value> = offerings
                 .into_iter()
                 .map(
-                    |(id, code, title, offering_type, delivery_mode, start_at, end_at, status)| {
+                    |(id, code, title, offering_type, delivery_mode, access_mode, policy, start_at, end_at, status)| {
                         serde_json::json!({
                             "id": id,
                             "offeringCode": code,
                             "title": title,
                             "offeringType": offering_type,
                             "deliveryMode": delivery_mode,
+                            "accessMode": access_mode,
+                            "accessPolicyJson": policy,
                             "startAt": start_at,
                             "endAt": end_at,
                             "status": status
@@ -2989,6 +3035,33 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         })
     }
 
+    fn find_offering_scope<'a>(
+        &'a self,
+        offering_id: String,
+    ) -> CourseRepositoryFuture<'a, Option<(String, String)>> {
+        Box::pin(async move {
+            let row = sqlx::query(
+                r#"
+                SELECT tenant_id, organization_id
+                FROM course_offering
+                WHERE id = $1 AND deleted_at IS NULL
+                LIMIT 1
+                "#,
+            )
+            .bind(offering_id)
+            .fetch_optional(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            Ok(row.map(|row| {
+                (
+                    row.try_get::<String, _>("tenant_id").unwrap_or_default(),
+                    row.try_get::<String, _>("organization_id")
+                        .unwrap_or_else(|_| "0".to_owned()),
+                )
+            }))
+        })
+    }
+
     fn list_live_sessions<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -3064,15 +3137,17 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     String,
                     String,
                     String,
-                    String,
                     Option<String>,
                     Option<String>,
+                    Option<String>,
+                    i32,
                     String,
                 ),
             >(
                 r#"
                 SELECT id, title, description, live_status, scheduled_start_at,
-                       scheduled_end_at, actual_start_at, actual_end_at, provider_room_ref, status
+                       scheduled_end_at, actual_start_at, actual_end_at, provider_room_ref,
+                       attendee_count_snapshot, status
                 FROM course_live_session
                 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 "#,
@@ -3094,6 +3169,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     actual_start,
                     actual_end,
                     room_ref,
+                    attendee_count,
                     status,
                 )| {
                     serde_json::json!({
@@ -3106,6 +3182,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                         "actualStartAt": actual_start,
                         "actualEndAt": actual_end,
                         "providerRoomRef": room_ref,
+                        "attendeeCountSnapshot": attendee_count,
                         "status": status
                     })
                 },

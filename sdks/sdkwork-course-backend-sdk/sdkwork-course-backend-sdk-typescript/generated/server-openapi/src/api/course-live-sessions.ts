@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { CourseCommandBody, SdkWorkCommandData, SdkWorkPageData } from '../types';
 
@@ -13,13 +13,13 @@ export class CourseLiveSessionsReplayApi {
 
 
 /** course Live Sessions replay create. */
-  async create(liveSessionId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.post<Record<string, unknown>>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/replay`), body, undefined, undefined, 'application/json');
+  async create(liveSessionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/replay`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Live Sessions replay publish. */
-  async publish(liveSessionId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/replay/publish`), body, undefined, undefined, 'application/json');
+  async publish(liveSessionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/replay/publish`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 }
 
@@ -42,7 +42,7 @@ export class CourseLiveSessionsApi {
 
 
 /** course Live Sessions list. */
-  async list(params?: CourseLiveSessionsListParams): Promise<SdkWorkPageData> {
+  async list(params?: CourseLiveSessionsListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
@@ -50,37 +50,37 @@ export class CourseLiveSessionsApi {
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_live_sessions`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_live_sessions`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** course Live Sessions create. */
-  async create(body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.post<Record<string, unknown>>(backendApiPath(`/course_live_sessions`), body, undefined, undefined, 'application/json');
+  async create(body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_live_sessions`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Live Sessions retrieve. */
-  async retrieve(liveSessionId: string): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}`));
+  async retrieve(liveSessionId: string, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** course Live Sessions update. */
-  async update(liveSessionId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.patch<Record<string, unknown>>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(liveSessionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** course Live Sessions start. */
-  async start(liveSessionId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/start`), body, undefined, undefined, 'application/json');
+  async start(liveSessionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/start`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 
 /** course Live Sessions end. */
-  async end(liveSessionId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/end`), body, undefined, undefined, 'application/json');
+  async end(liveSessionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/end`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 
 /** course Live Sessions cancel. */
-  async cancel(liveSessionId: string, body: CourseCommandBody): Promise<SdkWorkCommandData> {
-    return this.client.post<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/cancel`), body, undefined, undefined, 'application/json');
+  async cancel(liveSessionId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_live_sessions/${serializePathParameter(liveSessionId, { name: 'liveSessionId', style: 'simple', explode: false })}/cancel`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'command' });
   }
 }
 

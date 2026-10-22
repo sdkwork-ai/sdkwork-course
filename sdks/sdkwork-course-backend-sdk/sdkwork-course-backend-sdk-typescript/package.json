@@ -15,7 +15,8 @@
     }
   },
   "dependencies": {
-    "@sdkwork/sdk-common": "^1.0.8"
+    "@sdkwork/sdk-common": "^1.0.8",
+    "@sdkwork/utils": "workspace:*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

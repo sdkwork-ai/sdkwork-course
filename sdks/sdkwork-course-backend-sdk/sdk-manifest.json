@@ -54,7 +54,7 @@
       "transportPackageName": "sdkwork-course-backend-sdk-generated-typescript"
     }
   ],
-  "ownerOnlyOperationCount": 67,
+  "ownerOnlyOperationCount": 69,
   "generator": {
     "package": "@sdkwork/sdk-generator",
     "entrypoint": "../sdkwork-sdk-generator/bin/sdkgen.js"

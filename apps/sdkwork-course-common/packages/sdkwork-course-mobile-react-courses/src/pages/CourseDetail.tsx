@@ -26,6 +26,7 @@ export function CourseDetail() {
 
   const [course, setCourse] = useState<CourseData | null>(null);
   const [curriculum, setCurriculum] = useState<CourseSectionUI[]>([]);
+  const [collectionItems, setCollectionItems] = useState<CourseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -48,6 +49,11 @@ export function CourseDetail() {
       const enrolled = enrollments.some((enrollment) => enrollment.courseId === id);
       setCourse({ ...detail, isPurchased: detail.isPurchased ?? enrolled });
       setCurriculum(sections);
+      if (detail.kind === "collection") {
+        setCollectionItems(await CourseService.getCollectionItems(id).catch(() => []));
+      } else {
+        setCollectionItems([]);
+      }
     } catch (error) {
       if (error instanceof CourseCapabilityUnavailableError) {
         setUnavailable(true);
@@ -200,20 +206,60 @@ export function CourseDetail() {
         </div>
       )}
 
-      <CourseCurriculum
-        courseId={course.id}
-        courseType={course.type ?? "recorded"}
-        isPurchased={Boolean(course.isPurchased)}
-        curriculum={curriculum.map((section) => ({
-          section: section.section,
-          lessons: section.lessons.map((lesson) => ({
-            id: lesson.id,
-            title: lesson.title,
-            free: lesson.free,
-            kind: lesson.kind,
-          })),
-        }))}
-      />
+      {course.kind === "collection" ? (
+        <div className="px-5 py-5 bg-white dark:bg-[#1C1C1E] border-b border-black/5 dark:border-white/5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[15px] font-bold text-text-main">
+              {t("course.collectionItems", "合集包含")}
+            </h2>
+            <span className="text-[11px] text-text-sub">{collectionItems.length} 门课程</span>
+          </div>
+          <ol className="space-y-2.5">
+            {collectionItems.map((item, index) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/course/${item.id}`)}
+                  className="w-full flex items-center gap-3 rounded-xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.03] px-3 py-3 text-left active:bg-black/5 dark:active:bg-white/5"
+                >
+                  <span className="w-7 h-7 shrink-0 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-semibold text-text-main">
+                      {item.title}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-text-sub">
+                      {item.author || item.instructor || "平台讲师"} · {item.totalLessons ?? 0} 课时
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-[11px] font-semibold text-blue-500">进入</span>
+                </button>
+              </li>
+            ))}
+            {collectionItems.length === 0 ? (
+              <li className="rounded-xl border border-dashed border-black/10 dark:border-white/10 px-4 py-6 text-center text-[12px] text-text-sub">
+                合集内容整理中
+              </li>
+            ) : null}
+          </ol>
+        </div>
+      ) : (
+        <CourseCurriculum
+          courseId={course.id}
+          courseType={course.type ?? "recorded"}
+          isPurchased={Boolean(course.isPurchased)}
+          curriculum={curriculum.map((section) => ({
+            section: section.section,
+            lessons: section.lessons.map((lesson) => ({
+              id: lesson.id,
+              title: lesson.title,
+              free: lesson.free,
+              kind: lesson.kind,
+            })),
+          }))}
+        />
+      )}
 
       <div className="px-5 py-5 bg-white dark:bg-[#1C1C1E] border-b border-black/5 dark:border-white/5">
         <h2 className="text-[15px] font-bold text-text-main mb-3">

@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { SdkWorkPageData } from '../types';
 
@@ -21,7 +21,7 @@ export class CourseProgressApi {
 
 
 /** course Progress list. */
-  async list(params?: CourseProgressListParams): Promise<SdkWorkPageData> {
+  async list(params?: CourseProgressListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
@@ -29,12 +29,12 @@ export class CourseProgressApi {
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_progress`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_progress`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** course Progress retrieve. */
-  async retrieve(enrollmentId: string): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/course_enrollments/${serializePathParameter(enrollmentId, { name: 'enrollmentId', style: 'simple', explode: false })}/progress`));
+  async retrieve(enrollmentId: string, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_enrollments/${serializePathParameter(enrollmentId, { name: 'enrollmentId', style: 'simple', explode: false })}/progress`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 

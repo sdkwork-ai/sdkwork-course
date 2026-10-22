@@ -1,125 +1,283 @@
-﻿import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import React from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { CourseCard, PageHeader, LoadingSpinner, EmptyState } from '@sdkwork/sdkwork-course-pc-commons'
-import { useCourseSdk, extractSdkListItems, readEntityString, readEntityNumber } from '@sdkwork/sdkwork-course-pc-core'
+import { useCourseSdk } from '@sdkwork/sdkwork-course-pc-core'
+import {
+  Button,
+  DiscoverCourseCard,
+  CourseGridSkeleton,
+  EmptyState,
+  Notice,
+  SelectField,
+  formatRelativeTime,
+} from '@sdkwork/sdkwork-course-pc-commons'
+import { mapCourse, readPageItems, readPageTotal } from './courseModel'
 
-interface Course {
-  id: string
-  courseCode: string
-  title: string
-  description?: string
-  thumbnail?: string
-  instructor?: string
-  lessonsCount: number
-  studentsCount: number
-  ratingScore: string
-  category?: string
-  tags: string[]
-  status: string
+const KIND_OPTIONS = [
+  { value: '', label: '全部课程' },
+  { value: 'standard', label: '体系课程' },
+  { value: 'column', label: '专栏' },
+  { value: 'collection', label: '合集' },
+]
+
+const LEVEL_OPTIONS = [
+  { value: '', label: '全部难度' },
+  { value: 'beginner', label: '入门' },
+  { value: 'intermediate', label: '进阶' },
+  { value: 'advanced', label: '高级' },
+  { value: 'all', label: '不限' },
+]
+
+const PAGE_SIZE = 12
+
+const KIND_TITLES: Record<string, string> = {
+  '': '课程中心',
+  standard: '体系课程',
+  column: '专栏',
+  collection: '合集',
 }
 
-function mapCourse(record: Record<string, unknown>): Course {
-  return {
-    id: readEntityString(record, 'id', 'courseId'),
-    courseCode: readEntityString(record, 'courseCode', 'course_code'),
-    title: readEntityString(record, 'title', 'name'),
-    description: readEntityString(record, 'description', 'summary') || undefined,
-    thumbnail: readEntityString(record, 'thumbnail', 'cover', 'coverUrl') || undefined,
-    instructor: readEntityString(record, 'instructor', 'instructorName') || undefined,
-    lessonsCount: readEntityNumber(record, 'lessonsCount', 'lessons_count') ?? 0,
-    studentsCount: readEntityNumber(record, 'studentsCount', 'students_count', 'students') ?? 0,
-    ratingScore: readEntityString(record, 'ratingScore', 'rating', 'rating_score') || '0',
-    category: readEntityString(record, 'category', 'categoryId') || undefined,
-    tags: Array.isArray(record.tags) ? (record.tags as string[]) : [],
-    status: readEntityString(record, 'status') || 'draft',
-  }
+export interface CourseListPageProps {
+  /** Render inside a host surface (SDKWork plugin, IM) instead of the standalone shell. */
+  embedded?: boolean
 }
 
-export function CourseListPage() {
+export function CourseListPage({ embedded = false }: CourseListPageProps) {
   const navigate = useNavigate()
   const sdk = useCourseSdk()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['courses', searchQuery, selectedCategory],
-    queryFn: async () => {
-      const params: Record<string, string> = {}
-      if (searchQuery) params.q = searchQuery
-      if (selectedCategory) params.category = selectedCategory
-      return sdk.courses.list(params)
-    },
+  const kind = searchParams.get('kind') ?? ''
+  const category = searchParams.get('category') ?? ''
+  const level = searchParams.get('level') ?? ''
+  const q = searchParams.get('q') ?? ''
+  const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1)
+
+  const updateParam = (key: string, nextValue: string) => {
+    const next = new URLSearchParams(searchParams)
+    if (nextValue) next.set(key, nextValue)
+    else next.delete(key)
+    if (key !== 'page') next.delete('page')
+    setSearchParams(next, { replace: true })
+  }
+
+  const coursesQuery = useQuery({
+    queryKey: ['courses', kind, category, level, q, page],
+    queryFn: () =>
+      sdk.courses.list({
+        kind: kind || undefined,
+        category: category || undefined,
+        level: level || undefined,
+        q: q || undefined,
+        page,
+        pageSize: PAGE_SIZE,
+      }),
+    placeholderData: (previous) => previous,
   })
 
-  const courses = extractSdkListItems(data).map(mapCourse)
+  const categoryQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => sdk.courseCategories.list({ pageSize: 50 }),
+    staleTime: 5 * 60 * 1000,
+  })
 
-  if (isLoading) {
-    return <LoadingSpinner text="加载课程中..." />
-  }
+  const courses = readPageItems(coursesQuery.data).map(mapCourse)
+  const total = readPageTotal(coursesQuery.data)
+  const categories = readPageItems(categoryQuery.data)
+    .map((value) => {
+      const record = value as Record<string, unknown>
+      return { id: String(record.id ?? ''), name: String(record.name ?? '未命名分类') }
+    })
+    .filter((item) => item.id)
 
-  if (error) {
-    return (
-      <EmptyState
-        icon="❌"
-        title="加载失败"
-        description="无法加载课程列表，请稍后再试"
-      />
-    )
-  }
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const hasActiveFilter = Boolean(kind || category || level || q)
+  const title = KIND_TITLES[kind] ?? '课程中心'
 
   return (
-    <div>
-      <PageHeader
-        title="课程中心"
-        subtitle="探索我们的精品课程"
-      />
+    <div className="space-y-4 pb-8">
+      <nav className="flex items-center gap-2 text-xs font-medium text-slate-400">
+        <button type="button" onClick={() => navigate('/')} className="hover:text-slate-700">
+          首页
+        </button>
+        <span>/</span>
+        <span className="text-slate-600">{title}</span>
+      </nav>
 
-      <div className="mb-6 flex gap-4">
-        <input
-          type="text"
-          placeholder="搜索课程..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 dark:placeholder-zinc-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-4 py-2 border border-gray-300 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">所有分类</option>
-          <option value="programming">编程开发</option>
-          <option value="design">设计创意</option>
-          <option value="business">商业管理</option>
-          <option value="language">语言学习</option>
-        </select>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-2">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>
+          <p className="mt-0.5 text-xs text-slate-500">
+            找到适合你的学习路径，按章节学习并记录进度。
+          </p>
+        </div>
+        {total > 0 ? <span className="text-xs text-slate-400">共 {total} 个内容</span> : null}
       </div>
 
-      {courses.length === 0 ? (
-        <EmptyState
-          icon="📚"
-          title="暂无课程"
-          description="没有找到符合条件的课程"
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {courses.map((course) => (
-            <CourseCard
-              key={course.id}
-              id={course.id}
-              title={course.title}
-              description={course.description}
-              thumbnail={course.thumbnail}
-              instructor={course.instructor}
-              lessonsCount={course.lessonsCount}
-              studentsCount={course.studentsCount}
-              rating={course.ratingScore}
-              onClick={(id) => navigate(`/courses/${id}`)}
-            />
+      <section className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-1">
+          {['', 'standard', 'column', 'collection'].map((value) => (
+            <button
+              key={value || 'all'}
+              type="button"
+              onClick={() => updateParam('kind', value)}
+              className={
+                kind === value
+                  ? 'h-9 border-b-2 border-indigo-600 px-3 text-[13px] font-semibold text-indigo-600'
+                  : 'h-9 border-b-2 border-transparent px-3 text-[13px] font-semibold text-slate-500 transition hover:text-slate-900'
+              }
+            >
+              {KIND_OPTIONS.find((option) => option.value === value)?.label}
+            </button>
           ))}
         </div>
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_160px_150px] lg:w-[600px]">
+          <label className="relative block">
+            <span className="sr-only">搜索课程</span>
+            <svg
+              viewBox="0 0 24 24"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+            </svg>
+            <input
+              value={q}
+              onChange={(event) => updateParam('q', event.target.value)}
+              placeholder="搜索课程、专栏或合集"
+              className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+            />
+          </label>
+          <SelectField
+            aria-label="按分类筛选"
+            value={category}
+            onChange={(event) => updateParam('category', event.target.value)}
+            className="h-9 rounded-lg text-[13px]"
+            options={[
+              { value: '', label: '全部分类' },
+              ...categories.map((item) => ({ value: item.id, label: item.name })),
+            ]}
+          />
+          <SelectField
+            aria-label="按难度筛选"
+            value={level}
+            onChange={(event) => updateParam('level', event.target.value)}
+            className="h-9 rounded-lg text-[13px]"
+            options={LEVEL_OPTIONS}
+          />
+        </div>
+      </section>
+
+      {hasActiveFilter ? (
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span>当前筛选：</span>
+          {kind ? <FilterChip label={KIND_OPTIONS.find((item) => item.value === kind)?.label ?? kind} onClear={() => updateParam('kind', '')} /> : null}
+          {category ? <FilterChip label={categories.find((item) => item.id === category)?.name ?? category} onClear={() => updateParam('category', '')} /> : null}
+          {level ? <FilterChip label={LEVEL_OPTIONS.find((item) => item.value === level)?.label ?? level} onClear={() => updateParam('level', '')} /> : null}
+          {q ? <FilterChip label={`关键词：${q}`} onClear={() => updateParam('q', '')} /> : null}
+          <button
+            type="button"
+            onClick={() => setSearchParams(new URLSearchParams(), { replace: true })}
+            className="font-semibold text-indigo-600 hover:text-indigo-700"
+          >
+            清除全部
+          </button>
+        </div>
+      ) : null}
+
+      {coursesQuery.error ? (
+        <Notice tone="error" title="课程列表加载失败">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>请稍后再试，或检查网络连接。</span>
+            <Button size="sm" onClick={() => void coursesQuery.refetch()}>
+              重试
+            </Button>
+          </div>
+        </Notice>
+      ) : coursesQuery.isLoading ? (
+        <CourseGridSkeleton count={8} />
+      ) : courses.length === 0 ? (
+        <EmptyState
+          icon="🔍"
+          title="没有找到匹配的内容"
+          description={hasActiveFilter ? '试试调整筛选条件，或清除全部筛选。' : '课程正在准备中，请稍后再来。'}
+        />
+      ) : (
+        <>
+          <div
+            className={embedded ? 'grid gap-4' : 'grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5'}
+            style={
+              embedded
+                ? { gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }
+                : undefined
+            }
+          >
+            {courses.map((course) => (
+              <DiscoverCourseCard
+                key={course.id}
+                id={course.id}
+                title={course.title}
+                cover={course.thumbnail}
+                kind={course.kind}
+                lessonsCount={course.lessonsCount}
+                studentsCount={course.studentsCount}
+                durationSeconds={course.durationSeconds}
+                author={course.author}
+                dateText={
+                  course.publishedAt || course.updatedAt
+                    ? formatRelativeTime(course.publishedAt ?? course.updatedAt)
+                    : undefined
+                }
+                priceAmount={course.priceAmount}
+                isFree={course.isFree}
+                currency={course.currency}
+                onClick={(id) =>
+                  navigate(
+                    course.kind === 'collection' ? `/courses/${id}` : `/courses/${id}/play`,
+                  )
+                }
+              />
+            ))}
+          </div>
+          {totalPages > 1 ? (
+            <nav className="flex items-center justify-center gap-2 pt-2" aria-label="分页">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => updateParam('page', String(page - 1))}
+              >
+                上一页
+              </Button>
+              <span className="px-3 text-sm text-slate-500">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => updateParam('page', String(page + 1))}
+              >
+                下一页
+              </Button>
+            </nav>
+          ) : null}
+        </>
       )}
     </div>
+  )
+}
+
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 font-medium text-slate-600">
+      {label}
+      <button type="button" onClick={onClear} aria-label={`移除筛选 ${label}`} className="text-slate-400 hover:text-slate-700">
+        ×
+      </button>
+    </span>
   )
 }

@@ -8,7 +8,7 @@ use crate::db::schema::COURSE_TABLES;
 use sdkwork_content_course_service::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
     CourseAuditCommand, CourseAuditLogItem, CourseCatalogCommand, CourseCategoryItem,
-    CourseCommentItem, CourseCommentModerationRequest, CourseEnrollmentCommand, CourseError,
+    CourseEnrollmentCommand, CourseError,
     CourseItem, CourseLessonCommand, CourseLessonItem, CourseLessonProgressCommand,
     CourseLiveSessionCommand, CourseOfferingCommand, CoursePage, CourseQuery, CourseResult,
     CourseSectionItem, CourseServiceContext,
@@ -208,19 +208,6 @@ pub trait CourseSqlxRepositoryPort {
         command: CourseLessonProgressCommand,
     ) -> CourseRepositoryFuture<'a, ()>;
 
-    fn list_comments<'a>(
-        &'a self,
-        context: &'a CourseServiceContext,
-        query: CourseQuery,
-    ) -> CourseRepositoryFuture<'a, Vec<CourseCommentItem>>;
-
-    fn moderate_comment<'a>(
-        &'a self,
-        context: &'a CourseServiceContext,
-        comment_id: String,
-        request: CourseCommentModerationRequest,
-    ) -> CourseRepositoryFuture<'a, Vec<CourseCommentItem>>;
-
     fn submit_application<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -275,6 +262,11 @@ pub trait CourseSqlxRepositoryPort {
         context: &'a CourseServiceContext,
         offering_id: String,
     ) -> CourseRepositoryFuture<'a, ()>;
+
+    fn find_offering_scope<'a>(
+        &'a self,
+        offering_id: String,
+    ) -> CourseRepositoryFuture<'a, Option<(String, String)>>;
 
     fn list_live_sessions<'a>(
         &'a self,

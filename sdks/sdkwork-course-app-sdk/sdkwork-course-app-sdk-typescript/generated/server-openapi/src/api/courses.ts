@@ -6,10 +6,11 @@ import type { SdkWorkPageData } from '../types';
 
 export interface CoursesListParams {
   q?: string;
-  cursor?: string;
   page?: number;
   pageSize?: number;
-  status?: string;
+  category?: string;
+  level?: string;
+  kind?: string;
 }
 
 export class CoursesApi {
@@ -24,10 +25,11 @@ export class CoursesApi {
   async list(params?: CoursesListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
-      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
-      { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
+      { name: 'category', value: params?.category, style: 'form', explode: true, allowReserved: false },
+      { name: 'level', value: params?.level, style: 'form', explode: true, allowReserved: false },
+      { name: 'kind', value: params?.kind, style: 'form', explode: true, allowReserved: false },
     ]);
     return this.client.request<SdkWorkPageData>(appendQueryString(appApiPath(`/courses`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }

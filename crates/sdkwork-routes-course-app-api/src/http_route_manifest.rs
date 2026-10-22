@@ -1,7 +1,14 @@
-use sdkwork_web_contract::HttpMethod;
+use sdkwork_web_contract::{HttpMethod, RouteAuth};
 use sdkwork_web_core::{HttpRoute, HttpRouteManifest};
 
 const HTTP_ROUTES: &[HttpRoute] = &[
+    HttpRoute::new(
+        HttpMethod::Post,
+        "/app/v3/api/course_entitlements/grant",
+        "course",
+        "courseEntitlements.grant",
+        RouteAuth::Public,
+    ),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/app/v3/api/course_categories",
@@ -142,21 +149,9 @@ const HTTP_ROUTES: &[HttpRoute] = &[
     ),
     HttpRoute::dual_token(
         HttpMethod::Get,
-        "/app/v3/api/courses/{courseId}/comments",
+        "/app/v3/api/courses/{courseId}/engagement",
         "course",
-        "courseComments.list",
-    ),
-    HttpRoute::dual_token(
-        HttpMethod::Post,
-        "/app/v3/api/courses/{courseId}/comments",
-        "course",
-        "courseComments.create",
-    ),
-    HttpRoute::dual_token(
-        HttpMethod::Delete,
-        "/app/v3/api/course_comments/{commentId}",
-        "course",
-        "courseComments.delete",
+        "courseEngagement.retrieve",
     ),
     HttpRoute::dual_token(
         HttpMethod::Put,
@@ -187,6 +182,60 @@ const HTTP_ROUTES: &[HttpRoute] = &[
         "/app/v3/api/course_applications/{applicationId}",
         "course",
         "courseApplications.retrieve",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/app/v3/api/courses/{courseId}/curriculum",
+        "course",
+        "courseCurriculum.retrieve",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/app/v3/api/courses/{courseId}/items",
+        "course",
+        "courseCollectionItems.list",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/app/v3/api/studio/courses",
+        "course",
+        "studioCourses.list",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Post,
+        "/app/v3/api/studio/courses",
+        "course",
+        "studioCourses.create",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/app/v3/api/studio/courses/{courseId}",
+        "course",
+        "studioCourses.retrieve",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Put,
+        "/app/v3/api/studio/courses/{courseId}",
+        "course",
+        "studioCourses.update",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Delete,
+        "/app/v3/api/studio/courses/{courseId}",
+        "course",
+        "studioCourses.delete",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Post,
+        "/app/v3/api/studio/courses/{courseId}/submit",
+        "course",
+        "studioCourses.submit",
+    ),
+    HttpRoute::dual_token(
+        HttpMethod::Post,
+        "/app/v3/api/studio/courses/{courseId}/withdraw",
+        "course",
+        "studioCourses.withdraw",
     ),
 ];
 

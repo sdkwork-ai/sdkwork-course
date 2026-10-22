@@ -30,6 +30,10 @@ capabilities:
       - reaction
       - application
       - audit
+      - review
+      - collection_link
+      - studio_authoring
+      - curriculum
     requiredLayers:
       - kind: contracts
         path: sdks/_shared/course-contracts

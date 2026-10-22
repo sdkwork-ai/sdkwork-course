@@ -15,3 +15,8 @@ export {
   getCourseRuntimePort,
   isCourseRuntimePortBound,
 } from "./services/courseRuntimePort";
+export {
+  configureCommentsRuntime,
+  getCommentsRuntimeClient,
+} from "./services/commentsRuntime";
+export type { CommentsRuntimeConfig } from "./services/commentsRuntime";

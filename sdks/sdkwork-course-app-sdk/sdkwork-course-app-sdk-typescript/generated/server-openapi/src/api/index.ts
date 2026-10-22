@@ -10,6 +10,10 @@ export { CourseLessonResourcesApi, createCourseLessonResourcesApi } from './cour
 export { CourseProgressApi, createCourseProgressApi } from './course-progress';
 export { CourseLessonProgressApi, createCourseLessonProgressApi } from './course-lesson-progress';
 export { CourseLiveSessionsApi, createCourseLiveSessionsApi } from './course-live-sessions';
-export { CourseCommentsApi, createCourseCommentsApi } from './course-comments';
+export { CourseEngagementApi, createCourseEngagementApi } from './course-engagement';
 export { CourseReactionsApi, createCourseReactionsApi } from './course-reactions';
 export { CourseApplicationsApi, createCourseApplicationsApi } from './course-applications';
+export { CourseCurriculumApi, createCourseCurriculumApi } from './course-curriculum';
+export { CourseCollectionItemsApi, createCourseCollectionItemsApi } from './course-collection-items';
+export { StudioCoursesApi, createStudioCoursesApi } from './studio-courses';
+export { CourseEntitlementsApi, createCourseEntitlementsApi } from './course-entitlements';

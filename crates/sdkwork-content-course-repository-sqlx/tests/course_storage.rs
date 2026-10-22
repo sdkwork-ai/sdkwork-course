@@ -13,6 +13,7 @@ fn optional_postgres_database_url() -> Option<String> {
 fn course_repository_schema_lists_the_professional_course_tables() {
     assert_eq!(COURSE_TABLES.len(), 15);
     assert!(COURSE_TABLES.contains(&"course_catalog"));
+    assert!(COURSE_TABLES.contains(&"course_catalog_link"));
     assert!(COURSE_TABLES.contains(&"course_offering"));
     assert!(COURSE_TABLES.contains(&"course_live_session"));
     assert!(COURSE_TABLES.contains(&"course_learning_progress"));
@@ -50,6 +51,6 @@ async fn course_repository_applies_the_database_baseline_schema() {
         .await
         .expect("course table count");
 
-    assert_eq!(table_count, 15);
-    assert_eq!(repository.table_names().len(), 15);
+    assert_eq!(table_count, 16);
+    assert_eq!(repository.table_names().len(), 16);
 }

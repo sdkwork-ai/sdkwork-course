@@ -11,8 +11,8 @@ export { CourseLiveSessionsApi, createCourseLiveSessionsApi } from './course-liv
 export { CourseEnrollmentsApi, createCourseEnrollmentsApi } from './course-enrollments';
 export { CourseProgressApi, createCourseProgressApi } from './course-progress';
 export { CourseLessonProgressApi, createCourseLessonProgressApi } from './course-lesson-progress';
-export { CourseCommentsApi, createCourseCommentsApi } from './course-comments';
 export { CourseReactionsApi, createCourseReactionsApi } from './course-reactions';
 export { CourseApplicationsApi, createCourseApplicationsApi } from './course-applications';
 export { CourseReportsApi, createCourseReportsApi } from './course-reports';
 export { CourseAuditLogsApi, createCourseAuditLogsApi } from './course-audit-logs';
+export { CourseReviewsApi, createCourseReviewsApi } from './course-reviews';

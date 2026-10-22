@@ -61,17 +61,17 @@ assert.equal(
 
 assert.match(
   backendSdkCourses,
-  /create\(body: CourseCommandBody\): Promise<Record<string, unknown>>/u,
+  /create\(body: CourseCommandBody(?:, requestOptions\?: ApiRequestOptions)?\): Promise<Record<string, unknown>>/u,
   'regenerated backend SDK must expose CourseCommandBody create API',
 );
 
-assert.equal(backendManifest.routes.length, 67, 'backend route manifest must expose 67 operations');
+assert.equal(backendManifest.routes.length, 69, 'backend route manifest must expose 69 operations');
 
 const backendOperationCount = Object.values(backendOpenApi.paths ?? {}).reduce(
   (count, pathItem) => count + Object.keys(pathItem).length,
   0,
 );
-assert.equal(backendOperationCount, 67, 'backend OpenAPI must expose 67 HTTP operations');
+assert.equal(backendOperationCount, 69, 'backend OpenAPI must expose 69 HTTP operations');
 
 assert.match(
   gatewayAssembly,

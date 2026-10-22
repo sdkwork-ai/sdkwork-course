@@ -83,8 +83,26 @@ CREATE TABLE IF NOT EXISTS course_catalog (
   external_source_id TEXT,
   body_content TEXT,
   price_amount TEXT,
+  original_price_amount TEXT,
   currency TEXT,
+  is_free INTEGER NOT NULL DEFAULT 1,
   is_collection INTEGER NOT NULL DEFAULT 0,
+  -- Content shape owned by the course center:
+  --   standard   -> chapter (course_section) + lesson curriculum
+  --   column     -> serialized column; lessons may be flat articles/videos
+  --   collection -> ordered bundle of published courses (course_catalog_link)
+  course_kind TEXT NOT NULL DEFAULT 'standard',
+  -- UGC ownership. Official catalog content leaves this NULL.
+  author_user_id TEXT,
+  author_display_name TEXT,
+  -- Review workflow. publish_status='reviewing' means the author submitted the
+  -- current draft; review_note carries the operator's latest decision note so a
+  -- rejected draft can be explained without a second table.
+  review_note TEXT,
+  submitted_at TEXT,
+  reviewed_at TEXT,
+  reviewed_by TEXT,
+  review_round INTEGER NOT NULL DEFAULT 0,
   visibility TEXT NOT NULL DEFAULT 'tenant',
   publish_status TEXT NOT NULL DEFAULT 'draft',
   published_at TEXT,
@@ -332,31 +350,6 @@ CREATE TABLE IF NOT EXISTS course_lesson_progress (
   UNIQUE (tenant_id, offering_id, lesson_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS course_comment (
-  id TEXT PRIMARY KEY,
-  uuid TEXT NOT NULL UNIQUE,
-  tenant_id TEXT NOT NULL,
-  organization_id TEXT NOT NULL DEFAULT '0',
-  target_type TEXT NOT NULL,
-  target_id TEXT NOT NULL,
-  parent_id TEXT,
-  author_user_id TEXT NOT NULL,
-  author_snapshot TEXT,
-  content TEXT NOT NULL,
-  content_format TEXT NOT NULL DEFAULT 'plain',
-  moderation_status TEXT NOT NULL,
-  moderation_note TEXT,
-  like_count_snapshot INTEGER NOT NULL DEFAULT 0,
-  status TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  created_by TEXT,
-  updated_at TEXT NOT NULL,
-  updated_by TEXT,
-  version INTEGER NOT NULL DEFAULT 0,
-  deleted_at TEXT,
-  deleted_by TEXT
-);
-
 CREATE TABLE IF NOT EXISTS course_reaction (
   id TEXT PRIMARY KEY,
   uuid TEXT NOT NULL UNIQUE,
@@ -452,6 +445,12 @@ CREATE INDEX IF NOT EXISTS idx_course_catalog_category_status
   ON course_catalog (tenant_id, organization_id, category_id, publish_status, updated_at);
 CREATE INDEX IF NOT EXISTS idx_course_catalog_visibility_status
   ON course_catalog (tenant_id, organization_id, visibility, publish_status);
+CREATE INDEX IF NOT EXISTS idx_course_catalog_review_queue
+  ON course_catalog (tenant_id, organization_id, publish_status, submitted_at);
+CREATE INDEX IF NOT EXISTS idx_course_catalog_author
+  ON course_catalog (tenant_id, author_user_id, updated_at);
+CREATE INDEX IF NOT EXISTS idx_course_catalog_kind_status
+  ON course_catalog (tenant_id, organization_id, course_kind, publish_status);
 CREATE INDEX IF NOT EXISTS idx_course_offering_course_status
   ON course_offering (course_id, status, start_at);
 CREATE INDEX IF NOT EXISTS idx_course_section_course_sort
@@ -468,10 +467,10 @@ CREATE INDEX IF NOT EXISTS idx_course_learning_progress_user
   ON course_learning_progress (tenant_id, user_id, progress_status, last_activity_at);
 CREATE INDEX IF NOT EXISTS idx_course_lesson_progress_live
   ON course_lesson_progress (live_session_id, progress_status);
-CREATE INDEX IF NOT EXISTS idx_course_comment_target
-  ON course_comment (target_type, target_id, moderation_status, created_at);
 CREATE INDEX IF NOT EXISTS idx_course_reaction_target
   ON course_reaction (target_type, target_id, reaction_type, status);
+CREATE INDEX IF NOT EXISTS idx_course_catalog_link_course
+  ON course_catalog_link (course_id, link_type, sort_order);
 CREATE INDEX IF NOT EXISTS idx_course_application_status
   ON course_application (tenant_id, organization_id, application_status, created_at);
 CREATE INDEX IF NOT EXISTS idx_course_audit_target

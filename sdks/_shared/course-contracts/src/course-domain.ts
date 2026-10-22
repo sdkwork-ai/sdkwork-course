@@ -12,11 +12,22 @@ export const COURSE_TABLE_NAMES = [
   "course_lesson_progress",
   "course_comment",
   "course_reaction",
+  "course_catalog_link",
   "course_application",
   "course_audit_log",
 ] as const;
 
 export type CourseDatabaseTableName = (typeof COURSE_TABLE_NAMES)[number];
+
+export const COURSE_KINDS = ["standard", "column", "collection"] as const;
+export type CourseKind = (typeof COURSE_KINDS)[number];
+
+export const COURSE_REVIEW_DECISIONS = [
+  "approve",
+  "reject",
+  "request_changes",
+] as const;
+export type CourseReviewDecision = (typeof COURSE_REVIEW_DECISIONS)[number];
 
 export const COURSE_OFFERING_TYPES = ["vod", "live", "blended", "cohort"] as const;
 export type CourseOfferingType = (typeof COURSE_OFFERING_TYPES)[number];

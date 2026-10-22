@@ -72,12 +72,19 @@ function mapCourseCatalog(record: Record<string, unknown>): CourseCatalog {
     description: firstString(record, "description", "summary"),
     thumbnail: firstString(record, "thumbnail", "cover", "coverUrl"),
     instructor: firstString(record, "instructor", "instructorName"),
+    author: firstString(record, "authorDisplayName", "author_display_name"),
     lessonsCount: firstNumber(record, "lessonsCount", "lessons_count"),
     studentsCount: firstNumber(record, "studentsCount", "students_count", "students"),
     ratingScore: firstString(record, "ratingScore", "rating", "rating_score"),
     type: firstString(record, "type", "offeringType") as CourseCatalog["type"],
+    kind: firstString(record, "kind", "courseKind", "course_kind"),
     liveStatus: firstString(record, "liveStatus", "live_status", "status") as CourseCatalog["liveStatus"],
     price: firstNumber(record, "price", "listPrice", "list_price"),
+    priceAmount: firstString(record, "priceAmount", "price_amount"),
+    isFree:
+      record.isFree === undefined && record.is_free === undefined
+        ? undefined
+        : Boolean(record.isFree ?? record.is_free),
     originalPrice: firstNumber(record, "originalPrice", "original_price"),
     isPurchased: record.isPurchased === undefined ? undefined : Boolean(record.isPurchased),
   };
@@ -155,18 +162,6 @@ function mapCourseLearningProgress(record: Record<string, unknown>): CourseLearn
   };
 }
 
-function mapCourseComment(record: Record<string, unknown>): CourseComment {
-  return {
-    id: String(record.id ?? record.commentId ?? ""),
-    courseId: firstString(record, "courseId", "course_id"),
-    targetType: firstString(record, "targetType", "target_type") as CourseComment["targetType"],
-    targetId: firstString(record, "targetId", "target_id"),
-    author: firstString(record, "author", "authorName", "userName"),
-    content: firstString(record, "content", "body", "text") ?? "",
-    createdAt: firstString(record, "createdAt", "created_at") ?? new Date().toISOString(),
-  };
-}
-
 function mapCourseReaction(record: Record<string, unknown>): CourseReaction {
   return {
     id: firstString(record, "id", "reactionId"),
@@ -193,9 +188,11 @@ export function createGeneratedCourseAppSdkPort(client: SdkworkAppClient): Cours
           params
             ? {
                 q: params.q,
+                category: params.categoryId,
+                kind: params.kind,
+                level: params.level,
                 page: params.page,
                 pageSize: params.pageSize,
-                status: params.status,
               }
             : undefined,
         );
@@ -204,6 +201,10 @@ export function createGeneratedCourseAppSdkPort(client: SdkworkAppClient): Cours
       async retrieve(courseId) {
         const payload = await client.courses.retrieve(courseId);
         return mapCourseCatalog(payload as Record<string, unknown>);
+      },
+      async collectionItems(courseId) {
+        const payload = await client.courseCollectionItems.list(courseId, { pageSize: 50 });
+        return listItems(payload).map(mapCourseCatalog);
       },
     },
     offerings: {
@@ -309,20 +310,6 @@ export function createGeneratedCourseAppSdkPort(client: SdkworkAppClient): Cours
           id: payload.resourceId ?? liveSessionId,
           status: payload.status,
         } as unknown as Record<string, unknown>);
-      },
-    },
-    comments: {
-      async list(courseId) {
-        const payload = await client.courseComments.list(courseId);
-        return listItems(payload).map(mapCourseComment);
-      },
-      async create(courseId, command) {
-        const payload = await client.courseComments.create(courseId, {
-          targetType: command.targetType,
-          targetId: command.targetId,
-          content: command.content,
-        });
-        return mapCourseComment(payload as Record<string, unknown>);
       },
     },
     reactions: {

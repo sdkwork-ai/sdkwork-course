@@ -1,4 +1,5 @@
 export { ConsoleCourse } from './ConsoleCourse';
+export { CourseAdminConsole } from './CourseAdminConsole';
 export {
   configureCourseConsolePcHost,
   getCourseConsolePcHost,
@@ -13,6 +14,8 @@ export {
   type ConsoleCourseLessonItem,
   type ConsoleCourseListResult,
   type ConsoleCourseSectionItem,
+  type ConsoleReviewDetail,
+  type ConsoleReviewStats,
   type CreateConsoleCourseCategoryInput,
   type CreateConsoleCourseInput,
   type CreateConsoleCourseLessonInput,

@@ -52,6 +52,58 @@ export function resetCourseAppSdkClient(): void {
   courseAppSdkClient = null;
 }
 
+export interface CourseEngagement {
+  courseId: string;
+  likes: number;
+  favorites: number;
+  shares: number;
+  discussions: number;
+  viewer: {
+    liked: boolean;
+    favorited: boolean;
+    shared: boolean;
+  };
+}
+
+function readEngagementNumber(record: Record<string, unknown>, key: string): number {
+  const value = record[key];
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+/** Read persisted course engagement counters and the current viewer's reactions. */
+export async function retrieveCourseEngagement(
+  courseId: string,
+  client: CourseAppSdkClient = getCourseAppSdkClient(),
+): Promise<CourseEngagement> {
+  const response = await client.courseEngagement.retrieve(courseId);
+  const data = response as Record<string, unknown>;
+  const payload =
+    data && typeof data === 'object' && 'item' in data && typeof data.item === 'object'
+      ? (data.item as Record<string, unknown>)
+      : data;
+  const viewer =
+    payload.viewer && typeof payload.viewer === 'object'
+      ? (payload.viewer as Record<string, unknown>)
+      : {};
+  return {
+    courseId,
+    likes: readEngagementNumber(payload, 'likes'),
+    favorites: readEngagementNumber(payload, 'favorites'),
+    shares: readEngagementNumber(payload, 'shares'),
+    discussions: readEngagementNumber(payload, 'discussions'),
+    viewer: {
+      liked: viewer.liked === true,
+      favorited: viewer.favorited === true,
+      shared: viewer.shared === true,
+    },
+  };
+}
+
 /** @deprecated Use getCourseAppSdkClient() — kept for transitional imports. */
 export const createCourseSdk = getCourseAppSdkClient;
 export type CourseSdk = CourseAppSdkClient;

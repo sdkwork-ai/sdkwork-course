@@ -12,9 +12,13 @@ import { CourseLessonResourcesApi, createCourseLessonResourcesApi } from './api/
 import { CourseProgressApi, createCourseProgressApi } from './api/course-progress';
 import { CourseLessonProgressApi, createCourseLessonProgressApi } from './api/course-lesson-progress';
 import { CourseLiveSessionsApi, createCourseLiveSessionsApi } from './api/course-live-sessions';
-import { CourseCommentsApi, createCourseCommentsApi } from './api/course-comments';
+import { CourseEngagementApi, createCourseEngagementApi } from './api/course-engagement';
 import { CourseReactionsApi, createCourseReactionsApi } from './api/course-reactions';
 import { CourseApplicationsApi, createCourseApplicationsApi } from './api/course-applications';
+import { CourseCurriculumApi, createCourseCurriculumApi } from './api/course-curriculum';
+import { CourseCollectionItemsApi, createCourseCollectionItemsApi } from './api/course-collection-items';
+import { StudioCoursesApi, createStudioCoursesApi } from './api/studio-courses';
+import { CourseEntitlementsApi, createCourseEntitlementsApi } from './api/course-entitlements';
 
 export class SdkworkAppClient {
   private httpClient: HttpClient;
@@ -29,9 +33,13 @@ export class SdkworkAppClient {
   public readonly courseProgress: CourseProgressApi;
   public readonly courseLessonProgress: CourseLessonProgressApi;
   public readonly courseLiveSessions: CourseLiveSessionsApi;
-  public readonly courseComments: CourseCommentsApi;
+  public readonly courseEngagement: CourseEngagementApi;
   public readonly courseReactions: CourseReactionsApi;
   public readonly courseApplications: CourseApplicationsApi;
+  public readonly courseCurriculum: CourseCurriculumApi;
+  public readonly courseCollectionItems: CourseCollectionItemsApi;
+  public readonly studioCourses: StudioCoursesApi;
+  public readonly courseEntitlements: CourseEntitlementsApi;
 
   constructor(config: SdkworkAppConfig) {
     this.httpClient = createHttpClient(config);
@@ -55,11 +63,19 @@ export class SdkworkAppClient {
 
     this.courseLiveSessions = createCourseLiveSessionsApi(this.httpClient);
 
-    this.courseComments = createCourseCommentsApi(this.httpClient);
+    this.courseEngagement = createCourseEngagementApi(this.httpClient);
 
     this.courseReactions = createCourseReactionsApi(this.httpClient);
 
     this.courseApplications = createCourseApplicationsApi(this.httpClient);
+
+    this.courseCurriculum = createCourseCurriculumApi(this.httpClient);
+
+    this.courseCollectionItems = createCourseCollectionItemsApi(this.httpClient);
+
+    this.studioCourses = createStudioCoursesApi(this.httpClient);
+
+    this.courseEntitlements = createCourseEntitlementsApi(this.httpClient);
   }
   setAuthToken(token: string): this {
     this.httpClient.setAuthToken(token);

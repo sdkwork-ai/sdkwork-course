@@ -15,6 +15,7 @@
   },
   "backend": {
     "profileKey": "backend-root-admin",
+    "appId": "sdkwork-course",
     "accessTokenPermissionScope": [
       "iam.users.read",
       "iam.organizations.read",

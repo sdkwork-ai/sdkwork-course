@@ -19,13 +19,26 @@ export type DriveAppSdkClient = SdkworkDriveAppClient;
 export type DriveAppSdkClientConfig = SdkworkAppConfig;
 
 let driveAppSdkClient: DriveAppSdkClient | null = null;
+let driveApiBaseUrl: string | null = null;
+
+/**
+ * Point Drive uploads at the same SDKWork gateway as the host course client.
+ * Embedded hosts serve the course surface from an app-protocol origin, so the
+ * standalone `window.location.origin` resolution is not usable there.
+ */
+export function configureCourseDriveApiBaseUrl(baseUrl: string): void {
+  const normalized = baseUrl.trim().replace(/\/+$/, '');
+  if (!normalized || normalized === driveApiBaseUrl) return;
+  driveApiBaseUrl = normalized;
+  resetDriveAppSdkClient();
+}
 
 export function createDriveAppSdkClientConfig(
   session?: CourseSession | null,
 ): DriveAppSdkClientConfig {
   const currentSession = session ?? readCourseSessionTokens();
   return {
-    baseUrl: resolveAppApiBaseUrl(),
+    baseUrl: driveApiBaseUrl ?? resolveAppApiBaseUrl(),
     accessToken: resolveCourseAccessToken(currentSession),
     authToken: resolveCourseAuthToken(currentSession),
     platform: 'pc',
@@ -49,6 +62,8 @@ export interface CourseDriveUploadResult {
   driveResourceId: string;
   fileName: string;
   mimeType?: string;
+  /** Signed preview URL for image assets; refreshed when the cover is edited. */
+  previewUrl?: string;
 }
 
 export async function uploadCourseMediaFile(file: File): Promise<CourseDriveUploadResult> {
@@ -65,10 +80,22 @@ export async function uploadCourseMediaFile(file: File): Promise<CourseDriveUplo
     contentType: file.type || 'application/octet-stream',
   });
   const nodeId = uploadResult.uploadItem.nodeId;
+  let previewUrl: string | undefined;
+  if (file.type.startsWith('image/')) {
+    try {
+      const urls = await driveClient.drive.nodes.downloadUrls.retrieve(nodeId, {
+        requestedTtlSeconds: 7 * 24 * 60 * 60,
+      });
+      previewUrl = urls.signedSourceUrl || urls.downloadUrl;
+    } catch {
+      // The cover can still be saved and resolved later through Drive.
+    }
+  }
   return {
     driveNodeId: nodeId,
     driveResourceId: nodeId,
     fileName: file.name,
     mimeType: file.type || undefined,
+    previewUrl,
   };
 }

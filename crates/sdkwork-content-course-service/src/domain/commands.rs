@@ -92,6 +92,107 @@ pub struct CourseCatalogCommand {
     pub cover: Option<CourseMediaResourceRef>,
     pub level: Option<String>,
     pub tags: Vec<String>,
+    /// Content shape for operator-created catalog entries.
+    pub kind: Option<String>,
+    pub summary: Option<String>,
+    pub price_amount: Option<String>,
+    pub currency: Option<String>,
+    pub is_free: Option<bool>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseStudioResourceDraft {
+    pub drive_resource_id: String,
+    pub resource_role: String,
+    pub mime_type: Option<String>,
+    pub file_name: Option<String>,
+    pub file_size_bytes: Option<i64>,
+    pub duration_seconds: Option<i64>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseStudioLessonDraft {
+    pub id: Option<String>,
+    pub lesson_kind: CourseLessonKind,
+    pub title: String,
+    pub summary: Option<String>,
+    /// Article body for `article` lessons.
+    pub content: Option<String>,
+    pub duration_seconds: i64,
+    pub free_preview: bool,
+    pub external_source_id: Option<String>,
+    pub source_provider: Option<String>,
+    pub sort_order: i64,
+    pub resources: Vec<CourseStudioResourceDraft>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseStudioSectionDraft {
+    pub id: Option<String>,
+    pub title: String,
+    pub description: Option<String>,
+    pub sort_order: i64,
+    pub lessons: Vec<CourseStudioLessonDraft>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseStudioDraftCommand {
+    pub course_id: Option<String>,
+    pub title: String,
+    pub subtitle: Option<String>,
+    pub summary: Option<String>,
+    pub description: Option<String>,
+    pub category_id: Option<String>,
+    pub level: Option<String>,
+    pub tags: Vec<String>,
+    /// `standard`, `column`, or `collection`.
+    pub kind: String,
+    pub cover: Option<CourseMediaResourceRef>,
+    pub price_amount: Option<String>,
+    pub original_price_amount: Option<String>,
+    pub currency: Option<String>,
+    pub is_free: bool,
+    /// Display-only creator name captured from the session at creation time.
+    pub author_display_name: Option<String>,
+    pub sections: Vec<CourseStudioSectionDraft>,
+    /// Ordered linked course ids for `collection` courses.
+    pub collection_items: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseReviewDecisionCommand {
+    /// `approve` / `reject` / `request_changes`.
+    pub decision: String,
+    pub note: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseOfflineCommand {
+    pub note: Option<String>,
+}
+
+/// Canonical content shapes for the course center.
+pub const COURSE_KIND_STANDARD: &str = "standard";
+pub const COURSE_KIND_COLUMN: &str = "column";
+pub const COURSE_KIND_COLLECTION: &str = "collection";
+
+pub fn normalize_course_kind(value: &str) -> Option<&'static str> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        COURSE_KIND_STANDARD => Some(COURSE_KIND_STANDARD),
+        COURSE_KIND_COLUMN => Some(COURSE_KIND_COLUMN),
+        COURSE_KIND_COLLECTION => Some(COURSE_KIND_COLLECTION),
+        _ => None,
+    }
+}
+
+pub fn is_supported_course_kind(value: &str) -> bool {
+    normalize_course_kind(value).is_some()
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]

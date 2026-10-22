@@ -9,13 +9,12 @@ use sqlx::Row;
 
 use sdkwork_content_course_service::domain::models::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
-    CourseAuditLogItem, CourseCategoryItem, CourseCommentItem, CourseCommentModerationRequest,
-    CourseError, CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult,
-    CourseSectionItem,
+    CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseError, CourseItem, CourseLessonItem,
+    CoursePage, CourseQuery, CourseResult, CourseSectionItem, CourseStudioDetail,
 };
 use sdkwork_content_course_service::ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseCommentRepository, CourseEnrollmentRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository,
     CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
     CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
     CourseResourceRepository,
@@ -23,7 +22,7 @@ use sdkwork_content_course_service::ports::repository::{
 use sdkwork_content_course_service::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
     CourseLessonProgressCommand, CourseLiveSessionCommand, CourseOfferingCommand,
-    CourseServiceContext,
+    CourseReviewDecisionCommand, CourseServiceContext, CourseStudioDraftCommand,
 };
 
 use super::course_repository::{CourseSqlxRepositoryPort, PostgresCourseRepository};
@@ -153,7 +152,7 @@ impl CourseCatalogRepository for PostgresCourseRepository {
         context: &CourseServiceContext,
         course_id: String,
     ) -> CourseResult<CourseItem> {
-        CourseSqlxRepositoryPort::publish_course(self, context, course_id).await
+        self.publish_course_impl(context, &course_id).await
     }
 
     async fn unpublish_course(
@@ -170,6 +169,87 @@ impl CourseCatalogRepository for PostgresCourseRepository {
         course_id: String,
     ) -> CourseResult<()> {
         CourseSqlxRepositoryPort::delete_course(self, context, course_id).await
+    }
+
+    async fn save_studio_course(
+        &self,
+        context: &CourseServiceContext,
+        command: CourseStudioDraftCommand,
+    ) -> CourseResult<CourseItem> {
+        self.save_studio_course_impl(context, command).await
+    }
+
+    async fn retrieve_course_detail(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseStudioDetail>> {
+        self.retrieve_course_detail_impl(context, &course_id).await
+    }
+
+    async fn retrieve_curriculum(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Option<CourseCurriculum>> {
+        self.retrieve_curriculum_impl(context, &course_id).await
+    }
+
+    async fn list_collection_items(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Vec<CourseCollectionItem>> {
+        self.list_collection_items_impl(context, &course_id).await
+    }
+
+    async fn submit_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem> {
+        self.submit_course_impl(context, &course_id).await
+    }
+
+    async fn withdraw_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<CourseItem> {
+        self.withdraw_course_impl(context, &course_id).await
+    }
+
+    async fn review_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        command: CourseReviewDecisionCommand,
+    ) -> CourseResult<CourseItem> {
+        self.review_course_impl(context, &course_id, command).await
+    }
+
+    async fn offline_course(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        note: Option<String>,
+    ) -> CourseResult<CourseItem> {
+        self.offline_course_impl(context, &course_id, note).await
+    }
+
+    async fn list_review_courses(
+        &self,
+        context: &CourseServiceContext,
+        query: CourseQuery,
+    ) -> CourseResult<CoursePage> {
+        self.list_review_courses_impl(context, query).await
+    }
+
+    async fn review_stats(
+        &self,
+        context: &CourseServiceContext,
+    ) -> CourseResult<serde_json::Value> {
+        self.review_stats_impl(context).await
     }
 }
 
@@ -216,6 +296,13 @@ impl CourseOfferingRepository for PostgresCourseRepository {
         offering_id: String,
     ) -> CourseResult<()> {
         CourseSqlxRepositoryPort::delete_offering(self, context, offering_id).await
+    }
+
+    async fn find_offering_scope(
+        &self,
+        offering_id: String,
+    ) -> CourseResult<Option<(String, String)>> {
+        CourseSqlxRepositoryPort::find_offering_scope(self, offering_id).await
     }
 }
 
@@ -468,6 +555,27 @@ impl CourseEnrollmentRepository for PostgresCourseRepository {
     ) -> CourseResult<Vec<Value>> {
         CourseSqlxRepositoryPort::list_enrollments(self, context, query).await
     }
+
+    async fn has_active_enrollment(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+        user_id: String,
+    ) -> CourseResult<bool> {
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM course_enrollment \
+             WHERE tenant_id = $1 AND course_id = $2 AND user_id = $3 \
+               AND enrollment_status IN ('active', 'completed') AND status = 'active' \
+               AND deleted_at IS NULL)",
+        )
+        .bind(&context.tenant_id)
+        .bind(&course_id)
+        .bind(&user_id)
+        .fetch_one(self.pool())
+        .await
+        .map_err(sqlx_storage_error)?;
+        Ok(exists)
+    }
 }
 
 // ── Progress ────────────────────────────────────────────────────────
@@ -549,125 +657,6 @@ impl CourseProgressRepository for PostgresCourseRepository {
 // ── Comment ─────────────────────────────────────────────────────────
 
 #[async_trait::async_trait]
-impl CourseCommentRepository for PostgresCourseRepository {
-    async fn list_comments(
-        &self,
-        context: &CourseServiceContext,
-        query: CourseQuery,
-    ) -> CourseResult<Vec<CourseCommentItem>> {
-        CourseSqlxRepositoryPort::list_comments(self, context, query).await
-    }
-
-    async fn create_comment(
-        &self,
-        context: &CourseServiceContext,
-        command: Value,
-    ) -> CourseResult<CourseCommentItem> {
-        let now = chrono::Utc::now().to_rfc3339();
-        let id = uuid::Uuid::new_v4().to_string();
-        let uuid_val = uuid::Uuid::new_v4().to_string();
-
-        let target_type = command
-            .get("targetType")
-            .and_then(|v| v.as_str())
-            .unwrap_or("course");
-        let target_id = command
-            .get("targetId")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        let content = command
-            .get("content")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        let parent_id = command.get("parentId").and_then(|v| v.as_str());
-
-        sqlx::query(
-            r#"
-            INSERT INTO course_comment (
-                id, uuid, tenant_id, organization_id, target_type, target_id, parent_id,
-                author_user_id, content, content_format, moderation_status, status,
-                created_at, created_by, updated_at, updated_by, version
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'plain', 'visible', 'active', $10, $11, $12, $13, 0)
-            "#,
-        )
-        .bind(&id)
-        .bind(&uuid_val)
-        .bind(&context.tenant_id)
-        .bind(&context.organization_id)
-        .bind(target_type)
-        .bind(target_id)
-        .bind(parent_id)
-        .bind(&context.user_id)
-        .bind(content)
-        .bind(&now)
-        .bind(&context.actor_id)
-        .bind(&now)
-        .bind(&context.actor_id)
-        .execute(self.pool())
-        .await
-        .map_err(sqlx_storage_error)?;
-
-        // Fetch the created comment
-        let comment = sqlx::query_as::<_, CourseCommentItem>(
-            r#"
-            SELECT id, target_id as course_id, author_snapshot as author, content,
-                   moderation_status as status, created_at
-            FROM course_comment
-            WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
-            "#,
-        )
-        .bind(&id)
-        .bind(&context.tenant_id)
-        .fetch_one(self.pool())
-        .await
-        .map_err(sqlx_storage_error)?;
-
-        Ok(comment)
-    }
-
-    async fn moderate_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-        request: CourseCommentModerationRequest,
-    ) -> CourseResult<Vec<CourseCommentItem>> {
-        CourseSqlxRepositoryPort::moderate_comment(self, context, comment_id, request).await
-    }
-
-    async fn delete_comment(
-        &self,
-        context: &CourseServiceContext,
-        comment_id: String,
-    ) -> CourseResult<()> {
-        let now = chrono::Utc::now().to_rfc3339();
-        let result = sqlx::query(
-            r#"
-            UPDATE course_comment
-            SET status = 'deleted', deleted_at = $1, deleted_by = $2, updated_at = $3, updated_by = $4
-            WHERE id = $5 AND tenant_id = $6 AND deleted_at IS NULL
-            "#,
-        )
-        .bind(&now)
-        .bind(&context.actor_id)
-        .bind(&now)
-        .bind(&context.actor_id)
-        .bind(&comment_id)
-        .bind(&context.tenant_id)
-        .execute(self.pool())
-        .await
-        .map_err(sqlx_storage_error)?;
-
-        if result.rows_affected() == 0 {
-            return Err(CourseError::not_found("Comment not found"));
-        }
-
-        Ok(())
-    }
-}
-
-// ── Application ─────────────────────────────────────────────────────
-
-#[async_trait::async_trait]
 impl CourseApplicationRepository for PostgresCourseRepository {
     async fn list_applications(
         &self,
@@ -684,7 +673,7 @@ impl CourseApplicationRepository for PostgresCourseRepository {
     ) -> CourseResult<Option<CourseApplicationItem>> {
         let application = sqlx::query_as::<_, CourseApplicationItem>(
             r#"
-            SELECT id, title, category_id as category, description, applicant_user_id,
+            SELECT id, title, category_id as category_id, category_id as category, description, applicant_user_id,
                    application_status as status, contact_name, contact_email,
                    created_at as submitted_at, reviewed_at, review_note
             FROM course_application
@@ -779,11 +768,22 @@ impl CourseApplicationRepository for PostgresCourseRepository {
         // Fetch the created course
         let course = sqlx::query_as::<_, CourseItem>(
             r#"
-            SELECT id, course_code, title, description, cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor, estimated_duration_seconds::text as duration_text,
-                   lesson_count_snapshot::bigint as lessons_count, rating_score_snapshot as rating_score,
-                   student_count_snapshot::bigint as students_count, difficulty_level as level,
-                   category_id as category, tags_json as tags, body_content as content, status
+            SELECT id, course_code, title, subtitle, summary, description,
+                   cover_resource_snapshot as thumbnail,
+                   primary_instructor_id as instructor,
+                   estimated_duration_seconds::text as duration_text,
+                   lesson_count_snapshot::bigint as lessons_count,
+                   rating_score_snapshot as rating_score,
+                   student_count_snapshot::bigint as students_count,
+                   difficulty_level as level,
+                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   status, publish_status, published_at,
+                   course_kind as kind,
+                   (is_free <> 0) as is_free,
+                   (is_collection <> 0) as is_collection,
+                   price_amount, original_price_amount, currency,
+                   author_user_id, author_display_name,
+                   review_note, submitted_at, reviewed_at, reviewed_by, review_round::bigint as review_round
             FROM course_catalog
             WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
             "#,
@@ -943,6 +943,83 @@ impl CourseResourceRepository for PostgresCourseRepository {
 
 #[async_trait::async_trait]
 impl CourseReactionRepository for PostgresCourseRepository {
+    async fn course_engagement(
+        &self,
+        context: &CourseServiceContext,
+        course_id: String,
+    ) -> CourseResult<Value> {
+        let viewer_id = context.user_id.as_deref().unwrap_or("");
+        let row = sqlx::query(
+            r#"
+            SELECT
+              (SELECT COUNT(*) FROM course_reaction
+                WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
+                  AND reaction_type = 'like' AND reaction_value = 'true'
+                  AND status = 'active' AND deleted_at IS NULL) AS likes,
+              (SELECT COUNT(*) FROM course_reaction
+                WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
+                  AND reaction_type = 'favorite' AND reaction_value = 'true'
+                  AND status = 'active' AND deleted_at IS NULL) AS favorites,
+              (SELECT COUNT(*) FROM course_reaction
+                WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
+                  AND reaction_type = 'share' AND reaction_value = 'true'
+                  AND status = 'active' AND deleted_at IS NULL) AS shares,
+              (SELECT COUNT(*) FROM comments_comment cc
+                JOIN comments_thread ct
+                  ON ct.id = cc.thread_id AND ct.tenant_id = cc.tenant_id
+                WHERE ct.tenant_id = $1 AND ct.owner_kind = 'course' AND ct.owner_id = $2
+                  AND cc.status = 'published' AND cc.deleted_at IS NULL) AS discussions,
+              EXISTS (
+                SELECT 1 FROM course_reaction
+                WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
+                  AND actor_user_id = $3 AND reaction_type = 'like'
+                  AND reaction_value = 'true' AND status = 'active' AND deleted_at IS NULL
+              ) AS viewer_liked,
+              EXISTS (
+                SELECT 1 FROM course_reaction
+                WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
+                  AND actor_user_id = $3 AND reaction_type = 'favorite'
+                  AND reaction_value = 'true' AND status = 'active' AND deleted_at IS NULL
+              ) AS viewer_favorited,
+              EXISTS (
+                SELECT 1 FROM course_reaction
+                WHERE tenant_id = $1 AND target_type = 'course' AND target_id = $2
+                  AND actor_user_id = $3 AND reaction_type = 'share'
+                  AND reaction_value = 'true' AND status = 'active' AND deleted_at IS NULL
+              ) AS viewer_shared
+            "#,
+        )
+        .bind(&context.tenant_id)
+        .bind(&course_id)
+        .bind(viewer_id)
+        .fetch_one(self.pool())
+        .await
+        .map_err(sqlx_storage_error)?;
+
+        let likes: i64 = row.try_get("likes").map_err(sqlx_storage_error)?;
+        let favorites: i64 = row.try_get("favorites").map_err(sqlx_storage_error)?;
+        let shares: i64 = row.try_get("shares").map_err(sqlx_storage_error)?;
+        let discussions: i64 = row.try_get("discussions").map_err(sqlx_storage_error)?;
+        let viewer_liked: bool = row.try_get("viewer_liked").map_err(sqlx_storage_error)?;
+        let viewer_favorited: bool = row
+            .try_get("viewer_favorited")
+            .map_err(sqlx_storage_error)?;
+        let viewer_shared: bool = row.try_get("viewer_shared").map_err(sqlx_storage_error)?;
+
+        Ok(serde_json::json!({
+            "courseId": course_id,
+            "likes": likes,
+            "favorites": favorites,
+            "shares": shares,
+            "discussions": discussions,
+            "viewer": {
+                "liked": viewer_liked,
+                "favorited": viewer_favorited,
+                "shared": viewer_shared,
+            }
+        }))
+    }
+
     async fn list_reactions(
         &self,
         context: &CourseServiceContext,

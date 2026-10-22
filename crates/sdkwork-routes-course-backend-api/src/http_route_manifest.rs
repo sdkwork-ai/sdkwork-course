@@ -328,24 +328,6 @@ const HTTP_ROUTES: &[HttpRoute] = &[
     ).with_required_permission("course.progress.repair"),
     HttpRoute::dual_token(
         HttpMethod::Get,
-        "/backend/v3/api/course_comments",
-        "course",
-        "courseComments.list",
-    ).with_required_permission("course.comments.read"),
-    HttpRoute::dual_token(
-        HttpMethod::Patch,
-        "/backend/v3/api/course_comments/{commentId}/moderation",
-        "course",
-        "courseComments.moderate",
-    ).with_required_permission("course.comments.moderate"),
-    HttpRoute::dual_token(
-        HttpMethod::Delete,
-        "/backend/v3/api/course_comments/{commentId}",
-        "course",
-        "courseComments.delete",
-    ).with_required_permission("course.comments.moderate"),
-    HttpRoute::dual_token(
-        HttpMethod::Get,
         "/backend/v3/api/course_reactions",
         "course",
         "courseReactions.list",
@@ -404,6 +386,36 @@ const HTTP_ROUTES: &[HttpRoute] = &[
         "course",
         "courseAuditLogs.retrieve",
     ).with_required_permission("course.audit_logs.read"),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/backend/v3/api/course_reviews",
+        "course",
+        "courseReviews.list",
+    ).with_required_permission("course.reviews.read"),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/backend/v3/api/course_reviews/stats",
+        "course",
+        "courseReviews.stats",
+    ).with_required_permission("course.reviews.read"),
+    HttpRoute::dual_token(
+        HttpMethod::Get,
+        "/backend/v3/api/course_reviews/{courseId}",
+        "course",
+        "courseReviews.retrieve",
+    ).with_required_permission("course.reviews.read"),
+    HttpRoute::dual_token(
+        HttpMethod::Post,
+        "/backend/v3/api/course_reviews/{courseId}/review",
+        "course",
+        "courseReviews.review",
+    ).with_required_permission("course.reviews.review"),
+    HttpRoute::dual_token(
+        HttpMethod::Post,
+        "/backend/v3/api/courses/{courseId}/offline",
+        "course",
+        "courses.offline",
+    ).with_required_permission("course.courses.publish"),
 ];
 
 pub fn course_backend_api_http_route_manifest() -> HttpRouteManifest {

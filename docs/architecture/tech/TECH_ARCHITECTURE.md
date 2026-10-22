@@ -2,12 +2,14 @@
 
 Status: active
 Owner: SDKWork maintainers
-Updated: 2026-06-30
+Updated: 2026-10-21
 Specs: `../sdkwork-specs/ARCHITECTURE_DECISION_SPEC.md`, `../sdkwork-specs/DOCUMENTATION_SPEC.md`
 
 ## 1. Architecture Overview
 
-`sdkwork-course` is a standalone SDKWork application for online course catalog, learning progress, live sessions, and governance workflows. It ships as:
+`sdkwork-course` is a standalone SDKWork application for online course catalog,
+creator UGC authoring, review governance, learning progress, and live sessions.
+It ships as:
 
 - Rust gateway assembly (`sdkwork-api-course-assembly`) embedded into the platform HTTP process
 - Generated app/backend SDK families for typed clients
@@ -105,3 +107,11 @@ cargo test --workspace
 
 - **sdkwork-discovery**: not required until RPC services are introduced
 - **Live provider RPC**: remains behind `CourseLiveProviderPort` until provider contracts are wired
+- **Commerce entitlement**: paid course access fails closed until an integrating
+  application supplies the `CourseEntitlementPort` adapter
+
+## 10. Related Shards
+
+- [TECH-course-ugc-review.md](TECH-course-ugc-review.md) — UGC authoring,
+  专栏/合集/章节 model, review state machine, and the operator console.
+

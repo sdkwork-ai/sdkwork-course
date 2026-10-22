@@ -66,6 +66,16 @@ pub struct CourseQuery {
     pub category: Option<String>,
     pub level: Option<String>,
     pub status: Option<String>,
+    /// Content shape filter (`standard` / `column` / `collection`).
+    pub kind: Option<String>,
+    /// Restricts a query to one author. App surfaces force this to the
+    /// authenticated user; backend queries may pass it explicitly.
+    pub author_user_id: Option<String>,
+    /// Application list ownership filter.
+    pub applicant_user_id: Option<String>,
+    /// Audit log filters.
+    pub target_type: Option<String>,
+    pub target_id: Option<String>,
 }
 
 impl CourseQuery {
@@ -75,6 +85,11 @@ impl CourseQuery {
 
     pub fn offset(&self) -> i64 {
         (self.page.unwrap_or(1).max(1) - 1) * self.limit()
+    }
+
+    /// True when the caller asked for drafts in a learner-facing catalog.
+    pub fn requested_status(&self) -> Option<&str> {
+        self.status.as_deref().filter(|value| !value.is_empty())
     }
 }
 
@@ -136,13 +151,6 @@ pub struct CourseLessonMutationRequest {
     pub metadata: Option<serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CourseCommentModerationRequest {
-    pub status: String,
-    pub moderation_note: Option<String>,
-}
-
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct CourseCategoryItem {
@@ -161,6 +169,8 @@ pub struct CourseItem {
     pub id: String,
     pub course_code: String,
     pub title: String,
+    pub subtitle: Option<String>,
+    pub summary: Option<String>,
     pub description: Option<String>,
     pub thumbnail: Option<String>,
     pub instructor: Option<String>,
@@ -170,9 +180,76 @@ pub struct CourseItem {
     pub students_count: i64,
     pub level: Option<String>,
     pub category: Option<String>,
+    pub category_id: Option<String>,
     pub tags: String,
     pub content: Option<String>,
+    /// Row lifecycle (`active` / `archived` / `deleted`).
     pub status: String,
+    /// Publication state: `draft` / `reviewing` / `published` /
+    /// `unpublished` / `archived`.
+    pub publish_status: String,
+    pub published_at: Option<String>,
+    /// Content shape: `standard` / `column` / `collection`.
+    pub kind: String,
+    pub is_free: bool,
+    pub is_collection: bool,
+    pub price_amount: Option<String>,
+    pub original_price_amount: Option<String>,
+    pub currency: Option<String>,
+    pub author_user_id: Option<String>,
+    pub author_display_name: Option<String>,
+    pub review_note: Option<String>,
+    pub submitted_at: Option<String>,
+    pub reviewed_at: Option<String>,
+    pub reviewed_by: Option<String>,
+    pub review_round: i64,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseResourceItem {
+    pub id: String,
+    pub owner_type: String,
+    pub owner_id: String,
+    pub resource_role: String,
+    pub drive_resource_id: String,
+    pub media_resource_snapshot: Option<String>,
+    pub mime_type: Option<String>,
+    pub duration_seconds: Option<i64>,
+    pub file_size_bytes: Option<i64>,
+    pub sort_order: i64,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseCollectionItem {
+    pub course_id: String,
+    pub title: String,
+    pub cover: Option<String>,
+    pub kind: String,
+    pub lessons_count: i64,
+    pub duration_seconds: i64,
+    pub sort_order: i64,
+    pub author_display_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseCurriculum {
+    pub course_id: String,
+    pub sections: Vec<CourseSectionItem>,
+    pub lessons: Vec<CourseLessonItem>,
+    pub resources: Vec<CourseResourceItem>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CourseStudioDetail {
+    pub course: CourseItem,
+    pub sections: Vec<CourseSectionItem>,
+    pub lessons: Vec<CourseLessonItem>,
+    pub resources: Vec<CourseResourceItem>,
+    pub collection_items: Vec<CourseCollectionItem>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
@@ -230,20 +307,10 @@ pub struct CourseApplicationItem {
     pub title: String,
     pub category: String,
     pub status: String,
+    pub applicant_user_id: Option<String>,
     pub contact_name: Option<String>,
     pub submitted_at: String,
     pub reviewed_at: Option<String>,
-}
-
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, FromRow)]
-#[serde(rename_all = "camelCase")]
-pub struct CourseCommentItem {
-    pub id: String,
-    pub course_id: String,
-    pub author: Option<String>,
-    pub content: String,
-    pub status: String,
-    pub created_at: String,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, FromRow)]

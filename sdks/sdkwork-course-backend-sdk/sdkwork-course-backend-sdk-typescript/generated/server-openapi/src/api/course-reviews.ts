@@ -1,18 +1,22 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
-import type { CourseCommandBody, SdkWorkPageData } from '../types';
+import type { CourseCommandBody, SdkWorkCommandData, SdkWorkPageData } from '../types';
 
 
-export interface CourseCommentsListParams {
+export interface CourseReviewsListParams {
   q?: string;
-  cursor?: string;
   page?: number;
   pageSize?: number;
   status?: string;
+  kind?: string;
 }
 
-export class CourseCommentsApi {
+export interface CourseReviewsReviewParams {
+  idempotencyKey?: string;
+}
+
+export class CourseReviewsApi {
   private client: HttpClient;
 
   constructor(client: HttpClient) {
@@ -20,31 +24,42 @@ export class CourseCommentsApi {
   }
 
 
-/** course Comments list. */
-  async list(params?: CourseCommentsListParams): Promise<SdkWorkPageData> {
+/** course Reviews list. */
+  async list(params?: CourseReviewsListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
-      { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
+      { name: 'kind', value: params?.kind, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_comments`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_reviews`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
-/** course Comments update. */
-  async update(commentId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.patch<Record<string, unknown>>(backendApiPath(`/course_comments/${serializePathParameter(commentId, { name: 'commentId', style: 'simple', explode: false })}/moderation`), body, undefined, undefined, 'application/json');
+/** course Reviews stats. */
+  async stats(requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_reviews/stats`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
-/** course Comments delete. */
-  async delete(commentId: string): Promise<void> {
-    return this.client.delete<void>(backendApiPath(`/course_comments/${serializePathParameter(commentId, { name: 'commentId', style: 'simple', explode: false })}`));
+/** course Reviews retrieve. */
+  async retrieve(courseId: string, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_reviews/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
+  }
+
+/** course Reviews review. */
+  async review(courseId: string, body: CourseCommandBody, params?: CourseReviewsReviewParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkCommandData> {
+    const requestHeaders = buildRequestHeaders(
+      {
+        'Idempotency-Key': { value: params?.idempotencyKey, style: 'simple', explode: false },
+      },
+      {}
+    );
+    return this.client.request<SdkWorkCommandData>(backendApiPath(`/course_reviews/${serializePathParameter(courseId, { name: 'courseId', style: 'simple', explode: false })}/review`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'command' });
   }
 }
 
-export function createCourseCommentsApi(client: HttpClient): CourseCommentsApi {
-  return new CourseCommentsApi(client);
+export function createCourseReviewsApi(client: HttpClient): CourseReviewsApi {
+  return new CourseReviewsApi(client);
 }
 
 function appendQueryString(path: string, rawQueryString: string): string {
@@ -277,4 +292,79 @@ function encodeQueryValue(value: string, allowReserved: boolean): string {
     .replace(/%2C/gi, ',')
     .replace(/%3B/gi, ';')
     .replace(/%3D/gi, '=');
+}
+function buildRequestHeaders(
+  headers: Record<string, HeaderParameterSpec | undefined>,
+  cookies: Record<string, HeaderParameterSpec | undefined> = {},
+): Record<string, string> | undefined {
+  const requestHeaders: Record<string, string> = {};
+
+  for (const [name, parameter] of Object.entries(headers)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      requestHeaders[name] = serialized;
+    }
+  }
+
+  const cookieHeader = buildCookieHeader(cookies);
+  if (cookieHeader) {
+    requestHeaders.Cookie = requestHeaders.Cookie
+      ? `${requestHeaders.Cookie}; ${cookieHeader}`
+      : cookieHeader;
+  }
+
+  return Object.keys(requestHeaders).length > 0 ? requestHeaders : undefined;
+}
+
+interface HeaderParameterSpec {
+  value: unknown;
+  style: string;
+  explode: boolean;
+  contentType?: string;
+}
+
+function buildCookieHeader(cookies: Record<string, HeaderParameterSpec | undefined>): string | undefined {
+  const pairs: string[] = [];
+  for (const [name, parameter] of Object.entries(cookies)) {
+    const serialized = serializeParameterValue(parameter);
+    if (serialized !== undefined) {
+      pairs.push(`${encodeURIComponent(name)}=${encodeURIComponent(serialized)}`);
+    }
+  }
+  return pairs.length > 0 ? pairs.join('; ') : undefined;
+}
+
+function serializeParameterValue(parameter: HeaderParameterSpec | undefined): string | undefined {
+  const value = parameter?.value;
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (parameter?.contentType) {
+    return JSON.stringify(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeHeaderPrimitive(item)).join(',');
+  }
+  if (typeof value === 'object' && value !== null) {
+    return serializeHeaderObject(value as Record<string, unknown>, parameter?.explode === true);
+  }
+  return serializeHeaderPrimitive(value);
+}
+
+function serializeHeaderObject(value: Record<string, unknown>, explode: boolean): string {
+  const entries = Object.entries(value).filter(([, entryValue]) => entryValue !== undefined && entryValue !== null);
+  if (explode) {
+    return entries.map(([key, entryValue]) => `${key}=${serializeHeaderPrimitive(entryValue)}`).join(',');
+  }
+  return entries.flatMap(([key, entryValue]) => [key, serializeHeaderPrimitive(entryValue)]).join(',');
+}
+
+function serializeHeaderPrimitive(value: unknown): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return String(value);
 }

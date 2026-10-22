@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { SdkWorkPageData } from '../types';
 
@@ -21,7 +21,7 @@ export class CourseReportsLiveSessionsApi {
 
 
 /** course Reports live Sessions list. */
-  async list(params?: CourseReportsLiveSessionsListParams): Promise<SdkWorkPageData> {
+  async list(params?: CourseReportsLiveSessionsListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
@@ -29,7 +29,7 @@ export class CourseReportsLiveSessionsApi {
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_reports/live_sessions`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_reports/live_sessions`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -50,7 +50,7 @@ export class CourseReportsLearningApi {
 
 
 /** course Reports learning list. */
-  async list(params?: CourseReportsLearningListParams): Promise<SdkWorkPageData> {
+  async list(params?: CourseReportsLearningListParams, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
     const query = buildQueryString([
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'cursor', value: params?.cursor, style: 'form', explode: true, allowReserved: false },
@@ -58,7 +58,7 @@ export class CourseReportsLearningApi {
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'status', value: params?.status, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_reports/learning`), query));
+    return this.client.request<SdkWorkPageData>(appendQueryString(backendApiPath(`/course_reports/learning`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -71,19 +71,17 @@ export class CourseReportsOverviewApi {
 
 
 /** course Reports overview retrieve. */
-  async retrieve(): Promise<Record<string, unknown>> {
-    return this.client.get<Record<string, unknown>>(backendApiPath(`/course_reports/overview`));
+  async retrieve(requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_reports/overview`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class CourseReportsApi {
-  private client: HttpClient;
   public readonly overview: CourseReportsOverviewApi;
   public readonly learning: CourseReportsLearningApi;
   public readonly liveSessions: CourseReportsLiveSessionsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.overview = new CourseReportsOverviewApi(client);
     this.learning = new CourseReportsLearningApi(client);
     this.liveSessions = new CourseReportsLiveSessionsApi(client);

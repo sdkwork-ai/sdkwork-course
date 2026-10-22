@@ -11,8 +11,6 @@
 import type {
   CourseCatalog,
   CourseCategory,
-  CourseComment,
-  CourseCommentCommand,
   CourseEnrollment,
   CourseEnrollmentCommand,
   CourseLearningProgress,
@@ -35,6 +33,7 @@ export interface CourseAppSdkPort {
   courses: {
     list(params?: CourseListParams): Promise<readonly CourseCatalog[]>;
     retrieve(courseId: string): Promise<CourseCatalog>;
+    collectionItems(courseId: string): Promise<readonly CourseCatalog[]>;
   };
   offerings: {
     list(courseId: string): Promise<readonly CourseOffering[]>;
@@ -67,10 +66,6 @@ export interface CourseAppSdkPort {
     heartbeat(liveSessionId: string): Promise<CourseLiveSession>;
     leave(liveSessionId: string): Promise<CourseLiveSession>;
   };
-  comments: {
-    list(courseId: string): Promise<readonly CourseComment[]>;
-    create(courseId: string, command: CourseCommentCommand): Promise<CourseComment>;
-  };
   reactions: {
     update(command: CourseReactionCommand): Promise<CourseReaction>;
   };
@@ -79,8 +74,6 @@ export interface CourseAppSdkPort {
 export type {
   CourseCatalog,
   CourseCategory,
-  CourseComment,
-  CourseCommentCommand,
   CourseEnrollment,
   CourseEnrollmentCommand,
   CourseLearningProgress,

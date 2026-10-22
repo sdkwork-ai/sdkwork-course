@@ -14,10 +14,50 @@ export interface ConsoleCourseItem {
   courseCode: string;
   title: string;
   status: string;
+  publishStatus: string;
+  kind: string;
+  author?: string;
+  reviewNote?: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  reviewRound: number;
+  summary?: string;
+  priceAmount?: string;
+  isFree: boolean;
+  currency?: string;
   studentsCount: number;
   lessonsCount: number;
   category?: string;
   instructor?: string;
+}
+
+export interface ConsoleReviewStats {
+  pending: number;
+  changesRequested: number;
+  published: number;
+  ugcTotal: number;
+  ugcPublished: number;
+  pendingOverdue: number;
+  avgReviewHours: number;
+}
+
+export interface ConsoleReviewDetail {
+  course: ConsoleCourseItem;
+  sections: Array<{ id: string; title: string; lessonCount: number }>;
+  lessons: Array<{
+    id: string;
+    sectionId?: string;
+    title: string;
+    kind?: string;
+    durationSeconds: number;
+    freePreview: boolean;
+    content?: string;
+    externalSourceId?: string;
+    sourceProvider?: string;
+  }>;
+  resources: Array<{ id: string; ownerId: string; resourceRole: string; driveResourceId: string }>;
+  collectionItems: Array<{ courseId: string; title: string; kind: string; lessonsCount: number }>;
+  auditLogs: Array<{ id: string; operationId: string; actorId?: string; createdAt: string }>;
 }
 
 export interface ConsoleCourseListResult {
@@ -134,7 +174,21 @@ function mapCourseItem(record: ReturnType<typeof asRecord>): ConsoleCourseItem {
     id: readString(record, ['id', 'courseId']),
     courseCode: readString(record, ['courseCode', 'course_code', 'code']),
     title: readString(record, ['title', 'name'], '未命名课程'),
-    status: readString(record, ['status'], 'draft'),
+    status: readString(record, ['status'], 'active'),
+    publishStatus:
+      readString(record, ['publishStatus', 'publish_status']) || readString(record, ['status'], 'draft'),
+    kind: readString(record, ['kind', 'courseKind', 'course_kind'], 'standard'),
+    author:
+      readString(record, ['authorDisplayName', 'author_display_name', 'author', 'instructor']) ||
+      undefined,
+    reviewNote: readString(record, ['reviewNote', 'review_note']) || undefined,
+    submittedAt: readString(record, ['submittedAt', 'submitted_at']) || undefined,
+    reviewedAt: readString(record, ['reviewedAt', 'reviewed_at']) || undefined,
+    reviewRound: readNumber(record, ['reviewRound', 'review_round']),
+    summary: readString(record, ['summary']) || undefined,
+    priceAmount: readString(record, ['priceAmount', 'price_amount']) || undefined,
+    isFree: Boolean(record.isFree ?? record.is_free ?? true),
+    currency: readString(record, ['currency']) || undefined,
     studentsCount: readNumber(record, ['studentsCount', 'students_count', 'studentCount']),
     lessonsCount: readNumber(record, ['lessonsCount', 'lessons_count', 'lessonCount']),
     category: readString(record, ['category', 'categoryName']) || undefined,
@@ -142,20 +196,25 @@ function mapCourseItem(record: ReturnType<typeof asRecord>): ConsoleCourseItem {
   };
 }
 
+function readPageTotal(response: unknown, fallback: number): number {
+  const page = asRecord(unwrapCourseBackendEnvelope(response));
+  const pageInfo = asRecord(page.pageInfo);
+  return readNumber(pageInfo, ['totalItems'], readNumber(page, ['total'], fallback));
+}
+
 export const courseConsoleService = {
-  async listCourses(params?: { q?: string; status?: string; limit?: number }): Promise<ConsoleCourseListResult> {
+  async listCourses(params?: { q?: string; status?: string; kind?: string; limit?: number }): Promise<ConsoleCourseListResult> {
     const client = getCourseConsolePcHost().getBackendClientWithSession();
     const response = await client.courses.list({
       q: params?.q,
       status: params?.status,
+      kind: params?.kind,
       pageSize: params?.limit ?? 50,
     });
     const items = readRecords(response, ['items', 'records', 'data', 'list', 'rows', 'content', 'courses'])
       .map(mapCourseItem)
       .filter((item) => item.id);
-    const page = asRecord(unwrapCourseBackendEnvelope(response));
-    const total = readNumber(page, ['total'], items.length);
-    return { items, total };
+    return { items, total: readPageTotal(response, items.length) };
   },
 
   async createCourse(input: CreateConsoleCourseInput): Promise<ConsoleCourseItem> {
@@ -195,9 +254,7 @@ export const courseConsoleService = {
     const items = readRecords(response, ['items', 'records', 'data', 'list', 'rows', 'content', 'categories'])
       .map(mapCategoryItem)
       .filter((item) => item.id);
-    const page = asRecord(unwrapCourseBackendEnvelope(response));
-    const total = readNumber(page, ['total'], items.length);
-    return { items, total };
+    return { items, total: readPageTotal(response, items.length) };
   },
 
   async createCategory(input: CreateConsoleCourseCategoryInput): Promise<ConsoleCourseCategoryItem> {
@@ -287,5 +344,86 @@ export const courseConsoleService = {
       }),
     });
     return { driveResourceId: upload.driveResourceId, fileName: upload.fileName };
+  },
+
+  async reviewCourse(courseId: string, decision: 'approve' | 'reject' | 'request_changes', note?: string): Promise<ConsoleCourseItem> {
+    const client = getCourseConsolePcHost().getBackendClientWithSession();
+    const response = await client.courseReviews.review(courseId, {
+      decision,
+      note: note?.trim() || undefined,
+    });
+    return mapCourseItem(readSingleRecord(response));
+  },
+
+  async offlineCourse(courseId: string, note?: string): Promise<ConsoleCourseItem> {
+    const client = getCourseConsolePcHost().getBackendClientWithSession();
+    const response = await client.courses.offline(courseId, { note: note?.trim() || undefined });
+    return mapCourseItem(readSingleRecord(response));
+  },
+
+  async listReviews(params?: { status?: string; kind?: string; q?: string; limit?: number }): Promise<ConsoleCourseListResult> {
+    const client = getCourseConsolePcHost().getBackendClientWithSession();
+    const response = await client.courseReviews.list({
+      status: params?.status,
+      kind: params?.kind,
+      q: params?.q,
+      pageSize: params?.limit ?? 50,
+    });
+    const items = readRecords(response, ['items', 'records', 'data', 'list', 'rows', 'content', 'courses'])
+      .map(mapCourseItem)
+      .filter((item) => item.id);
+    return { items, total: readPageTotal(response, items.length) };
+  },
+
+  async reviewStats(): Promise<ConsoleReviewStats> {
+    const client = getCourseConsolePcHost().getBackendClientWithSession();
+    const response = await client.courseReviews.stats();
+    const record = readSingleRecord(response);
+    return {
+      pending: readNumber(record, ['pending']),
+      changesRequested: readNumber(record, ['changesRequested', 'changes_requested']),
+      published: readNumber(record, ['published']),
+      ugcTotal: readNumber(record, ['ugcTotal', 'ugc_total']),
+      ugcPublished: readNumber(record, ['ugcPublished', 'ugc_published']),
+      pendingOverdue: readNumber(record, ['pendingOverdue', 'pending_overdue']),
+      avgReviewHours: readNumber(record, ['avgReviewHours', 'avg_review_hours']),
+    };
+  },
+
+  async getReviewDetail(courseId: string): Promise<ConsoleReviewDetail> {
+    const client = getCourseConsolePcHost().getBackendClientWithSession();
+    const response = await client.courseReviews.retrieve(courseId);
+    const record = asRecord(unwrapCourseBackendEnvelope(response));
+    const data = asRecord(record.data) ?? record;
+    const course = mapCourseItem(asRecord(data.course));
+    const sections = readRecords(data, ['sections']).map((section) => ({
+      id: readString(section, ['id']),
+      title: readString(section, ['title'], '未命名章节'),
+      lessonCount: readNumber(section, ['lessonCount', 'lesson_count']),
+    }));
+    const lessons = readRecords(data, ['lessons']).map((lesson) => ({
+      id: readString(lesson, ['id']),
+      sectionId: readString(lesson, ['sectionId', 'section_id']) || undefined,
+      title: readString(lesson, ['title'], '未命名课时'),
+      kind: readString(lesson, ['kind']) || undefined,
+      durationSeconds: readNumber(lesson, ['durationSeconds', 'duration_seconds']),
+      freePreview: Boolean(lesson.freePreview ?? lesson.free_preview),
+      content: readString(lesson, ['content']) || undefined,
+      externalSourceId: readString(lesson, ['externalSourceId', 'external_source_id']) || undefined,
+      sourceProvider: readString(lesson, ['sourceProvider', 'source_provider']) || undefined,
+    }));
+    const resources = readRecords(data, ['resources']).map((resource) => ({
+      id: readString(resource, ['id']),
+      ownerId: readString(resource, ['ownerId', 'owner_id']),
+      resourceRole: readString(resource, ['resourceRole', 'resource_role']),
+      driveResourceId: readString(resource, ['driveResourceId', 'drive_resource_id']),
+    }));
+    const collectionItems = readRecords(data, ['collectionItems', 'collection_items']).map((item) => ({
+      courseId: readString(item, ['courseId', 'course_id']),
+      title: readString(item, ['title'], '未命名课程'),
+      kind: readString(item, ['kind'], 'standard'),
+      lessonsCount: readNumber(item, ['lessonsCount', 'lessons_count']),
+    }));
+    return { course, sections, lessons, resources, collectionItems, auditLogs: [] };
   },
 };

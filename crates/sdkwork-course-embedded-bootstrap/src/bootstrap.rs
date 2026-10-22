@@ -7,7 +7,7 @@ use sdkwork_content_course_repository_sqlx::{
 use sdkwork_content_course_service::{
     ports::repository::{
         CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-        CourseCategoryRepository, CourseCommentRepository, CourseEnrollmentRepository,
+        CourseCategoryRepository, CourseEnrollmentRepository,
         CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
         CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
         CourseResourceRepository,
@@ -31,7 +31,6 @@ where
         + CourseLiveSessionRepository
         + CourseEnrollmentRepository
         + CourseProgressRepository
-        + CourseCommentRepository
         + CourseApplicationRepository
         + CourseAuditLogRepository
         + CourseResourceRepository
@@ -49,7 +48,6 @@ where
         Box::new(repo.clone()) as Box<dyn CourseLiveSessionRepository>,
         Box::new(repo.clone()) as Box<dyn CourseEnrollmentRepository>,
         Box::new(repo.clone()) as Box<dyn CourseProgressRepository>,
-        Box::new(repo.clone()) as Box<dyn CourseCommentRepository>,
         Box::new(repo.clone()) as Box<dyn CourseApplicationRepository>,
         Box::new(repo.clone()) as Box<dyn CourseAuditLogRepository>,
         Box::new(repo.clone()) as Box<dyn CourseResourceRepository>,

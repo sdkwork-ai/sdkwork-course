@@ -1,5 +1,5 @@
-﻿import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import React, { useState } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import {
   useAppStore,
   getIamAppSdkClient,
@@ -10,6 +10,7 @@ import {
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { setUser, setError } = useAppStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,7 +29,8 @@ export function LoginPage() {
       assertIamSessionTokens(tokens)
       const session = persistIamSession(tokens, email)
       setUser(session.user!)
-      navigate('/')
+      const redirect = searchParams.get('redirect')
+      navigate(redirect && redirect.startsWith('/') ? redirect : '/')
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : '登录失败，请稍后再试'
       setErrorLocal(message)

@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { CourseCommandBody } from '../types';
 
@@ -13,8 +13,8 @@ export class CourseLessonProgressApi {
 
 
 /** course Lesson Progress update. */
-  async update(lessonProgressId: string, body: CourseCommandBody): Promise<Record<string, unknown>> {
-    return this.client.patch<Record<string, unknown>>(backendApiPath(`/course_lesson_progress/${serializePathParameter(lessonProgressId, { name: 'lessonProgressId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(lessonProgressId: string, body: CourseCommandBody, requestOptions?: ApiRequestOptions): Promise<Record<string, unknown>> {
+    return this.client.request<Record<string, unknown>>(backendApiPath(`/course_lesson_progress/${serializePathParameter(lessonProgressId, { name: 'lessonProgressId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -22,13 +22,7 @@ export function createCourseLessonProgressApi(client: HttpClient): CourseLessonP
   return new CourseLessonProgressApi(client);
 }
 
-function appendQueryString(path: string, rawQueryString: string): string {
-  const query = rawQueryString.replace(/^\?+/, '');
-  if (!query) {
-    return path;
-  }
-  return path.includes('?') ? `${path}&${query}` : `${path}?${query}`;
-}
+
 
 interface PathParameterSpec {
   name: string;

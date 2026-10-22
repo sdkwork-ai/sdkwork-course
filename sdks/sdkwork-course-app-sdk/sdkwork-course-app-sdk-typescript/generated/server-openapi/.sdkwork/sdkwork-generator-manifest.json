@@ -44,7 +44,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "033158f6f5ac66250d214d10b196f5ae1ef45ce6737655182397dfb664ee95ca"
+      "sha256": "53df1ff1a0dc77010b4d20fcba103458cc33855e8702032af5f872ccd41a296d"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -63,12 +63,24 @@
       "sha256": "ecbcc87141b513a055b88ff71eedc8a7cfe674332840700db8a8841b420eee81"
     },
     {
-      "path": "src/api/course-comments.ts",
-      "sha256": "fd68403f9d61b98c1bd5db3b44df875b46d3c3fc0115fa14e6009b90d3f16d93"
+      "path": "src/api/course-collection-items.ts",
+      "sha256": "5e17ffbe4a0432a596b83b6ad6a9f2c892d5dcf061c56e727f9ad3ccee03aa0f"
+    },
+    {
+      "path": "src/api/course-curriculum.ts",
+      "sha256": "34c0556a4e98404a7f6516c926245eb4b1670da0ef60a1f692e2b95b8458ab58"
+    },
+    {
+      "path": "src/api/course-engagement.ts",
+      "sha256": "1eb1a567431412bab955e71605347d15018aa92162ee03864cf519f032e164e6"
     },
     {
       "path": "src/api/course-enrollments.ts",
       "sha256": "3750a71cb7ae58eda87d588bb175bb696a3adf0f183b68426dcd1109f5f92f39"
+    },
+    {
+      "path": "src/api/course-entitlements.ts",
+      "sha256": "e7d34d741374d346574a61b12f8f2703fa08080053d9502985211d1467c34269"
     },
     {
       "path": "src/api/course-lesson-progress.ts",
@@ -104,15 +116,19 @@
     },
     {
       "path": "src/api/courses.ts",
-      "sha256": "0c4cffb6ec6620709f8820c83d3779483980d4982f4f3bf5f6a3c3ba66894734"
+      "sha256": "5eee1cc8a2e5195f56116cde8abde0b9cdc5ed6106ed31ebaf1d2b50a9b46c66"
     },
     {
       "path": "src/api/index.ts",
-      "sha256": "389a8ce0f4cb42812f887da6ed754e14ffd7567685681a20cede75ec9f06873a"
+      "sha256": "a4fbfd3ce7f9a35238b3fb51ea018b0779264bbaed0b612ec2407daa44547952"
     },
     {
       "path": "src/api/paths.ts",
       "sha256": "4ffed7b7d576dc11081bf6b43511465d3a5db410bd25c425ef47b69b154981ad"
+    },
+    {
+      "path": "src/api/studio-courses.ts",
+      "sha256": "7e82dcc904bd75b2aab8cae15cd9e13cabb0f3706f276113b0d08a8156dfad59"
     },
     {
       "path": "src/auth/index.ts",
@@ -120,7 +136,7 @@
     },
     {
       "path": "src/http/client.ts",
-      "sha256": "868b7785497a93658b628de2d9b520d9d2456406bcf2ef717319beaa6913146d"
+      "sha256": "f0e93f51af678aadaf96d3e4b26e2224cb5f551b3f4651980630bbe1c7f1ceac"
     },
     {
       "path": "src/http/index.ts",
@@ -132,7 +148,7 @@
     },
     {
       "path": "src/sdk.ts",
-      "sha256": "f67ff92d1c1acffbc2c5e3b3c343fec54ed4d0e39234e59ad16abb1553052447"
+      "sha256": "237a930dbe2c7910971fe553d1cf76ecd8d425d1d6f763dc5f8861d0847d133d"
     },
     {
       "path": "src/types/common.ts",
@@ -192,7 +208,7 @@
     },
     {
       "path": "tsconfig.json",
-      "sha256": "7c8a6c2b00fb208ec28e1e6045194487d1b3e563d6c44cef4783fd4fe0e8ffad"
+      "sha256": "35f6f0baf03ca4245339f0a532b02c6b0c8e64d66852a2f77d38ae063b2024b8"
     }
   ],
   "scaffoldFiles": [

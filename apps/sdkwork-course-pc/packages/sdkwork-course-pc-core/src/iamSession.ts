@@ -9,6 +9,7 @@ import {
   type CourseSessionUser,
 } from './session';
 import { resetCourseAppSdkClient } from './courseAppSdkClient';
+import { resetCourseBackendSdkClient } from './courseBackendSdkClient';
 import { resetIamAppSdkClient } from './iamAppSdkClient';
 import { resetDriveAppSdkClient } from './driveAppSdkClient';
 import { getIamAppSdkClient } from './iamAppSdkClient';
@@ -71,6 +72,7 @@ export function persistIamSession(
   resetCourseAppSdkClient();
   resetIamAppSdkClient();
   resetDriveAppSdkClient();
+  resetCourseBackendSdkClient();
   getCourseGlobalTokenManager();
 
   return session;

@@ -14,27 +14,58 @@ Course-specific records and APIs live here.
 
 - Course catalog: categories, instructors, courses, offerings, sections,
   lessons, and Drive-backed resource references.
+- Content shapes: 课程 (`standard`), 专栏 (`column`), 合集 (`collection`), and
+  章节 (`course_section`) with lessons.
 - Course learning: enrollments, learning progress, lesson progress, live
   sessions, and replay handling.
-- Course governance: author submissions, review workflow, comment moderation,
-  reactions, reports, and audit logs.
+- Course governance: UGC creator studio, submission/review workflow, comment
+  moderation, reactions, reports, and audit logs.
+- Learner discovery: topic panel, featured carousel, responsive course feed,
+  hover-play cards, 专栏/合集 entry banners, and a creator call-to-action.
+- Admin console: review queue, approve/return decisions, course take-down,
+  category management, and review statistics.
 - SDK families: `sdkwork-course-app-sdk` and `sdkwork-course-backend-sdk`.
 
 The course workspace does not own sales, purchase, billing, or settlement flows.
-Access decisions can be injected by an integrating application through explicit
-adapters, but this workspace keeps learning content and governance independent
-from those systems.
+Paid content fails closed until an integrating application supplies the
+`CourseEntitlementPort` adapter; learning content and governance stay
+independent from those systems.
+
+## Content And Review Model
+
+- Creators own drafts through `course_catalog.author_user_id`.
+- `publish_status` drives the state machine: `draft` → `reviewing` →
+  `published`, with `unpublished` and `archived` terminal/offline states.
+- Returned drafts keep `draft` plus `reviewed_at` and `review_note`, rendered as
+  已退回 in the studio.
+- Approving a submission creates a default offering (`free`/`paid`) and
+  publishes the content.
+- Collections are ordered `course_catalog_link` rows pointing at published
+  courses.
 
 ## Layout
 
 ```text
 sdkwork-course/
   apis/
+  apps/            # PC learner/creator/admin, H5, mini-program
   crates/
+  database/
   sdks/
   specs/
   scripts/
 ```
+
+## Client Surfaces
+
+- PC `/` — merchandised home for courses, columns, and collections.
+- PC `/courses`, `/courses/:id` — filterable catalog and curriculum detail.
+- PC `/courses/:courseId/learn/:lessonId` — chapter-aware player.
+- PC `/studio` — creator dashboard and draft editor (chapters, lessons, upload,
+  collection ordering, submit/withdraw).
+- PC `/admin` — operator overview, review queue, course governance, categories.
+- H5 `/course` — mobile catalog with 课程/专栏/合集 filters and published-only
+  content.
 
 ## Verification
 

@@ -11,7 +11,6 @@ describe('CourseAppSdkClient', () => {
     expect(sdk.courseSections).toBeDefined();
     expect(sdk.courseLessons).toBeDefined();
     expect(sdk.courseProgress).toBeDefined();
-    expect(sdk.courseComments).toBeDefined();
     expect(sdk.courseReactions).toBeDefined();
     expect(sdk.courseApplications).toBeDefined();
   });
@@ -21,7 +20,7 @@ describe('CourseAppSdkClient', () => {
     expect(typeof sdk.courseCategories.list).toBe('function');
     expect(typeof sdk.courses.list).toBe('function');
     expect(typeof sdk.courseEnrollments.current.list).toBe('function');
-    expect(typeof sdk.courseComments.create).toBe('function');
     expect(typeof sdk.courseReactions.update).toBe('function');
   });
 });
+

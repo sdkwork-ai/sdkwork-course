@@ -7,6 +7,7 @@ import type {
   CourseReaction,
 } from "@sdkwork/course-sdk-ports";
 import { getCourseRuntimePort } from "./courseRuntimePort";
+import { getCommentsRuntimeClient } from "./commentsRuntime";
 
 export interface CourseLessonUI {
   id: string;
@@ -46,6 +47,10 @@ export interface CourseData {
   cover: string;
   category: string;
   type?: "live" | "recorded" | string;
+  kind?: string;
+  author?: string;
+  isFree?: boolean;
+  priceAmount?: string;
   liveStatus?: string;
   instructorDesc?: string;
   advantages?: string[];
@@ -127,12 +132,16 @@ function toCourseData(course: {
   title: string;
   thumbnail?: string;
   instructor?: string;
+  author?: string;
   lessonsCount?: number;
   studentsCount?: number;
   ratingScore?: string;
   type?: string;
+  kind?: string;
   liveStatus?: string;
   price?: number;
+  priceAmount?: string;
+  isFree?: boolean;
   originalPrice?: number;
   isPurchased?: boolean;
   description?: string;
@@ -143,13 +152,17 @@ function toCourseData(course: {
     instructor: course.instructor ?? "",
     rating: parseFloat(course.ratingScore ?? "0") || 0,
     students: course.studentsCount ?? 0,
-    price: course.price ?? 0,
+    price: (course.price ?? Number(course.priceAmount ?? "0")) || 0,
     originalPrice: course.originalPrice ?? 0,
     duration: formatDuration(0),
     totalLessons: course.lessonsCount,
     cover: course.thumbnail ?? "",
     category: "",
     type: course.type,
+    kind: course.kind,
+    author: course.author,
+    isFree: course.isFree,
+    priceAmount: course.priceAmount,
     liveStatus: course.liveStatus,
     isPurchased: course.isPurchased,
     description: course.description,
@@ -199,11 +212,13 @@ export class CourseService {
   }
 
   static async getCourses(
-    params: { q?: string; categoryId?: string; page?: number; pageSize?: number } = {},
+    params: { q?: string; categoryId?: string; kind?: string; level?: string; page?: number; pageSize?: number } = {},
   ): Promise<CourseData[]> {
     const courses = await port().courses.list({
       q: params.q,
       categoryId: params.categoryId,
+      kind: params.kind,
+      level: params.level,
       page: params.page,
       pageSize: params.pageSize,
     });
@@ -213,6 +228,11 @@ export class CourseService {
   static async getCourseDetail(courseId: string): Promise<CourseData> {
     const course = await port().courses.retrieve(courseId);
     return toCourseData(course);
+  }
+
+  static async getCollectionItems(courseId: string): Promise<CourseData[]> {
+    const courses = await port().courses.collectionItems(courseId);
+    return courses.map(toCourseData);
   }
 
   static async getMyCourses(): Promise<MyCourseData[]> {
@@ -298,10 +318,23 @@ export class CourseService {
 
   static async getCourseDiscussions(
     courseId: string,
-    _lessonId?: string,
+    lessonId?: string,
   ): Promise<CourseDiscussion[]> {
-    const comments = await port().comments.list(courseId);
-    return comments.map(toDiscussion);
+    const client = getCommentsRuntimeClient();
+    const thread = await client.comments.threads.ensure({
+      ownerKind: lessonId ? "course-lesson" : "course",
+      ownerId: lessonId ?? courseId,
+      title: "课程讨论",
+    });
+    const page = await client.comments.comments.list(thread.id, { pageSize: 50 });
+    return (page.items ?? []).map((comment) =>
+      toDiscussion({
+        id: comment.id,
+        author: comment.authorId,
+        content: comment.body,
+        createdAt: comment.createdAt,
+      }),
+    );
   }
 
   static async postDiscussion(
@@ -309,12 +342,19 @@ export class CourseService {
     lessonId: string | undefined,
     content: string,
   ): Promise<CourseDiscussion> {
-    const comment = await port().comments.create(courseId, {
-      targetType: lessonId ? "lesson" : "course",
-      targetId: lessonId ?? courseId,
-      content,
+    const client = getCommentsRuntimeClient();
+    const thread = await client.comments.threads.ensure({
+      ownerKind: lessonId ? "course-lesson" : "course",
+      ownerId: lessonId ?? courseId,
+      title: "课程讨论",
     });
-    return toDiscussion(comment);
+    const response = await client.comments.comments.create(thread.id, { body: content });
+    return toDiscussion({
+      id: response.comment.id,
+      author: response.comment.authorId,
+      content: response.comment.body,
+      createdAt: response.comment.createdAt,
+    });
   }
 
   static async setReaction(
