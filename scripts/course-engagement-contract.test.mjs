@@ -47,3 +47,38 @@ test('existing course databases get the reaction table through a migration', () 
   assert.match(migration, /CREATE TABLE IF NOT EXISTS course_reaction/u);
   assert.match(migration, /idx_course_reaction_target/u);
 });
+
+test('live join, heartbeat, and leave persist attendance', () => {
+  const repository = readFileSync(
+    path.join(
+      repoRoot,
+      'crates/sdkwork-content-course-repository-sqlx/src/repository/postgres_course_repository_port.rs',
+    ),
+    'utf8',
+  );
+  assert.match(repository, /INSERT INTO course_live_attendance/u);
+  assert.match(repository, /ON CONFLICT \(tenant_id, live_session_id, user_id\)/u);
+  assert.match(repository, /SET last_heartbeat_at = \$1/u);
+  assert.match(repository, /SET left_at = \$1/u);
+
+  const service = readFileSync(
+    path.join(
+      repoRoot,
+      'crates/sdkwork-content-course-service/src/service/course_service.rs',
+    ),
+    'utf8',
+  );
+  assert.match(service, /record_live_join\(/u);
+  assert.match(service, /heartbeat_live_attendance\(/u);
+  assert.match(service, /leave_live_attendance\(/u);
+
+  const migration = readFileSync(
+    path.join(
+      repoRoot,
+      'database/migrations/postgres/0005_course_live_attendance.up.sql',
+    ),
+    'utf8',
+  );
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS course_live_attendance/u);
+  assert.match(migration, /UNIQUE \(tenant_id, live_session_id, user_id\)/u);
+});

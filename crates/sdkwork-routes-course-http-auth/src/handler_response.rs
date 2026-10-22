@@ -49,6 +49,7 @@ pub fn handler_value_to_response(
                 .or_else(|| object.get("categoryId"))
                 .or_else(|| object.get("courseId"))
                 .or_else(|| object.get("lessonId"))
+                .or_else(|| object.get("liveSessionId"))
                 .or_else(|| object.get("resourceId"))
                 .and_then(Value::as_str)
                 .map(str::to_owned);

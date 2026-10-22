@@ -58,6 +58,9 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+      // Workspace packages are consumed as TypeScript sources; keep compiled
+      // `.js` residue from shadowing `.ts`/`.tsx` in dev and production builds.
+      extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
     },
     server: {
       port: 3000,

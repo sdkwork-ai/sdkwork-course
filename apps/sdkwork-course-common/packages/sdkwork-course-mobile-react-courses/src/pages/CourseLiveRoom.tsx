@@ -95,6 +95,18 @@ export function CourseLiveRoom() {
   const [joining, setJoining] = useState(false);
   const [joined, setJoined] = useState(false);
 
+  useEffect(() => {
+    if (!joined || !session) return undefined;
+    const sessionId = session.id;
+    const timer = window.setInterval(() => {
+      void CourseService.heartbeatLiveSession(sessionId).catch(() => undefined);
+    }, 60_000);
+    return () => {
+      window.clearInterval(timer);
+      void CourseService.leaveLiveSession(sessionId).catch(() => undefined);
+    };
+  }, [joined, session]);
+
   const handleAction = async () => {
     if (isLive) {
       // Live session join flow: registers attendance on the course service;

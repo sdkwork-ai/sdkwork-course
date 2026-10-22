@@ -14,7 +14,7 @@ use sdkwork_content_course_service::{
     CourseEnrollmentCommand, CourseError,
     CourseItem, CourseLessonCommand, CourseLessonItem, CourseLessonProgressCommand,
     CourseLiveSessionCommand, CourseOfferingCommand, CoursePage, CourseQuery,
-    CourseSectionItem, CourseServiceContext,
+    CourseResult, CourseSectionItem, CourseServiceContext,
 };
 
 use super::course_repository::{
@@ -23,6 +23,40 @@ use super::course_repository::{
 
 fn sqlx_storage_error(error: sqlx::Error) -> CourseError {
     CourseError::storage(error.to_string())
+}
+
+/// Recomputes the live-session attendee snapshot from active attendance rows.
+async fn refresh_live_attendee_count(
+    pool: &sqlx::PgPool,
+    tenant_id: &str,
+    live_session_id: &str,
+    now: &str,
+    actor_id: Option<&str>,
+) -> CourseResult<()> {
+    sqlx::query(
+        r#"
+        UPDATE course_live_session
+        SET attendee_count_snapshot = (
+                SELECT COUNT(*)::int
+                FROM course_live_attendance a
+                WHERE a.tenant_id = course_live_session.tenant_id
+                  AND a.live_session_id = course_live_session.id
+                  AND a.left_at IS NULL
+                  AND a.deleted_at IS NULL
+            ),
+            updated_at = $3,
+            updated_by = $4
+        WHERE tenant_id = $1 AND id = $2 AND deleted_at IS NULL
+        "#,
+    )
+    .bind(tenant_id)
+    .bind(live_session_id)
+    .bind(now)
+    .bind(actor_id)
+    .execute(pool)
+    .await
+    .map_err(sqlx_storage_error)?;
+    Ok(())
 }
 
 impl CourseSqlxRepositoryPort for PostgresCourseRepository {
@@ -62,6 +96,34 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .map_err(sqlx_storage_error)?;
 
             Ok(categories)
+        })
+    }
+
+    fn retrieve_category<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        category_id: String,
+    ) -> CourseRepositoryFuture<'a, Option<CourseCategoryItem>> {
+        Box::pin(async move {
+            let category = sqlx::query_as::<_, CourseCategoryItem>(
+                r#"
+                SELECT id, category_code as code, name, description, icon_resource_snapshot as icon_key,
+                       sort_order::bigint as sort_weight, course_count_snapshot::bigint as course_count
+                FROM course_category
+                WHERE id = $1
+                  AND tenant_id = $2
+                  AND (organization_id = $3 OR organization_id = '0')
+                  AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&category_id)
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .fetch_optional(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+
+            Ok(category)
         })
     }
 
@@ -586,6 +648,33 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             }
 
             Ok(())
+        })
+    }
+
+    fn count_courses<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        publish_status: Option<String>,
+    ) -> CourseRepositoryFuture<'a, i64> {
+        Box::pin(async move {
+            let status_filter = publish_status.as_deref().unwrap_or("");
+            let count = sqlx::query_scalar::<_, i64>(
+                r#"
+                SELECT COUNT(*)
+                FROM course_catalog
+                WHERE tenant_id = $1
+                  AND (organization_id = $2 OR organization_id = '0')
+                  AND ($3 = '' OR publish_status = $3)
+                  AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(status_filter)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            Ok(count)
         })
     }
 
@@ -2273,6 +2362,29 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         })
     }
 
+    fn count_enrollments<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64> {
+        Box::pin(async move {
+            let count = sqlx::query_scalar::<_, i64>(
+                r#"
+                SELECT COUNT(*)
+                FROM course_enrollment
+                WHERE tenant_id = $1
+                  AND (organization_id = $2 OR organization_id = '0')
+                  AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            Ok(count)
+        })
+    }
+
     fn create_enrollment<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -2445,11 +2557,49 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Start transaction
             let mut tx = self.pool().begin().await.map_err(sqlx_storage_error)?;
 
+            // Learner clients (mobile/H5) may report progress without an
+            // enrollment id. Resolve the user's active enrollment from the
+            // lesson's course instead of failing the write.
+            let enrollment_id = if command.enrollment_id.trim().is_empty() {
+                let user_id = context
+                    .user_id
+                    .as_deref()
+                    .ok_or_else(|| CourseError::invalid("User ID required"))?;
+                sqlx::query_scalar::<_, String>(
+                    r#"
+                    SELECT e.id
+                    FROM course_enrollment e
+                    JOIN course_lesson l ON l.course_id = e.course_id
+                    WHERE e.tenant_id = $1 AND e.user_id = $2 AND l.id = $3
+                      AND e.enrollment_status IN ('active', 'completed')
+                      AND e.status = 'active' AND e.deleted_at IS NULL
+                    ORDER BY e.enrolled_at DESC
+                    LIMIT 1
+                    "#,
+                )
+                .bind(&context.tenant_id)
+                .bind(user_id)
+                .bind(&command.lesson_id)
+                .fetch_optional(&mut *tx)
+                .await
+                .map_err(sqlx_storage_error)?
+                .ok_or_else(|| CourseError::not_found("Active enrollment required"))?
+            } else {
+                command.enrollment_id.clone()
+            };
+            let completed_at = if command.completed_at.is_none()
+                && command.progress_status.as_str() == "completed"
+            {
+                Some(now.clone())
+            } else {
+                command.completed_at.clone()
+            };
+
             // Get enrollment and course info
             let enrollment = sqlx::query_as::<_, (String, String, String)>(
                 "SELECT id, course_id, offering_id FROM course_enrollment WHERE id = $1 AND tenant_id = $2 AND enrollment_status = 'active' AND deleted_at IS NULL"
             )
-            .bind(&command.enrollment_id)
+            .bind(&enrollment_id)
             .bind(&context.tenant_id)
             .fetch_one(&mut *tx)
             .await
@@ -2472,14 +2622,22 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 sqlx::query(
                     r#"
                     UPDATE course_lesson_progress 
-                    SET progress_status = $1, watch_seconds = $2, completed_at = $3,
-                        updated_at = $4, updated_by = $5, version = version + 1
-                    WHERE id = $6 AND tenant_id = $7
+                    SET progress_status = CASE
+                            WHEN progress_status = 'completed' THEN 'completed'
+                            ELSE $1
+                        END,
+                        watch_seconds = COALESCE($2, watch_seconds),
+                        watch_position_seconds = COALESCE($3, watch_position_seconds),
+                        completed_at = COALESCE($4, completed_at),
+                        updated_at = $5, updated_by = $6,
+                        version = version + 1
+                    WHERE id = $7 AND tenant_id = $8
                     "#,
                 )
                 .bind(command.progress_status.as_str())
-                .bind(command.watched_seconds.unwrap_or(0))
-                .bind(&command.completed_at)
+                .bind(command.watched_seconds)
+                .bind(command.watch_position_seconds)
+                .bind(&completed_at)
                 .bind(&now)
                 .bind(&context.actor_id)
                 .bind(&progress_id)
@@ -2507,10 +2665,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     INSERT INTO course_lesson_progress (
                         id, uuid, tenant_id, organization_id, course_id, offering_id,
                         lesson_id, enrollment_id, user_id, lesson_kind, progress_status,
-                        watch_seconds, completed_at, status, created_at, created_by,
-                        updated_at, updated_by, version
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'active', $14, $15, $16, $17, 0)
-                    "#
+                        watch_seconds, watch_position_seconds, completed_at, status,
+                        created_at, created_by, updated_at, updated_by, version
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+                              $14, 'active', $15, $16, $17, $18, 0)
+                    "#,
                 )
                 .bind(&progress_id)
                 .bind(&progress_uuid)
@@ -2519,12 +2678,13 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .bind(&enrollment.1) // course_id
                 .bind(&enrollment.2) // offering_id
                 .bind(&command.lesson_id)
-                .bind(&command.enrollment_id)
+                .bind(&enrollment_id)
                 .bind(&context.user_id)
                 .bind(&lesson_kind)
                 .bind(command.progress_status.as_str())
                 .bind(command.watched_seconds.unwrap_or(0))
-                .bind(&command.completed_at)
+                .bind(command.watch_position_seconds.unwrap_or(0))
+                .bind(&completed_at)
                 .bind(&now)
                 .bind(&context.actor_id)
                 .bind(&now)
@@ -2538,7 +2698,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             let completed_lessons = sqlx::query_scalar::<_, i64>(
                 "SELECT COUNT(*) FROM course_lesson_progress WHERE enrollment_id = $1 AND tenant_id = $2 AND progress_status = 'completed' AND deleted_at IS NULL"
             )
-            .bind(&command.enrollment_id)
+            .bind(&enrollment_id)
             .bind(&context.tenant_id)
             .fetch_one(&mut *tx)
             .await
@@ -2581,7 +2741,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             .bind(progress_percent.to_string())
             .bind(&now)
             .bind(&context.actor_id)
-            .bind(&command.enrollment_id)
+            .bind(&enrollment_id)
             .bind(&context.tenant_id)
             .execute(&mut *tx)
             .await
@@ -2670,6 +2830,29 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             .map_err(sqlx_storage_error)?;
 
             Ok(application)
+        })
+    }
+
+    fn count_applications<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64> {
+        Box::pin(async move {
+            let count = sqlx::query_scalar::<_, i64>(
+                r#"
+                SELECT COUNT(*)
+                FROM course_application
+                WHERE tenant_id = $1
+                  AND (organization_id = $2 OR organization_id = '0')
+                  AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            Ok(count)
         })
     }
 
@@ -3187,6 +3370,158 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     })
                 },
             ))
+        })
+    }
+
+    fn record_live_join<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseRepositoryFuture<'a, ()> {
+        Box::pin(async move {
+            let user_id = context
+                .user_id
+                .clone()
+                .ok_or_else(|| CourseError::invalid("User ID required"))?;
+            let now = chrono::Utc::now().to_rfc3339();
+            let attendance_id = uuid::Uuid::new_v4().to_string();
+            let attendance_uuid = uuid::Uuid::new_v4().to_string();
+
+            let result = sqlx::query(
+                r#"
+                INSERT INTO course_live_attendance (
+                    id, uuid, tenant_id, organization_id, live_session_id, course_id,
+                    offering_id, lesson_id, user_id, joined_at, last_heartbeat_at,
+                    status, created_at, created_by, updated_at, updated_by, version
+                )
+                SELECT $1, $2, $3, $4, s.id, s.course_id, s.offering_id, s.lesson_id,
+                       $6, $7, $7, 'joined', $7, $8, $7, $8, 0
+                FROM course_live_session s
+                WHERE s.id = $5 AND s.tenant_id = $3 AND s.deleted_at IS NULL
+                ON CONFLICT (tenant_id, live_session_id, user_id) DO UPDATE SET
+                    joined_at = EXCLUDED.joined_at,
+                    last_heartbeat_at = EXCLUDED.last_heartbeat_at,
+                    left_at = NULL,
+                    attendance_seconds = 0,
+                    status = 'joined',
+                    updated_at = EXCLUDED.updated_at,
+                    updated_by = EXCLUDED.updated_by,
+                    version = course_live_attendance.version + 1
+                "#,
+            )
+            .bind(&attendance_id)
+            .bind(&attendance_uuid)
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(&live_session_id)
+            .bind(&user_id)
+            .bind(&now)
+            .bind(&context.actor_id)
+            .execute(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+
+            if result.rows_affected() == 0 {
+                return Err(CourseError::not_found("Live session not found"));
+            }
+
+            let _ = refresh_live_attendee_count(
+                self.pool(),
+                &context.tenant_id,
+                &live_session_id,
+                &now,
+                context.actor_id.as_deref(),
+            )
+            .await?;
+            Ok(())
+        })
+    }
+
+    fn heartbeat_live_attendance<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseRepositoryFuture<'a, ()> {
+        Box::pin(async move {
+            let user_id = context
+                .user_id
+                .clone()
+                .ok_or_else(|| CourseError::invalid("User ID required"))?;
+            let now = chrono::Utc::now().to_rfc3339();
+
+            let result = sqlx::query(
+                r#"
+                UPDATE course_live_attendance
+                SET last_heartbeat_at = $1, status = 'attending',
+                    updated_at = $1, updated_by = $2, version = version + 1
+                WHERE tenant_id = $3 AND live_session_id = $4 AND user_id = $5
+                  AND left_at IS NULL AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&now)
+            .bind(&context.actor_id)
+            .bind(&context.tenant_id)
+            .bind(&live_session_id)
+            .bind(&user_id)
+            .execute(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+
+            if result.rows_affected() == 0 {
+                return Err(CourseError::not_found(
+                    "Live attendance not found; join the session first",
+                ));
+            }
+            Ok(())
+        })
+    }
+
+    fn leave_live_attendance<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseRepositoryFuture<'a, ()> {
+        Box::pin(async move {
+            let user_id = context
+                .user_id
+                .clone()
+                .ok_or_else(|| CourseError::invalid("User ID required"))?;
+            let now = chrono::Utc::now().to_rfc3339();
+
+            let result = sqlx::query(
+                r#"
+                UPDATE course_live_attendance
+                SET left_at = $1, status = 'left',
+                    attendance_seconds = GREATEST(
+                        0,
+                        EXTRACT(EPOCH FROM ($1::timestamptz - joined_at::timestamptz))::int
+                    ),
+                    updated_at = $1, updated_by = $2, version = version + 1
+                WHERE tenant_id = $3 AND live_session_id = $4 AND user_id = $5
+                  AND left_at IS NULL AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&now)
+            .bind(&context.actor_id)
+            .bind(&context.tenant_id)
+            .bind(&live_session_id)
+            .bind(&user_id)
+            .execute(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+
+            // Leaving twice is harmless; still refresh the snapshot.
+            if result.rows_affected() > 0 {
+                let _ = refresh_live_attendee_count(
+                    self.pool(),
+                    &context.tenant_id,
+                    &live_session_id,
+                    &now,
+                    context.actor_id.as_deref(),
+                )
+                .await?;
+            }
+            Ok(())
         })
     }
 

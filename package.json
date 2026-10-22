@@ -66,7 +66,7 @@
     "topology:validate": "node ../sdkwork-app-topology/scripts/sdkwork-topology.mjs validate --root . --spec specs/topology.spec.json",
     "_sdkwork:test": "node --test scripts/course-workspace-boundary.test.mjs",
     "_sdkwork:check": "pnpm run check:api-envelope && pnpm run check:app-composition && pnpm run check:browser-build-scripts && pnpm run check:cors-standard && pnpm run check:openapi-drift",
-    "_sdkwork:verify": "pnpm run test && pnpm run test:design && pnpm run test:sdk-contract && pnpm run test:contracts && pnpm run test:contract:database && pnpm run test:route-integration && pnpm run check:api-envelope && pnpm run check:openapi-drift && pnpm run check:app-composition && pnpm run typecheck:apps && cargo test --workspace && pnpm check:cors-standard",
+    "_sdkwork:verify": "pnpm run test && pnpm run test:design && pnpm run test:sdk-contract && pnpm run test:contracts && pnpm run test:contract:database && pnpm run test:route-integration && pnpm run test:engagement && pnpm run check:api-envelope && pnpm run check:openapi-drift && pnpm run check:app-composition && pnpm run typecheck:apps && cargo test --workspace && pnpm check:cors-standard",
     "_sdkwork:clean": "cargo clean",
     "_sdkwork:build": "cargo build --workspace --release && pnpm --dir apps/sdkwork-course-pc run build:prod && pnpm --dir apps/sdkwork-course-h5 run build:prod && pnpm --dir apps/sdkwork-course-mini-program build"
   },

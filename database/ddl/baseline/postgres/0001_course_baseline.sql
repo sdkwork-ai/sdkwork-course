@@ -263,6 +263,32 @@ CREATE TABLE IF NOT EXISTS course_live_session (
   deleted_by TEXT
 );
 
+CREATE TABLE IF NOT EXISTS course_live_attendance (
+  id TEXT PRIMARY KEY,
+  uuid TEXT NOT NULL UNIQUE,
+  tenant_id TEXT NOT NULL,
+  organization_id TEXT NOT NULL DEFAULT '0',
+  live_session_id TEXT NOT NULL,
+  course_id TEXT NOT NULL,
+  offering_id TEXT NOT NULL,
+  lesson_id TEXT,
+  user_id TEXT NOT NULL,
+  joined_at TEXT NOT NULL,
+  last_heartbeat_at TEXT,
+  left_at TEXT,
+  attendance_seconds INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL,
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL,
+  created_by TEXT,
+  updated_at TEXT NOT NULL,
+  updated_by TEXT,
+  version INTEGER NOT NULL DEFAULT 0,
+  deleted_at TEXT,
+  deleted_by TEXT,
+  UNIQUE (tenant_id, live_session_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS course_enrollment (
   id TEXT PRIMARY KEY,
   uuid TEXT NOT NULL UNIQUE,
@@ -469,6 +495,8 @@ CREATE INDEX IF NOT EXISTS idx_course_lesson_progress_live
   ON course_lesson_progress (live_session_id, progress_status);
 CREATE INDEX IF NOT EXISTS idx_course_reaction_target
   ON course_reaction (target_type, target_id, reaction_type, status);
+CREATE INDEX IF NOT EXISTS idx_course_live_attendance_session
+  ON course_live_attendance (tenant_id, live_session_id, status);
 CREATE INDEX IF NOT EXISTS idx_course_catalog_link_course
   ON course_catalog_link (course_id, link_type, sort_order);
 CREATE INDEX IF NOT EXISTS idx_course_application_status

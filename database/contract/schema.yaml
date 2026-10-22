@@ -54,3 +54,6 @@ tables:
   - name: course_catalog_link
     lifecycle_status: active
     owner: course-platform
+  - name: course_live_attendance
+    lifecycle_status: active
+    owner: course-platform

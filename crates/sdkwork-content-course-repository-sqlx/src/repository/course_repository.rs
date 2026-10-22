@@ -33,6 +33,12 @@ pub trait CourseSqlxRepositoryPort {
         query: CourseQuery,
     ) -> CourseRepositoryFuture<'a, Vec<CourseCategoryItem>>;
 
+    fn retrieve_category<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        category_id: String,
+    ) -> CourseRepositoryFuture<'a, Option<CourseCategoryItem>>;
+
     fn save_category<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -75,6 +81,12 @@ pub trait CourseSqlxRepositoryPort {
         context: &'a CourseServiceContext,
         instructor_id: String,
     ) -> CourseRepositoryFuture<'a, ()>;
+
+    fn count_courses<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        publish_status: Option<String>,
+    ) -> CourseRepositoryFuture<'a, i64>;
 
     fn list_courses<'a>(
         &'a self,
@@ -190,6 +202,11 @@ pub trait CourseSqlxRepositoryPort {
         resource_ref_id: String,
     ) -> CourseRepositoryFuture<'a, ()>;
 
+    fn count_enrollments<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64>;
+
     fn create_enrollment<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -213,6 +230,11 @@ pub trait CourseSqlxRepositoryPort {
         context: &'a CourseServiceContext,
         request: CourseApplicationCreateRequest,
     ) -> CourseRepositoryFuture<'a, CourseApplicationItem>;
+
+    fn count_applications<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64>;
 
     fn list_applications<'a>(
         &'a self,
@@ -279,6 +301,24 @@ pub trait CourseSqlxRepositoryPort {
         context: &'a CourseServiceContext,
         live_session_id: String,
     ) -> CourseRepositoryFuture<'a, Option<Value>>;
+
+    fn record_live_join<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseRepositoryFuture<'a, ()>;
+
+    fn heartbeat_live_attendance<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseRepositoryFuture<'a, ()>;
+
+    fn leave_live_attendance<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseRepositoryFuture<'a, ()>;
 
     fn list_enrollments<'a>(
         &'a self,

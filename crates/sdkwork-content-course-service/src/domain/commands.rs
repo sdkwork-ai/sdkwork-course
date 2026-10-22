@@ -258,6 +258,7 @@ pub struct CourseLessonProgressCommand {
     pub lesson_id: String,
     pub progress_status: CourseProgressStatus,
     pub watched_seconds: Option<i64>,
+    pub watch_position_seconds: Option<i64>,
     pub completed_at: Option<String>,
     pub idempotency_key: Option<String>,
 }

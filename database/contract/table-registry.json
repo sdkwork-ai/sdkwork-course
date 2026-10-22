@@ -91,6 +91,12 @@
       "owner": "course-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_live_attendance",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
     }
   ]
 }

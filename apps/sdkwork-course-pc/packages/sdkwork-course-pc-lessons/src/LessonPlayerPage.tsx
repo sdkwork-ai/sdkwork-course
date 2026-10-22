@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { enrollInFirstCourseOffering, getCommentsClient, getDriveAppSdkClient, retrieveCourseEngagement, useCourseSdk, type CourseEngagement } from '@sdkwork/sdkwork-course-pc-core'
@@ -179,6 +179,24 @@ export function LessonPlayerPage() {
     staleTime: 10 * 60 * 1000,
     retry: 1,
   })
+
+  const lastWatchReport = useRef(0)
+  useEffect(() => {
+    lastWatchReport.current = 0
+  }, [lesson?.id])
+
+  const handleVideoTimeUpdate = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = event.currentTarget
+    const current = Math.floor(video.currentTime)
+    if (!lesson?.id || current - lastWatchReport.current < 30) return
+    lastWatchReport.current = current
+    void sdk.courseLessonProgress.watchPositions
+      .update(lesson.id, {
+        positionSeconds: current,
+        durationSeconds: Math.floor(video.duration || 0),
+      })
+      .catch(() => undefined)
+  }
 
   const completeMutation = useMutation({
     mutationFn: async () => {
@@ -399,6 +417,7 @@ export function LessonPlayerPage() {
                   autoPlay
                   playsInline
                   preload="metadata"
+                  onTimeUpdate={handleVideoTimeUpdate}
                   className="h-full w-full bg-black object-contain"
                 />
               </div>

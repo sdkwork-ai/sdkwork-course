@@ -104,3 +104,10 @@ etc/**/*.local.*
 # Local backup copy of a previously generated SDK tree (superseded by the
 # tracked `server-openapi` directory). Added by repo-commit sweep; never commit.
 **/server-openapi-old/
+
+# Same sibling rule for the remaining pc-* packages: their `src` trees carry no
+# authored .js/.d.ts (verified: `git ls-files 'apps/sdkwork-course-pc/**/src/**/*.d.ts'`
+# is empty and the only tracked .js live at package roots as jest.config.js), so
+# the emit-beside-source case is expressible as a path-scoped ignore here too.
+/apps/sdkwork-course-pc/packages/*/src/**/*.js
+/apps/sdkwork-course-pc/packages/*/src/**/*.d.ts

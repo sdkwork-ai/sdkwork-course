@@ -43,6 +43,14 @@ impl CourseCategoryRepository for PostgresCourseRepository {
         CourseSqlxRepositoryPort::list_categories(self, context, query).await
     }
 
+    async fn retrieve_category(
+        &self,
+        context: &CourseServiceContext,
+        category_id: String,
+    ) -> CourseResult<Option<CourseCategoryItem>> {
+        CourseSqlxRepositoryPort::retrieve_category(self, context, category_id).await
+    }
+
     async fn save_category(
         &self,
         context: &CourseServiceContext,
@@ -123,6 +131,14 @@ impl CourseInstructorRepository for PostgresCourseRepository {
 
 #[async_trait::async_trait]
 impl CourseCatalogRepository for PostgresCourseRepository {
+    async fn count_courses(
+        &self,
+        context: &CourseServiceContext,
+        publish_status: Option<String>,
+    ) -> CourseResult<i64> {
+        CourseSqlxRepositoryPort::count_courses(self, context, publish_status).await
+    }
+
     async fn list_courses(
         &self,
         context: &CourseServiceContext,
@@ -486,12 +502,40 @@ impl CourseLiveSessionRepository for PostgresCourseRepository {
     ) -> CourseResult<Option<Value>> {
         CourseSqlxRepositoryPort::retrieve_live_session(self, context, live_session_id).await
     }
+
+    async fn record_live_join(
+        &self,
+        context: &CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseResult<()> {
+        CourseSqlxRepositoryPort::record_live_join(self, context, live_session_id).await
+    }
+
+    async fn heartbeat_live_attendance(
+        &self,
+        context: &CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseResult<()> {
+        CourseSqlxRepositoryPort::heartbeat_live_attendance(self, context, live_session_id).await
+    }
+
+    async fn leave_live_attendance(
+        &self,
+        context: &CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseResult<()> {
+        CourseSqlxRepositoryPort::leave_live_attendance(self, context, live_session_id).await
+    }
 }
 
 // ── Enrollment ──────────────────────────────────────────────────────
 
 #[async_trait::async_trait]
 impl CourseEnrollmentRepository for PostgresCourseRepository {
+    async fn count_enrollments(&self, context: &CourseServiceContext) -> CourseResult<i64> {
+        CourseSqlxRepositoryPort::count_enrollments(self, context).await
+    }
+
     async fn create_enrollment(
         &self,
         context: &CourseServiceContext,
@@ -658,6 +702,10 @@ impl CourseProgressRepository for PostgresCourseRepository {
 
 #[async_trait::async_trait]
 impl CourseApplicationRepository for PostgresCourseRepository {
+    async fn count_applications(&self, context: &CourseServiceContext) -> CourseResult<i64> {
+        CourseSqlxRepositoryPort::count_applications(self, context).await
+    }
+
     async fn list_applications(
         &self,
         context: &CourseServiceContext,

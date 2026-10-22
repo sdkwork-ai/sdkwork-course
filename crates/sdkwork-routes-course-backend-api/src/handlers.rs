@@ -90,7 +90,7 @@ pub async fn course_instructors_retrieve(
     let result = service.retrieve_instructor(context, instructor_id).await?;
     match result {
         Some(instructor) => Ok(ok(instructor)),
-        None => Ok(ok(serde_json::json!(null))),
+        None => Err(CourseRouteError::not_found("Instructor not found")),
     }
 }
 
@@ -371,7 +371,7 @@ pub async fn course_lessons_retrieve(
     let result = service.retrieve_lesson(context, lesson_id).await?;
     match result {
         Some(lesson) => Ok(ok(serde_json::to_value(lesson).unwrap_or_default())),
-        None => Ok(ok(serde_json::json!(null))),
+        None => Err(CourseRouteError::not_found("Lesson not found")),
     }
 }
 
@@ -688,7 +688,7 @@ pub async fn course_applications_retrieve(
         Some(application) => Ok(ok(
             serde_json::to_value(application).unwrap_or_default(),
         )),
-        None => Ok(ok(serde_json::json!(null))),
+        None => Err(CourseRouteError::not_found("Application not found")),
     }
 }
 
@@ -789,7 +789,7 @@ pub async fn course_audit_logs_retrieve(
     let result = service.retrieve_audit_log(context, audit_log_id).await?;
     match result {
         Some(audit_log) => Ok(ok(serde_json::to_value(audit_log).unwrap_or_default())),
-        None => Ok(ok(serde_json::json!(null))),
+        None => Err(CourseRouteError::not_found("Audit log not found")),
     }
 }
 // ── Review workflow ─────────────────────────────────────────────────

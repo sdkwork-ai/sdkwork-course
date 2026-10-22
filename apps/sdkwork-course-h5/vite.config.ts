@@ -32,6 +32,8 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+      // Prefer the TypeScript source plane over gitignored tsc residue.
+      extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
       dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
     },
     server: {

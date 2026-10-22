@@ -87,6 +87,48 @@ impl CourseServiceImpl {
         }
     }
 
+    /// Whether the caller may read paid lesson content for a published course.
+    async fn has_full_course_access(
+        &self,
+        context: &CourseServiceContext,
+        course_id: &str,
+    ) -> CourseResult<bool> {
+        let Some(course) = self
+            .catalog_repo
+            .retrieve_course(context, course_id.to_string())
+            .await?
+        else {
+            return Ok(false);
+        };
+        if context.permissions.iter().any(|permission| {
+            permission == "*"
+                || (permission.starts_with("course.")
+                    && (permission.ends_with(".read") || permission.ends_with(".write")))
+        }) {
+            return Ok(true);
+        }
+        if context.user_id.is_some()
+            && course.author_user_id.as_deref() == context.user_id.as_deref()
+        {
+            return Ok(true);
+        }
+        if course.publish_status != "published" {
+            return Ok(false);
+        }
+        if course.is_free {
+            return Ok(true);
+        }
+        let user_id = context.user_id.clone().or_else(|| context.actor_id.clone());
+        match user_id {
+            Some(user_id) => {
+                self.enrollment_repo
+                    .has_active_enrollment(context, course_id.to_string(), user_id)
+                    .await
+            }
+            None => Ok(false),
+        }
+    }
+
     async fn append_course_audit(
         &self,
         context: &CourseServiceContext,
@@ -118,6 +160,12 @@ pub trait CourseApplicationService: Send + Sync {
         context: &CourseServiceContext,
         query: CourseQuery,
     ) -> CourseResult<Vec<CourseCategoryItem>>;
+
+    async fn retrieve_category(
+        &self,
+        context: &CourseServiceContext,
+        category_id: String,
+    ) -> CourseResult<Option<CourseCategoryItem>>;
 
     async fn save_category(
         &self,
@@ -616,6 +664,16 @@ impl CourseApplicationService for CourseServiceImpl {
         self.category_repo.list_categories(context, query).await
     }
 
+    async fn retrieve_category(
+        &self,
+        context: &CourseServiceContext,
+        category_id: String,
+    ) -> CourseResult<Option<CourseCategoryItem>> {
+        self.category_repo
+            .retrieve_category(context, category_id)
+            .await
+    }
+
     async fn save_category(
         &self,
         context: &CourseServiceContext,
@@ -826,33 +884,25 @@ impl CourseApplicationService for CourseServiceImpl {
         if course.publish_status != "published" {
             return Ok(None);
         }
-        if !course.is_free {
-            let user_id = context.user_id.clone().or_else(|| context.actor_id.clone());
-            let enrolled = match user_id {
-                Some(user_id) => {
-                    self.enrollment_repo
-                        .has_active_enrollment(context, course_id.clone(), user_id)
-                        .await?
+        if !self
+            .has_full_course_access(context, &course_id)
+            .await?
+        {
+            let free_lesson_ids = curriculum
+                .lessons
+                .iter()
+                .filter(|lesson| lesson.free_preview)
+                .map(|lesson| lesson.id.clone())
+                .collect::<std::collections::HashSet<_>>();
+            for lesson in &mut curriculum.lessons {
+                if !lesson.free_preview {
+                    lesson.content = None;
+                    lesson.external_source_id = None;
                 }
-                None => false,
-            };
-            if !enrolled {
-                let free_lesson_ids = curriculum
-                    .lessons
-                    .iter()
-                    .filter(|lesson| lesson.free_preview)
-                    .map(|lesson| lesson.id.clone())
-                    .collect::<std::collections::HashSet<_>>();
-                for lesson in &mut curriculum.lessons {
-                    if !lesson.free_preview {
-                        lesson.content = None;
-                        lesson.external_source_id = None;
-                    }
-                }
-                curriculum.resources.retain(|resource| {
-                    free_lesson_ids.contains(&resource.owner_id)
-                });
             }
+            curriculum.resources.retain(|resource| {
+                free_lesson_ids.contains(&resource.owner_id)
+            });
         }
         Ok(Some(curriculum))
     }
@@ -1180,7 +1230,25 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         course_id: String,
     ) -> CourseResult<Vec<CourseLessonItem>> {
-        self.lesson_repo.list_lessons(context, course_id).await
+        let mut lessons = self
+            .lesson_repo
+            .list_lessons(context, course_id.clone())
+            .await?;
+        let published = self
+            .catalog_repo
+            .retrieve_course(context, course_id.clone())
+            .await?
+            .map(|course| course.publish_status == "published")
+            .unwrap_or(false);
+        if !self.has_full_course_access(context, &course_id).await? {
+            for lesson in &mut lessons {
+                if !published || !lesson.free_preview {
+                    lesson.content = None;
+                    lesson.external_source_id = None;
+                }
+            }
+        }
+        Ok(lessons)
     }
 
     async fn retrieve_lesson(
@@ -1188,7 +1256,24 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         lesson_id: String,
     ) -> CourseResult<Option<CourseLessonItem>> {
-        self.lesson_repo.retrieve_lesson(context, lesson_id).await
+        let Some(lesson) = self.lesson_repo.retrieve_lesson(context, lesson_id).await? else {
+            return Ok(None);
+        };
+        let published = self
+            .catalog_repo
+            .retrieve_course(context, lesson.course_id.clone())
+            .await?
+            .map(|course| course.publish_status == "published")
+            .unwrap_or(false);
+        if (lesson.free_preview && published)
+            || self
+                .has_full_course_access(context, &lesson.course_id)
+                .await?
+        {
+            Ok(Some(lesson))
+        } else {
+            Err(CourseError::not_found("Lesson content is locked"))
+        }
     }
 
     async fn save_lesson(
@@ -1231,6 +1316,28 @@ impl CourseApplicationService for CourseServiceImpl {
         owner_type: String,
         owner_id: String,
     ) -> CourseResult<Vec<Value>> {
+        if owner_type == "lesson" {
+            if let Some(lesson) = self
+                .lesson_repo
+                .retrieve_lesson(context, owner_id.clone())
+                .await?
+            {
+                if !self
+                    .has_full_course_access(context, &lesson.course_id)
+                    .await?
+                {
+                    let published = self
+                        .catalog_repo
+                        .retrieve_course(context, lesson.course_id.clone())
+                        .await?
+                        .map(|course| course.publish_status == "published")
+                        .unwrap_or(false);
+                    if !published || !lesson.free_preview {
+                        return Ok(Vec::new());
+                    }
+                }
+            }
+        }
         self.resource_repo
             .list_resources(context, owner_type, owner_id)
             .await
@@ -1460,9 +1567,14 @@ impl CourseApplicationService for CourseServiceImpl {
             .clone()
             .ok_or_else(|| CourseError::invalid("User ID required"))?;
 
-        self.live_provider_port
-            .create_join_grant(context, live_session_id, user_id)
-            .await
+        let grant = self
+            .live_provider_port
+            .create_join_grant(context, live_session_id.clone(), user_id)
+            .await?;
+        self.live_session_repo
+            .record_live_join(context, live_session_id)
+            .await?;
+        Ok(grant)
     }
 
     // ── Reactions ───────────────────────────────────────────────────
@@ -1624,12 +1736,9 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         live_session_id: String,
     ) -> CourseResult<()> {
-        // Update last_heartbeat_at in lesson progress
-        let _ = self
-            .live_session_repo
-            .retrieve_live_session(context, live_session_id.clone())
-            .await?;
-        Ok(())
+        self.live_session_repo
+            .heartbeat_live_attendance(context, live_session_id)
+            .await
     }
 
     async fn leave_live_session(
@@ -1637,12 +1746,9 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         live_session_id: String,
     ) -> CourseResult<()> {
-        // Record leave time in lesson progress
-        let _ = self
-            .live_session_repo
-            .retrieve_live_session(context, live_session_id)
-            .await?;
-        Ok(())
+        self.live_session_repo
+            .leave_live_attendance(context, live_session_id)
+            .await
     }
 
     async fn retrieve_live_session_replay(
@@ -1658,25 +1764,19 @@ impl CourseApplicationService for CourseServiceImpl {
     // ── Reports ─────────────────────────────────────────────────────
 
     async fn list_reports_overview(&self, context: &CourseServiceContext) -> CourseResult<Value> {
-        // Aggregate counts from multiple repositories
-        let courses = self
+        let total_courses = self.catalog_repo.count_courses(context, None).await?;
+        let published_courses = self
             .catalog_repo
-            .list_courses(context, CourseQuery::default())
+            .count_courses(context, Some("published".to_string()))
             .await?;
-        let enrollments = self
-            .enrollment_repo
-            .list_enrollments(context, CourseQuery::default())
-            .await?;
-        let applications = self
-            .application_repo
-            .list_applications(context, CourseQuery::default())
-            .await?;
+        let total_enrollments = self.enrollment_repo.count_enrollments(context).await?;
+        let total_applications = self.application_repo.count_applications(context).await?;
 
         Ok(serde_json::json!({
-            "totalCourses": courses.total,
-            "totalEnrollments": enrollments.len(),
-            "totalApplications": applications.len(),
-            "publishedCourses": courses.items.iter().filter(|c| c.status == "published").count(),
+            "totalCourses": total_courses,
+            "totalEnrollments": total_enrollments,
+            "totalApplications": total_applications,
+            "publishedCourses": published_courses,
         }))
     }
 

@@ -74,6 +74,8 @@ export interface MyCourseData {
 
 export interface CourseDiscussion {
   id: string;
+  parentId?: string;
+  rootId?: string;
   user: {
     name: string;
     avatar: string;
@@ -81,7 +83,14 @@ export interface CourseDiscussion {
   content: string;
   likes: number;
   time: string;
+  createdAt?: string;
+  replyCount?: number;
   reply?: {
+    author: string;
+    content: string;
+  };
+  quote?: {
+    id: string;
     author: string;
     content: string;
   };
@@ -189,19 +198,29 @@ function toLessonUI(lesson: CourseLesson): CourseLessonUI {
 
 function toDiscussion(comment: {
   id: string;
+  parentId?: string;
+  rootId?: string;
   author?: string;
+  avatarUrl?: string;
   content: string;
   createdAt: string;
+  replyCount?: number;
+  quote?: { id: string; author: string; content: string };
 }): CourseDiscussion {
   return {
     id: comment.id,
+    parentId: comment.parentId,
+    rootId: comment.rootId,
     user: {
       name: comment.author ?? "匿名",
-      avatar: "",
+      avatar: comment.avatarUrl ?? "",
     },
     content: comment.content,
     likes: 0,
     time: new Date(comment.createdAt).toLocaleDateString(),
+    createdAt: comment.createdAt,
+    replyCount: comment.replyCount,
+    quote: comment.quote,
   };
 }
 
@@ -311,6 +330,10 @@ export class CourseService {
     return toLiveSessionUI(session);
   }
 
+  static async heartbeatLiveSession(liveSessionId: string): Promise<void> {
+    await port().liveSessions.heartbeat(liveSessionId);
+  }
+
   static async leaveLiveSession(liveSessionId: string): Promise<CourseLiveSessionUI> {
     const session = await port().liveSessions.leave(liveSessionId);
     return toLiveSessionUI(session);
@@ -326,13 +349,27 @@ export class CourseService {
       ownerId: lessonId ?? courseId,
       title: "课程讨论",
     });
-    const page = await client.comments.comments.list(thread.id, { pageSize: 50 });
+    const page = await client.comments.comments.list(thread.id, {
+      pageSize: 50,
+      sort: "newest",
+    });
     return (page.items ?? []).map((comment) =>
       toDiscussion({
         id: comment.id,
-        author: comment.authorId,
+        parentId: comment.parentId,
+        rootId: comment.rootId,
+        author: comment.authorName || comment.authorId,
+        avatarUrl: comment.authorAvatarUrl,
         content: comment.body,
         createdAt: comment.createdAt,
+        replyCount: comment.replyCount,
+        quote: comment.quote
+          ? {
+              id: comment.quote.id,
+              author: comment.quote.authorName || comment.quote.authorId,
+              content: comment.quote.body,
+            }
+          : undefined,
       }),
     );
   }
@@ -341,6 +378,7 @@ export class CourseService {
     courseId: string,
     lessonId: string | undefined,
     content: string,
+    options: { parentId?: string; quoteId?: string } = {},
   ): Promise<CourseDiscussion> {
     const client = getCommentsRuntimeClient();
     const thread = await client.comments.threads.ensure({
@@ -348,12 +386,29 @@ export class CourseService {
       ownerId: lessonId ?? courseId,
       title: "课程讨论",
     });
-    const response = await client.comments.comments.create(thread.id, { body: content });
+    const response = await client.comments.comments.create(thread.id, {
+      body: content,
+      parentId: options.parentId,
+      quoteId: options.quoteId,
+    });
     return toDiscussion({
       id: response.comment.id,
-      author: response.comment.authorId,
+      parentId: response.comment.parentId,
+      rootId: response.comment.rootId,
+      author: response.comment.authorName || response.comment.authorId,
+      avatarUrl: response.comment.authorAvatarUrl,
       content: response.comment.body,
       createdAt: response.comment.createdAt,
+      replyCount: response.comment.replyCount,
+      quote: response.comment.quote
+        ? {
+            id: response.comment.quote.id,
+            author:
+              response.comment.quote.authorName ||
+              response.comment.quote.authorId,
+            content: response.comment.quote.body,
+          }
+        : undefined,
     });
   }
 

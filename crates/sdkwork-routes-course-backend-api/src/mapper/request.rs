@@ -8,9 +8,17 @@ pub fn parse_course_query(params: &Value) -> CourseQuery {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
     };
+    // Query extractors hand every value over as a string; accept both JSON
+    // numbers and numeric strings so pagination is never silently dropped.
+    let read_i64 = |key: &str| {
+        params.get(key).and_then(|v| {
+            v.as_i64()
+                .or_else(|| v.as_str().and_then(|s| s.parse::<i64>().ok()))
+        })
+    };
     CourseQuery {
-        page: params.get("page").and_then(|v| v.as_i64()),
-        page_size: params.get("page_size").and_then(|v| v.as_i64()),
+        page: read_i64("page"),
+        page_size: read_i64("page_size").or_else(|| read_i64("pageSize")),
         q: read("q"),
         category: read("category"),
         level: read("level"),
@@ -37,5 +45,25 @@ pub fn parse_service_context(
         request_id: None,
         trace_id: None,
         permissions: vec![],
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_course_query;
+    use serde_json::json;
+
+    #[test]
+    fn parses_pagination_from_query_string_values() {
+        let query = parse_course_query(&json!({
+            "page": "2",
+            "page_size": "25",
+            "q": "rust",
+            "author_user_id": "user-1"
+        }));
+        assert_eq!(query.page, Some(2));
+        assert_eq!(query.page_size, Some(25));
+        assert_eq!(query.q.as_deref(), Some("rust"));
+        assert_eq!(query.author_user_id.as_deref(), Some("user-1"));
     }
 }

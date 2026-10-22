@@ -16,6 +16,12 @@ pub trait CourseCategoryRepository: Send + Sync {
         query: CourseQuery,
     ) -> CourseResult<Vec<CourseCategoryItem>>;
 
+    async fn retrieve_category(
+        &self,
+        context: &CourseServiceContext,
+        category_id: String,
+    ) -> CourseResult<Option<CourseCategoryItem>>;
+
     async fn save_category(
         &self,
         context: &CourseServiceContext,
@@ -71,6 +77,11 @@ pub trait CourseInstructorRepository: Send + Sync {
 
 #[async_trait::async_trait]
 pub trait CourseCatalogRepository: Send + Sync {
+    async fn count_courses(
+        &self,
+        context: &CourseServiceContext,
+        publish_status: Option<String>,
+    ) -> CourseResult<i64>;
     async fn list_courses(
         &self,
         context: &CourseServiceContext,
@@ -298,10 +309,30 @@ pub trait CourseLiveSessionRepository: Send + Sync {
         context: &CourseServiceContext,
         live_session_id: String,
     ) -> CourseResult<Option<serde_json::Value>>;
+
+    async fn record_live_join(
+        &self,
+        context: &CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseResult<()>;
+
+    async fn heartbeat_live_attendance(
+        &self,
+        context: &CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseResult<()>;
+
+    async fn leave_live_attendance(
+        &self,
+        context: &CourseServiceContext,
+        live_session_id: String,
+    ) -> CourseResult<()>;
 }
 
 #[async_trait::async_trait]
 pub trait CourseEnrollmentRepository: Send + Sync {
+    async fn count_enrollments(&self, context: &CourseServiceContext) -> CourseResult<i64>;
+
     async fn create_enrollment(
         &self,
         context: &CourseServiceContext,
@@ -365,6 +396,8 @@ pub trait CourseProgressRepository: Send + Sync {
 
 #[async_trait::async_trait]
 pub trait CourseApplicationRepository: Send + Sync {
+    async fn count_applications(&self, context: &CourseServiceContext) -> CourseResult<i64>;
+
     async fn list_applications(
         &self,
         context: &CourseServiceContext,

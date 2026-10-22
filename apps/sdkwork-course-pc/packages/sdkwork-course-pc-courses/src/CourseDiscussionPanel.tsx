@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, formatDate } from '@sdkwork/sdkwork-course-pc-commons'
+import {
+  CommentThread,
+  type CommentItemView,
+  type CommentSort,
+} from '@sdkwork/sdkwork-course-pc-commons'
 import {
   ensureCommentsThread,
   getCommentsClient,
+  useAppStore,
 } from '@sdkwork/sdkwork-course-pc-core'
 
 export interface CourseDiscussionPanelProps {
@@ -18,9 +23,15 @@ const commentsOwnerKind = {
   live_session: 'live-session',
 } as const
 
+const targetTitle = {
+  course: '课程讨论',
+  lesson: '课时讨论',
+  live_session: '直播讨论',
+} as const
+
 /**
- * Discussion surface backed by the independent sdkwork-comments runtime and
- * generated comments App SDK.
+ * Course adapter for the generic CommentThread surface. All persistence and
+ * authorization stay in the independent comments capability.
  */
 export function CourseDiscussionPanel({
   courseId,
@@ -28,99 +39,124 @@ export function CourseDiscussionPanel({
   targetId,
 }: CourseDiscussionPanelProps) {
   const queryClient = useQueryClient()
-  const [newComment, setNewComment] = useState('')
+  const user = useAppStore((state) => state.user)
+  const [sort, setSort] = useState<CommentSort>('newest')
+
+  const currentUser = {
+    id: user?.id ?? 'guest',
+    name: user?.name?.trim() || '同学',
+    avatarUrl: user?.avatar,
+  }
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['comments', courseId, targetType, targetId],
+    queryKey: ['comments', courseId, targetType, targetId, sort],
     queryFn: async () => {
       const thread = await ensureCommentsThread(
         commentsOwnerKind[targetType],
         targetId,
         targetType === 'course' ? '课程讨论' : undefined,
       )
-      const page = await getCommentsClient().comments.comments.list(thread.id, { pageSize: 100 })
-      return { thread, items: page.items ?? [] }
+      const page = await getCommentsClient().comments.comments.list(thread.id, {
+        pageSize: 200,
+        sort,
+      })
+      return { thread, items: page.items ?? [], totalCount: Number(page.pageInfo?.totalItems ?? page.items?.length ?? 0) }
     },
   })
 
   const createMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async (input: {
+      body: string
+      parentId?: string
+      quoteId?: string
+    }) => {
       if (!data?.thread.id) throw new Error('评论线程尚未准备好')
-      return getCommentsClient().comments.comments.create(data.thread.id, { body: content })
+      return getCommentsClient().comments.comments.create(data.thread.id, {
+        body: input.body,
+        parentId: input.parentId,
+        quoteId: input.quoteId,
+        authorName: currentUser.name,
+        authorAvatarUrl: currentUser.avatarUrl,
+      })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', courseId] })
-      setNewComment('')
+      queryClient.invalidateQueries({
+        queryKey: ['comments', courseId, targetType, targetId],
+      })
     },
   })
 
-  const comments = (data?.items ?? []).map((comment) => ({
-    id: comment.id,
-    author: comment.authorId || '同学',
-    content: comment.body,
+  const comments: CommentItemView[] = (data?.items ?? []).map((comment) => ({    id: comment.id,
+    parentId: comment.parentId,
+    rootId: comment.rootId,
+    author: {
+      id: comment.authorId,
+      name:
+        comment.authorName ||
+        `用户 ${comment.authorId.slice(-4)}`,
+      avatarUrl: comment.authorAvatarUrl,
+    },
+    body: comment.body,
     createdAt: comment.createdAt,
+    replyCount: comment.replyCount,
+    editedAt: comment.editedAt,
+    likeCount: comment.likeCount,
+    viewerLiked: comment.viewerLiked,
+    rating: comment.rating,
+    metadata: comment.metadata,
+    quote: comment.quote
+      ? {
+          id: comment.quote.id,
+          authorName:
+            comment.quote.authorName ||
+            `用户 ${comment.quote.authorId.slice(-4)}`,
+          body: comment.quote.body,
+        }
+      : undefined,
   }))
 
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-bold text-slate-900">学习讨论</h2>
-        <span className="text-xs text-slate-400">{comments.length} 条讨论</span>
-      </div>
-
-      <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-        <textarea
-          value={newComment}
-          onChange={(event) => setNewComment(event.target.value)}
-          placeholder="写下你的问题、笔记或想法..."
-          rows={3}
-          className="w-full resize-none border-0 bg-transparent px-1 py-1 text-sm text-slate-800 outline-none placeholder:text-slate-400"
-        />
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-[11px] text-slate-400">友善交流，课程助教会参与答疑</p>
-          <Button
-            size="sm"
-            loading={createMutation.isPending}
-            disabled={!newComment.trim()}
-            onClick={() => {
-              const content = newComment.trim()
-              if (content) createMutation.mutate(content)
-            }}
-          >
-            发表讨论
-          </Button>
-        </div>
-      </div>
-
-      {createMutation.isError ? (
-        <p className="mt-3 text-xs text-rose-500">发表失败，请确认登录状态后重试。</p>
-      ) : null}
-
-      <div className="mt-4 space-y-3">
-        {isLoading ? <p className="text-sm text-slate-400">加载讨论中...</p> : null}
-        {error ? <p className="text-sm text-slate-400">讨论加载失败。</p> : null}
-        {!isLoading && !error && comments.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
-            还没有讨论，来写下第一条笔记吧。
-          </div>
-        ) : null}
-        {comments.map((comment) => (
-          <article key={comment.id} className="rounded-xl border border-slate-100 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white">
-                  {comment.author.slice(0, 1).toUpperCase()}
-                </span>
-                <span className="text-xs font-semibold text-slate-700">{comment.author}</span>
-              </div>
-              <span className="text-[11px] text-slate-400">{formatDate(comment.createdAt)}</span>
-            </div>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">
-              {comment.content}
-            </p>
-          </article>
-        ))}
-      </div>
-    </section>
+    <CommentThread
+      title="学习讨论"
+      subtitle="分享笔记、提出问题，也欢迎回复和引用其他同学的观点。"
+      comments={comments}
+      totalCount={data?.totalCount ?? comments.length}
+      currentUser={currentUser}
+      sort={sort}
+      onSortChange={setSort}
+      onSubmit={async (input) => {
+        await createMutation.mutateAsync(input)
+      }}
+      onLike={async (comment) => {
+        const client = getCommentsClient()
+        if (comment.viewerLiked) {
+          await client.comments.reactions.delete(comment.id, 'like')
+        } else {
+          await client.comments.reactions.update(comment.id, 'like')
+        }
+        await queryClient.invalidateQueries({
+          queryKey: ['comments', courseId, targetType, targetId],
+        })
+      }}
+      onEdit={async (comment, body) => {
+        await getCommentsClient().comments.comments.update(comment.id, { body })
+        await queryClient.invalidateQueries({
+          queryKey: ['comments', courseId, targetType, targetId],
+        })
+      }}
+      onDelete={async (comment) => {
+        await getCommentsClient().comments.comments.delete(comment.id)
+        await queryClient.invalidateQueries({
+          queryKey: ['comments', courseId, targetType, targetId],
+        })
+      }}
+      canDelete={(comment) => comment.author.id === currentUser.id}
+      isSubmitting={createMutation.isPending}
+      isLoading={isLoading}
+      errorMessage={error ? '讨论加载失败，请稍后重试。' : null}
+      emptyTitle="还没有讨论"
+      emptyDescription="写下第一条笔记或问题，开启这门课的学习讨论。"
+      placeholder="写下你的问题、笔记或想法，支持表情…"
+    />
   )
 }

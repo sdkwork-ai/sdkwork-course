@@ -22,12 +22,13 @@ pub async fn course_categories_list(
 pub async fn course_categories_retrieve(
     service: &dyn CourseApplicationService,
     context: &CourseServiceContext,
-    _category_id: String,
+    category_id: String,
 ) -> CourseRouteResult<Value> {
-    let items = service
-        .list_categories(context, CourseQuery::default())
-        .await?;
-    Ok(ok(serde_json::to_value(items).unwrap_or_default()))
+    let item = service.retrieve_category(context, category_id).await?;
+    match item {
+        Some(category) => Ok(ok(serde_json::to_value(category).unwrap_or_default())),
+        None => Err(CourseRouteError::not_found("Course category not found")),
+    }
 }
 
 pub async fn courses_list(
@@ -199,7 +200,10 @@ pub async fn course_lessons_retrieve(
     lesson_id: String,
 ) -> CourseRouteResult<Value> {
     let result = service.retrieve_lesson(context, lesson_id).await?;
-    Ok(ok(serde_json::to_value(result).unwrap_or_default()))
+    match result {
+        Some(lesson) => Ok(ok(serde_json::to_value(lesson).unwrap_or_default())),
+        None => Err(CourseRouteError::not_found("Lesson not found")),
+    }
 }
 
 pub async fn course_lesson_resources_list(
@@ -219,37 +223,54 @@ pub async fn course_progress_retrieve(
     enrollment_id: String,
 ) -> CourseRouteResult<Value> {
     let item = service.retrieve_progress(context, enrollment_id).await?;
-    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+    match item {
+        Some(progress) => Ok(ok(progress)),
+        None => Err(CourseRouteError::not_found("Course progress not found")),
+    }
 }
 
 pub async fn course_lesson_progress_update(
     service: &dyn CourseApplicationService,
     context: &CourseServiceContext,
-    _lesson_id: String,
+    lesson_id: String,
     body: Value,
 ) -> CourseRouteResult<Value> {
+    let completed = body.get("completed").and_then(Value::as_bool);
+    let progress_status = if let Some(status) = body.get("progressStatus").and_then(Value::as_str) {
+        serde_json::from_value(serde_json::json!(status)).unwrap_or_default()
+    } else if completed == Some(true) {
+        sdkwork_content_course_service::CourseProgressStatus::Completed
+    } else if body.get("watchedSeconds").is_some() || body.get("watchSeconds").is_some() {
+        sdkwork_content_course_service::CourseProgressStatus::InProgress
+    } else {
+        sdkwork_content_course_service::CourseProgressStatus::NotStarted
+    };
     let command = CourseLessonProgressCommand {
         enrollment_id: body
             .get("enrollmentId")
+            .or_else(|| body.get("enrollment_id"))
             .and_then(|v| v.as_str())
             .unwrap_or("")
             .to_string(),
-        lesson_id: _lesson_id,
-        progress_status: serde_json::from_value(
-            body.get("progressStatus")
-                .cloned()
-                .unwrap_or(serde_json::json!("not_started")),
-        )
-        .unwrap_or(sdkwork_content_course_service::CourseProgressStatus::NotStarted),
-        watched_seconds: body.get("watchedSeconds").and_then(|v| v.as_i64()),
+        lesson_id,
+        progress_status,
+        watched_seconds: body
+            .get("watchedSeconds")
+            .or_else(|| body.get("watchSeconds"))
+            .and_then(|v| v.as_i64()),
+        watch_position_seconds: body
+            .get("watchPositionSeconds")
+            .or_else(|| body.get("positionSeconds"))
+            .and_then(|v| v.as_i64()),
         completed_at: body
             .get("completedAt")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string()),
         idempotency_key: None,
     };
+    let response = serde_json::to_value(&command).unwrap_or_default();
     service.update_lesson_progress(context, command).await?;
-    Ok(ok(serde_json::json!(null)))
+    Ok(ok(response))
 }
 
 pub async fn course_lesson_progress_watch_positions_update(
@@ -266,12 +287,17 @@ pub async fn course_lesson_progress_watch_positions_update(
             .to_string(),
         lesson_id,
         progress_status: sdkwork_content_course_service::CourseProgressStatus::InProgress,
-        watched_seconds: body.get("watchPositionSeconds").and_then(|v| v.as_i64()),
+        watched_seconds: None,
+        watch_position_seconds: body
+            .get("watchPositionSeconds")
+            .or_else(|| body.get("positionSeconds"))
+            .and_then(|v| v.as_i64()),
         completed_at: None,
         idempotency_key: None,
     };
+    let response = serde_json::to_value(&command).unwrap_or_default();
     service.update_lesson_progress(context, command).await?;
-    Ok(ok(serde_json::json!(null)))
+    Ok(ok(response))
 }
 
 pub async fn course_live_sessions_list(
@@ -303,7 +329,9 @@ pub async fn course_live_sessions_join(
     live_session_id: String,
 ) -> CourseRouteResult<Value> {
     let grant = service.join_live_session(context, live_session_id).await?;
-    Ok(ok(serde_json::to_value(grant).unwrap_or_default()))
+    Ok(ok(serde_json::json!({
+        "liveSessionId": grant.live_session_id,
+    })))
 }
 
 pub async fn course_live_sessions_heartbeat(
@@ -336,7 +364,7 @@ pub async fn course_live_sessions_replay_retrieve(
         .await?;
     match result {
         Some(replay) => Ok(ok(replay)),
-        None => Ok(ok(serde_json::json!(null))),
+        None => Err(CourseRouteError::not_found("Replay not found")),
     }
 }
 
@@ -440,7 +468,7 @@ pub async fn course_applications_retrieve(
         {
             Ok(ok(serde_json::to_value(application).unwrap_or_default()))
         }
-        _ => Ok(ok(serde_json::json!(null))),
+        _ => Err(CourseRouteError::not_found("Application not found")),
     }
 }
 // ── Studio (creator authoring) ──────────────────────────────────────

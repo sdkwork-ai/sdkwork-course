@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
@@ -50,17 +50,35 @@ export function LiveSessionDetailPage() {
 
   const joinMutation = useMutation({
     mutationFn: () => sdk.courseLiveSessions.join(id!, {}),
+    onSuccess: () => setJoined(true),
   })
 
-  const enterLiveRoom = () => {
-    setJoined(true)
-    setFeedback('已加入直播，正在打开直播间')
-    void joinMutation.mutateAsync().catch(() => undefined)
-    if (session?.providerRoomRef) {
-      window.open(session.providerRoomRef, '_blank', 'noopener,noreferrer')
-    } else {
-      setFeedback('直播间地址尚未配置，请联系课程运营')
+  useEffect(() => {
+    if (!joined || !id) return undefined
+    const timer = window.setInterval(() => {
+      void sdk.courseLiveSessions.heartbeat(id, {}).catch(() => undefined)
+    }, 60_000)
+    return () => {
+      window.clearInterval(timer)
+      void sdk.courseLiveSessions.leave(id, {}).catch(() => undefined)
     }
+  }, [joined, id, sdk])
+
+  const enterLiveRoom = () => {
+    setFeedback('正在加入直播...')
+    void joinMutation
+      .mutateAsync()
+      .then(() => {
+        setFeedback('已加入直播，正在打开直播间')
+        if (session?.providerRoomRef) {
+          window.open(session.providerRoomRef, '_blank', 'noopener,noreferrer')
+        } else {
+          setFeedback('直播间地址尚未配置，请联系课程运营')
+        }
+      })
+      .catch(() => {
+        setFeedback('加入直播失败，请稍后再试')
+      })
   }
 
   const showReplay = () => {

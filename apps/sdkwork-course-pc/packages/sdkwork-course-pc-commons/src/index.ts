@@ -42,6 +42,18 @@ export type { ProgressBarProps } from './components/ui/ProgressBar'
 export { Tabs } from './components/ui/Tabs'
 export type { TabItem, TabsProps } from './components/ui/Tabs'
 
+export { CommentThread } from './components/comments/CommentThread'
+export type {
+  CommentAuthorView,
+  CommentItemView,
+  CommentQuoteView,
+  CommentSort,
+  CommentSubmitInput,
+  CommentThreadProps,
+} from './components/comments/CommentThread'
+export { EmojiPicker } from './components/comments/EmojiPicker'
+export type { EmojiPickerProps } from './components/comments/EmojiPicker'
+
 export { cn } from './utils/cn'
 export {
   formatCategory,
