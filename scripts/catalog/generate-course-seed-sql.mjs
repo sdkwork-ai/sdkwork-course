@@ -145,7 +145,7 @@ function curateCourse(spec, course) {
 
   if (!title || title.length < 6) return false
   if (!instructorName) return false
-  if (/已注销|账号注销|已封禁/u.test(instructorName)) return false
+  if (/已注销|账号注销|已封禁|不再更新|不要关注|停更|未命名/u.test(instructorName)) return false
   if (SPAM_TITLE.test(title)) return false
 
   if (spec.include.test(title)) {
@@ -381,7 +381,7 @@ function lessonRows(course) {
 // 网盘 links, 提取码). A paid catalog must not surface those, so clauses that
 // look like promotion are dropped and only the real course copy is kept.
 const PROMO_CLAUSE =
-  /公众号|微信|vx|wx|qq群|企鹅|加v|加我|关注|私信|备注|领取|网盘|提取码|pan\.baidu|https?:|www\.|课程咨询|联系方式|扫码|二维码|优惠|报名|低价|粉丝群|学员群|[Qq]\s*[:：]\s*\d/iu
+  /加微信|微信号|微信[:：]|微信公号|关注公众号|公众号[:：]|vx|wx|qq群|企鹅|加v|加我|关注我|私信|备注|领取|网盘|提取码|pan\.baidu|https?:|www\.|课程咨询|联系方式|扫码|二维码|限时优惠|立即报名|报名咨询|低价|粉丝群|学员群|[Qq]\s*[:：]\s*\d/iu
 
 function sanitizeCopy(value) {
   const text = String(value ?? '')

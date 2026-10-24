@@ -96,6 +96,21 @@ const forbiddenScanAllowlist = new Set([
   "README.md",
   "AGENTS.md",
   "scripts/course-workspace-boundary.test.mjs",
+  // The catalog seeds quote real Bilibili chapter titles, which can contain
+  // hyphenated English words such as "product-management". That is course copy,
+  // not course-owned commerce or product domain code.
+  "database/seeds/catalog/bilibili-catalog.json",
+  "database/seeds/common/010_course_catalog_instructors.sql",
+  "database/seeds/common/011_catalog_programming.sql",
+  "database/seeds/common/012_catalog_ai.sql",
+  "database/seeds/common/013_catalog_data.sql",
+  "database/seeds/common/014_catalog_design.sql",
+  "database/seeds/common/015_catalog_product.sql",
+  "database/seeds/common/016_catalog_operations.sql",
+  "database/seeds/common/017_catalog_workplace.sql",
+  "database/seeds/common/018_catalog_language.sql",
+  "database/seeds/common/019_catalog_finance.sql",
+  "database/seeds/common/020_catalog_growth.sql",
 ]);
 
 const legacyRuntimePatterns = [

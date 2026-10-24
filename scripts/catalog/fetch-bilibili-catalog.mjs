@@ -30,6 +30,13 @@ const MIN_LESSONS = Number(args['min-lessons'] ?? 6)
 const MAX_LESSONS = Number(args['max-lessons'] ?? 120)
 const MIN_TOTAL_SECONDS = Number(args['min-seconds'] ?? 1800)
 const VIEW_BUDGET = Number(args['view-budget'] ?? 160)
+// Caps how many courses a single uploader may contribute per category. Most
+// categories keep 2 for variety; narrow topics raise it so one prolific
+// instructor cannot starve the catalog.
+const MAX_PER_UPLOADER = Number(args['max-per-uploader'] ?? 2)
+// Accounts that are deactivated, abandoned, or ask not to be followed cannot
+// credit a paid catalog course.
+const JUNK_AUTHOR = /已注销|账号注销|已封禁|不再更新|不要关注|停更|未命名/u
 const ONLY = args.only ? String(args.only).split(',') : null
 
 const HEADERS = {
@@ -328,7 +335,7 @@ function toCourse(spec, view, seed) {
   const owner = view.owner ?? {}
   const instructorName = cleanText(owner.name)
   // Deactivated accounts and SEO aggregators must never become instructors.
-  if (!instructorName || /已注销|账号注销|已封禁/u.test(instructorName)) return null
+  if (!instructorName || JUNK_AUTHOR.test(instructorName)) return null
   if (SPAM_AUTHOR.test(instructorName)) return null
   const instructorAvatar = httpsUrl(owner.face)
   const videoCover = httpsUrl(view.pic)
@@ -498,7 +505,7 @@ async function collectCategory(spec) {
     if (!view) continue
 
     const ownerMid = Number(view.owner?.mid ?? 0)
-    if ((uploaderCount.get(ownerMid) ?? 0) >= 2) continue
+    if ((uploaderCount.get(ownerMid) ?? 0) >= MAX_PER_UPLOADER) continue
 
     const course = toCourse(spec, view, { index: courses.length })
     if (!course) continue
@@ -537,6 +544,10 @@ function mergeCategoryCourses(previous, spec, courses) {
   const merged = new Map()
   for (const course of [...courses, ...existing]) {
     if (!course?.idSeed || merged.has(course.idSeed)) continue
+    // Re-apply the current topic gates so tightened filters also prune
+    // courses that earlier runs already collected.
+    if (!isTopical(spec, course.title)) continue
+    if (JUNK_AUTHOR.test(String(course.instructor?.name ?? ''))) continue
     merged.set(course.idSeed, course)
   }
   return [...merged.values()].slice(0, PER_CATEGORY)
