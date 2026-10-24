@@ -133,8 +133,15 @@ export function CoursePlayer() {
   const currentLessonUnlocked = isPurchased || Boolean(currentLesson.free);
   const isBilibiliLesson =
     currentLesson.sourceProvider === "bilibili" && Boolean(currentLesson.externalSourceId);
-  const bilibiliOpenUrl = isBilibiliLesson
-    ? `https://www.bilibili.com/video/${currentLesson.externalSourceId}`
+  const bilibiliPageMatch = isBilibiliLesson
+    ? /\?p=(\d+)$/.exec(String(currentLesson.externalSourceId))
+    : null;
+  const bilibiliPage = bilibiliPageMatch ? Number(bilibiliPageMatch[1]) : 1;
+  const bilibiliBvid = isBilibiliLesson
+    ? String(currentLesson.externalSourceId).replace(/\?p=\d+$/, "")
+    : "";
+  const bilibiliOpenUrl = bilibiliBvid
+    ? `https://www.bilibili.com/video/${bilibiliBvid}${bilibiliPage > 1 ? `?p=${bilibiliPage}` : ""}`
     : undefined;
 
   const renderLessonContent = () => {
@@ -196,7 +203,7 @@ export function CoursePlayer() {
       return (
         <div className="relative aspect-video bg-black">
           <iframe
-            src={`https://player.bilibili.com/player.html?bvid=${currentLesson.externalSourceId}&page=1&high_quality=1&danmaku=0`}
+            src={`https://player.bilibili.com/player.html?bvid=${bilibiliBvid}&page=${bilibiliPage}&high_quality=1&danmaku=0`}
             className="w-full h-full"
             allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

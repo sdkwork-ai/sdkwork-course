@@ -19,7 +19,7 @@ VALUES
         '2026-10-21T14:00:00Z', NULL,
         'live', NULL, NULL, 1280,
         '{"intervalSeconds":30,"graceSeconds":120}',
-        '{"coverUrl":"https://picsum.photos/seed/live-agent/960/540","instructorName":"平台讲师","entryLabel":"进入直播间"}',
+        '{"coverUrl":"https://i2.hdslb.com/bfs/archive/b407a36eb05d9e0142d48fe017779edf09635584.jpg","instructorName":"平台讲师","entryLabel":"进入直播间"}',
         'active', '2026-10-21T14:15:00Z', 'seed', '2026-10-21T14:15:00Z', 'seed', 0
     ),
     (
@@ -32,7 +32,7 @@ VALUES
         '2026-10-22T06:00:00Z', '2026-10-22T07:30:00Z',
         NULL, NULL, 'scheduled', NULL, NULL, 0,
         '{"intervalSeconds":30,"graceSeconds":120}',
-        '{"coverUrl":"https://picsum.photos/seed/live-productivity/960/540","instructorName":"林知远","entryLabel":"预约直播"}',
+        '{"coverUrl":"https://i1.hdslb.com/bfs/archive/e101c4c44c062ef36134a141dfeb0e517489f5e2.jpg","instructorName":"林知远","entryLabel":"预约直播"}',
         'active', '2026-10-21T14:15:00Z', 'seed', '2026-10-21T14:15:00Z', 'seed', 0
     ),
     (
@@ -47,7 +47,7 @@ VALUES
         'ended', 'replay-ai-engineer-career', '2026-10-19T15:30:00Z',
         6420,
         '{"intervalSeconds":30,"graceSeconds":120}',
-        '{"coverUrl":"https://picsum.photos/seed/live-career/960/540","instructorName":"平台讲师","replayLabel":"观看回放"}',
+        '{"coverUrl":"https://i2.hdslb.com/bfs/archive/f062d5f0a407d0d6d8e3eaf2dd1af32e9099b956.jpg","instructorName":"平台讲师","replayLabel":"观看回放"}',
         'active', '2026-10-21T14:15:00Z', 'seed', '2026-10-21T14:15:00Z', 'seed', 0
     )
 ON CONFLICT (id) DO UPDATE SET

@@ -29,6 +29,17 @@
         "common/004_bilibili_ai_courses.sql",
         "common/005_course_center_showcase.sql",
         "common/006_live_sessions.sql",
+        "common/010_course_catalog_instructors.sql",
+        "common/011_catalog_programming.sql",
+        "common/012_catalog_ai.sql",
+        "common/013_catalog_data.sql",
+        "common/014_catalog_design.sql",
+        "common/015_catalog_product.sql",
+        "common/016_catalog_operations.sql",
+        "common/017_catalog_workplace.sql",
+        "common/018_catalog_language.sql",
+        "common/019_catalog_finance.sql",
+        "common/020_catalog_growth.sql",
         "common/001_bootstrap.sql"
       ],
       "locales": {
