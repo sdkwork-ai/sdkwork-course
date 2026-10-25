@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useCourseSdk } from '@sdkwork/sdkwork-course-pc-core'
 import {
   DiscoverCourseCard,
@@ -11,7 +11,9 @@ import {
 } from '@sdkwork/sdkwork-course-pc-commons'
 import { CategoryPanel } from './CategoryPanel'
 import { HeroCarousel } from './HeroCarousel'
-import { mapCourse, readPageItems } from './courseModel'
+import { mapCourse, readPageItems, readPageTotal } from './courseModel'
+
+const HOME_PAGE_SIZE = 30
 
 export interface HomePageProps {
   /** Render inside a host surface (SDKWork plugin, IM) instead of the standalone shell. */
@@ -23,9 +25,16 @@ export function HomePage({ embedded = false }: HomePageProps) {
   const sdk = useCourseSdk()
   const [rotation, setRotation] = useState(0)
 
-  const coursesQuery = useQuery({
+  const coursesQuery = useInfiniteQuery({
     queryKey: ['home-courses'],
-    queryFn: () => sdk.courses.list({ pageSize: 30 }),
+    queryFn: ({ pageParam }) => sdk.courses.list({ page: pageParam, pageSize: HOME_PAGE_SIZE }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, page) => sum + readPageItems(page).length, 0)
+      const total = readPageTotal(lastPage)
+      if (total > 0) return loaded < total ? allPages.length + 1 : undefined
+      return readPageItems(lastPage).length >= HOME_PAGE_SIZE ? allPages.length + 1 : undefined
+    },
   })
   const categoryQuery = useQuery({
     queryKey: ['home-categories'],
@@ -34,7 +43,7 @@ export function HomePage({ embedded = false }: HomePageProps) {
   })
 
   const allCourses = useMemo(
-    () => readPageItems(coursesQuery.data).map(mapCourse),
+    () => coursesQuery.data?.pages.flatMap((page) => readPageItems(page).map(mapCourse)) ?? [],
     [coursesQuery.data],
   )
   const rotated = useMemo(() => {
@@ -45,7 +54,29 @@ export function HomePage({ embedded = false }: HomePageProps) {
 
   const featured = rotated.slice(0, 6)
   const topRow = rotated.slice(1, 7)
-  const feed = rotated.length > 7 ? rotated.slice(7, 27) : rotated
+  const feed = rotated.length > 7 ? rotated.slice(7) : rotated
+
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = coursesQuery
+  const loadedPages = coursesQuery.data?.pages.length ?? 0
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  // IntersectionObserver reattaches on every page append so a sentinel that is
+  // still in view keeps triggering loads; jsdom and engines without the API
+  // degrade to first-page-only rendering instead of crashing.
+  useEffect(() => {
+    const node = loadMoreRef.current
+    if (!node || !hasNextPage || isFetchingNextPage) return
+    if (typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage()
+      },
+      // Start loading before the user visibly reaches the bottom edge.
+      { rootMargin: '480px 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, loadedPages])
 
   const categories = readPageItems(categoryQuery.data)
     .map((value) => {
@@ -85,7 +116,7 @@ export function HomePage({ embedded = false }: HomePageProps) {
 
   return (
     <div className="space-y-4 pb-10">
-      {coursesQuery.error ? (
+      {coursesQuery.error && allCourses.length === 0 ? (
         <Notice tone="error" title="课程中心加载失败">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>请检查网络或稍后再试。</span>
@@ -201,33 +232,32 @@ export function HomePage({ embedded = false }: HomePageProps) {
           ) : null}
 
           {feed.length > 0 ? (
-            <div className="flex justify-center pt-2">
-              <Link
-                to="/courses"
-                className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-6 text-[12px] font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600"
-              >
-                查看更多课程
-                <span className="text-slate-400">›</span>
-              </Link>
+            <div
+              ref={loadMoreRef}
+              className="flex min-h-12 items-center justify-center pt-2 text-[12px] text-slate-400"
+              aria-live="polite"
+            >
+              {isFetchingNextPage ? (
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500"
+                    aria-hidden="true"
+                  />
+                  正在加载更多课程…
+                </span>
+              ) : coursesQuery.error && hasNextPage ? (
+                <button
+                  type="button"
+                  onClick={() => void coursesQuery.fetchNextPage()}
+                  className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-white px-5 text-[12px] font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600"
+                >
+                  加载失败，点击重试
+                </button>
+              ) : !hasNextPage ? (
+                <span>已加载全部课程</span>
+              ) : null}
             </div>
           ) : null}
-
-          <section className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <div className="flex flex-col items-start justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center">
-              <div>
-                <h2 className="text-[15px] font-bold text-slate-900">把你的经验，变成一门课</h2>
-                <p className="mt-1 text-[12px] text-slate-500">
-                  上传封面与课时，编排章节或合集，提交平台审核后发布。
-                </p>
-              </div>
-              <Link
-                to="/studio?create=1"
-                className="course-primary inline-flex h-9 shrink-0 items-center rounded px-4 text-[12px] font-semibold transition hover:brightness-[0.98]"
-              >
-                上传课程
-              </Link>
-            </div>
-          </section>
         </>
       )}
     </div>
