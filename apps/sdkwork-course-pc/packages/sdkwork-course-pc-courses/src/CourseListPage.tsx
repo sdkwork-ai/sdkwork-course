@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useCourseSdk } from '@sdkwork/sdkwork-course-pc-core'
 import {
   Button,
@@ -51,27 +51,32 @@ export function CourseListPage({ embedded = false }: CourseListPageProps) {
   const category = searchParams.get('category') ?? ''
   const level = searchParams.get('level') ?? ''
   const q = searchParams.get('q') ?? ''
-  const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1)
 
   const updateParam = (key: string, nextValue: string) => {
     const next = new URLSearchParams(searchParams)
     if (nextValue) next.set(key, nextValue)
     else next.delete(key)
-    if (key !== 'page') next.delete('page')
     setSearchParams(next, { replace: true })
   }
 
-  const coursesQuery = useQuery({
-    queryKey: ['courses', kind, category, level, q, page],
-    queryFn: () =>
+  const coursesQuery = useInfiniteQuery({
+    queryKey: ['courses', kind, category, level, q],
+    queryFn: ({ pageParam }) =>
       sdk.courses.list({
         kind: kind || undefined,
         category: category || undefined,
         level: level || undefined,
         q: q || undefined,
-        page,
+        page: pageParam,
         pageSize: PAGE_SIZE,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, page) => sum + readPageItems(page).length, 0)
+      const total = readPageTotal(lastPage)
+      if (total > 0) return loaded < total ? allPages.length + 1 : undefined
+      return readPageItems(lastPage).length >= PAGE_SIZE ? allPages.length + 1 : undefined
+    },
     placeholderData: (previous) => previous,
   })
 
@@ -81,8 +86,8 @@ export function CourseListPage({ embedded = false }: CourseListPageProps) {
     staleTime: 5 * 60 * 1000,
   })
 
-  const courses = readPageItems(coursesQuery.data).map(mapCourse)
-  const total = readPageTotal(coursesQuery.data)
+  const courses = coursesQuery.data?.pages.flatMap((page) => readPageItems(page).map(mapCourse)) ?? []
+  const total = coursesQuery.data ? readPageTotal(coursesQuery.data.pages[0]) : 0
   const categories = readPageItems(categoryQuery.data)
     .map((value) => {
       const record = value as Record<string, unknown>
@@ -90,9 +95,30 @@ export function CourseListPage({ embedded = false }: CourseListPageProps) {
     })
     .filter((item) => item.id)
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const hasActiveFilter = Boolean(kind || category || level || q)
   const title = KIND_TITLES[kind] ?? '课程中心'
+
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } = coursesQuery
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  // IntersectionObserver reattaches whenever the loaded pages change so a
+  // sentinel still in view keeps triggering loads. isFetching guards against
+  // appending onto placeholderData while a new filter's first page loads;
+  // jsdom and engines without the API degrade to first-page-only rendering.
+  useEffect(() => {
+    const node = loadMoreRef.current
+    if (!node || !hasNextPage || isFetching || isFetchingNextPage) return
+    if (typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage()
+      },
+      // Start loading before the user visibly reaches the bottom edge.
+      { rootMargin: '480px 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, coursesQuery.data])
 
   return (
     <div className="space-y-4 pb-8">
@@ -188,7 +214,7 @@ export function CourseListPage({ embedded = false }: CourseListPageProps) {
         </div>
       ) : null}
 
-      {coursesQuery.error ? (
+      {coursesQuery.error && courses.length === 0 ? (
         <Notice tone="error" title="课程列表加载失败">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>请稍后再试，或检查网络连接。</span>
@@ -242,29 +268,31 @@ export function CourseListPage({ embedded = false }: CourseListPageProps) {
               />
             ))}
           </div>
-          {totalPages > 1 ? (
-            <nav className="flex items-center justify-center gap-2 pt-2" aria-label="分页">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => updateParam('page', String(page - 1))}
-              >
-                上一页
-              </Button>
-              <span className="px-3 text-sm text-slate-500">
-                {page} / {totalPages}
+          <div
+            ref={loadMoreRef}
+            className="flex min-h-12 items-center justify-center pt-2 text-[12px] text-slate-400"
+            aria-live="polite"
+          >
+            {isFetchingNextPage ? (
+              <span className="flex items-center gap-2">
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500"
+                  aria-hidden="true"
+                />
+                正在加载更多课程…
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => updateParam('page', String(page + 1))}
+            ) : coursesQuery.error && hasNextPage ? (
+              <button
+                type="button"
+                onClick={() => void coursesQuery.fetchNextPage()}
+                className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-white px-5 text-[12px] font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600"
               >
-                下一页
-              </Button>
-            </nav>
-          ) : null}
+                加载失败，点击重试
+              </button>
+            ) : !hasNextPage ? (
+              <span>已加载全部课程</span>
+            ) : null}
+          </div>
         </>
       )}
     </div>
