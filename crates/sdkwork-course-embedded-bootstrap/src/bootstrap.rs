@@ -10,9 +10,9 @@ use sdkwork_content_course_service::{
         CourseCategoryRepository, CourseEnrollmentRepository,
         CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
         CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-        CourseResourceRepository,
+        CourseResourceRepository, QuestionBankRepository,
     },
-    CourseApplicationService, CourseServiceImpl,
+    CourseApplicationService, CourseServiceImpl, QuestionBankService, QuestionBankServiceImpl,
 };
 use sdkwork_course_database_host::bootstrap_course_database;
 use sdkwork_database_sqlx::DatabasePool;
@@ -21,7 +21,12 @@ use sdkwork_routes_course_backend_api::gateway_mount as mount_course_backend_api
 
 use crate::port_factory::build_provider_ports;
 
-fn build_course_service<R>(repo: R) -> Arc<dyn CourseApplicationService>
+fn build_course_service<R>(
+    repo: R,
+) -> (
+    Arc<dyn CourseApplicationService>,
+    Arc<dyn QuestionBankService>,
+)
 where
     R: CourseCategoryRepository
         + CourseCatalogRepository
@@ -35,11 +40,12 @@ where
         + CourseAuditLogRepository
         + CourseResourceRepository
         + CourseReactionRepository
+        + QuestionBankRepository
         + Clone
         + 'static,
 {
     let ports = build_provider_ports();
-    Arc::new(CourseServiceImpl::new(
+    let course_service = Arc::new(CourseServiceImpl::new(
         Box::new(repo.clone()) as Box<dyn CourseCategoryRepository>,
         Box::new(repo.clone()) as Box<dyn CourseCatalogRepository>,
         Box::new(repo.clone()) as Box<dyn CourseInstructorRepository>,
@@ -57,7 +63,11 @@ where
         ports.entitlement,
         ports.notification,
         ports.audit,
-    )) as Arc<dyn CourseApplicationService>
+    )) as Arc<dyn CourseApplicationService>;
+    let question_bank_service = Arc::new(QuestionBankServiceImpl::new(
+        Box::new(repo) as Box<dyn QuestionBankRepository>,
+    )) as Arc<dyn QuestionBankService>;
+    (course_service, question_bank_service)
 }
 
 /// Embedded course assembly: the mounted router plus the pool it was built on.
@@ -74,6 +84,7 @@ pub struct EmbeddedCourseAssembly {
 /// composition).
 pub struct CourseServiceRuntime {
     pub service: Arc<dyn CourseApplicationService>,
+    pub question_bank_service: Arc<dyn QuestionBankService>,
     pub database_pool: DatabasePool,
 }
 
@@ -91,9 +102,11 @@ pub async fn course_service_runtime_from_pool(
         .ok_or_else(|| "embedded Course API requires PostgreSQL".to_owned())?
         .clone();
     let _host = bootstrap_course_database(pool.clone()).await?;
-    let service = build_course_service(PostgresCourseRepository::new(postgres_pool));
+    let (service, question_bank_service) =
+        build_course_service(PostgresCourseRepository::new(postgres_pool));
     Ok(CourseServiceRuntime {
         service,
+        question_bank_service,
         database_pool: pool,
     })
 }
@@ -108,9 +121,11 @@ pub async fn course_service_runtime_from_env() -> Result<CourseServiceRuntime, S
         .as_postgres()
         .ok_or_else(|| "embedded Course API requires PostgreSQL".to_owned())?
         .clone();
-    let service = build_course_service(PostgresCourseRepository::new(postgres_pool));
+    let (service, question_bank_service) =
+        build_course_service(PostgresCourseRepository::new(postgres_pool));
     Ok(CourseServiceRuntime {
         service,
+        question_bank_service,
         database_pool: pool,
     })
 }
@@ -121,7 +136,7 @@ pub async fn assemble_embedded_course_application_router_from_env(
 ) -> Result<EmbeddedCourseAssembly, String> {
     let runtime = course_service_runtime_from_env().await?;
     Ok(EmbeddedCourseAssembly {
-        router: course_application_router(&runtime.service),
+        router: course_application_router(&runtime.service, &runtime.question_bank_service),
         database_pool: runtime.database_pool,
     })
 }
@@ -133,7 +148,7 @@ pub async fn assemble_embedded_course_application_router(
 ) -> Result<EmbeddedCourseAssembly, String> {
     let runtime = course_service_runtime_from_pool(pool).await?;
     Ok(EmbeddedCourseAssembly {
-        router: course_application_router(&runtime.service),
+        router: course_application_router(&runtime.service, &runtime.question_bank_service),
         database_pool: runtime.database_pool,
     })
 }
@@ -166,9 +181,12 @@ pub async fn assemble_embedded_course_backend_router_from_env(
     })
 }
 
-fn course_application_router(service: &Arc<dyn CourseApplicationService>) -> Router {
+fn course_application_router(
+    service: &Arc<dyn CourseApplicationService>,
+    question_bank_service: &Arc<dyn QuestionBankService>,
+) -> Router {
     let backend = course_backend_router(Arc::clone(service));
-    mount_course_app_api(Arc::clone(service)).merge(backend)
+    mount_course_app_api(Arc::clone(service), Arc::clone(question_bank_service)).merge(backend)
 }
 
 fn course_backend_router(service: Arc<dyn CourseApplicationService>) -> Router {

@@ -557,3 +557,207 @@ pub async fn studio_courses_withdraw(
     let item = service.withdraw_course(context, course_id).await?;
     Ok(ok(serde_json::to_value(item).unwrap_or_default()))
 }
+
+// ── Question bank ───────────────────────────────────────────────────
+
+use sdkwork_content_course_service::{QuestionBankService, QuestionQuery};
+
+fn question_bank_ok(value: serde_json::Value) -> CourseRouteResult<Value> {
+    Ok(ok(value))
+}
+
+pub async fn question_bank_questions_list(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    query: QuestionQuery,
+) -> CourseRouteResult<Value> {
+    let page = service.list_questions(context, query).await?;
+    Ok(ok(serde_json::to_value(page).unwrap_or_default()))
+}
+
+pub async fn question_bank_questions_retrieve(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    question_id: String,
+) -> CourseRouteResult<Value> {
+    let item = service.retrieve_question(context, question_id).await?;
+    match item {
+        Some(question) => Ok(ok(serde_json::to_value(question).unwrap_or_default())),
+        None => Err(CourseRouteError::not_found("Question not found")),
+    }
+}
+
+pub async fn question_bank_questions_create(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let item = service.save_question(context, body).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+}
+
+pub async fn question_bank_questions_update(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    question_id: String,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let mut command = body;
+    if let Some(object) = command.as_object_mut() {
+        object.insert("id".to_string(), Value::String(question_id));
+    }
+    let item = service.save_question(context, command).await?;
+    Ok(ok(serde_json::to_value(item).unwrap_or_default()))
+}
+
+pub async fn question_bank_questions_delete(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    question_id: String,
+) -> CourseRouteResult<Value> {
+    service.delete_question(context, question_id).await?;
+    Ok(ok(serde_json::json!(null)))
+}
+
+pub async fn question_bank_questions_import(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let outcome = service.import_questions(context, body).await?;
+    question_bank_ok(outcome)
+}
+
+pub async fn question_bank_questions_batch_update(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let outcome = service.update_questions_batch(context, body).await?;
+    question_bank_ok(outcome)
+}
+
+pub async fn question_bank_questions_batch_delete(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let outcome = service.delete_questions_batch(context, body).await?;
+    question_bank_ok(outcome)
+}
+
+pub async fn question_bank_taxonomy_retrieve(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    query: QuestionQuery,
+) -> CourseRouteResult<Value> {
+    let taxonomy = service.retrieve_taxonomy(context, query).await?;
+    question_bank_ok(taxonomy)
+}
+
+pub async fn question_bank_papers_list(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    query: CourseQuery,
+) -> CourseRouteResult<Value> {
+    let page = service.list_papers(context, query).await?;
+    question_bank_ok(page)
+}
+
+pub async fn question_bank_papers_retrieve(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    paper_id: String,
+) -> CourseRouteResult<Value> {
+    let item = service.retrieve_paper(context, paper_id).await?;
+    match item {
+        Some(paper) => Ok(ok(paper)),
+        None => Err(CourseRouteError::not_found("Paper not found")),
+    }
+}
+
+pub async fn question_bank_papers_create(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let paper = service.compose_paper(context, body).await?;
+    Ok(ok(paper))
+}
+
+pub async fn question_bank_papers_update(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    paper_id: String,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let paper = service.update_paper(context, paper_id, body).await?;
+    Ok(ok(paper))
+}
+
+pub async fn question_bank_papers_delete(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    paper_id: String,
+) -> CourseRouteResult<Value> {
+    service.delete_paper(context, paper_id).await?;
+    Ok(ok(serde_json::json!(null)))
+}
+
+pub async fn question_bank_papers_archive(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    paper_id: String,
+) -> CourseRouteResult<Value> {
+    let paper = service.archive_paper(context, paper_id).await?;
+    Ok(ok(paper))
+}
+
+pub async fn question_bank_handouts_list(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    query: CourseQuery,
+) -> CourseRouteResult<Value> {
+    let page = service.list_handouts(context, query).await?;
+    question_bank_ok(page)
+}
+
+pub async fn question_bank_handouts_retrieve(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    handout_id: String,
+) -> CourseRouteResult<Value> {
+    let item = service.retrieve_handout(context, handout_id).await?;
+    match item {
+        Some(handout) => Ok(ok(handout)),
+        None => Err(CourseRouteError::not_found("Handout not found")),
+    }
+}
+
+pub async fn question_bank_handouts_create(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let handout = service.save_handout(context, body).await?;
+    Ok(ok(handout))
+}
+
+pub async fn question_bank_handouts_update(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    handout_id: String,
+    body: Value,
+) -> CourseRouteResult<Value> {
+    let handout = service.update_handout(context, handout_id, body).await?;
+    Ok(ok(handout))
+}
+
+pub async fn question_bank_handouts_delete(
+    service: &dyn QuestionBankService,
+    context: &CourseServiceContext,
+    handout_id: String,
+) -> CourseRouteResult<Value> {
+    service.delete_handout(context, handout_id).await?;
+    Ok(ok(serde_json::json!(null)))
+}

@@ -4,8 +4,9 @@ use crate::domain::commands::{
     CourseReviewDecisionCommand, CourseServiceContext, CourseStudioDraftCommand,
 };
 use crate::domain::models::{
-    CourseApplicationItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult,
-    CourseSectionItem, CourseStudioDetail,
+    CourseApplicationItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseItem,
+    CourseLessonItem, CoursePage, CourseQuery, CourseResult, CourseSectionItem, CourseStudioDetail,
+    QuestionItem, QuestionPage, QuestionQuery,
 };
 
 #[async_trait::async_trait]
@@ -497,5 +498,134 @@ pub trait CourseReactionRepository: Send + Sync {
         &self,
         context: &CourseServiceContext,
         reaction_id: String,
+    ) -> CourseResult<()>;
+}
+
+// ── Question bank ───────────────────────────────────────────────────
+
+#[async_trait::async_trait]
+pub trait QuestionBankRepository: Send + Sync {
+    async fn list_questions(
+        &self,
+        context: &CourseServiceContext,
+        query: QuestionQuery,
+    ) -> CourseResult<QuestionPage>;
+
+    async fn retrieve_question(
+        &self,
+        context: &CourseServiceContext,
+        question_id: String,
+    ) -> CourseResult<Option<QuestionItem>>;
+
+    /// Inserts or updates a question. `command.id` present means update.
+    async fn save_question(
+        &self,
+        context: &CourseServiceContext,
+        command: serde_json::Value,
+    ) -> CourseResult<QuestionItem>;
+
+    async fn delete_question(
+        &self,
+        context: &CourseServiceContext,
+        question_id: String,
+    ) -> CourseResult<()>;
+
+    /// Reference counts (`paperCount`, `handoutCount`) guarding deletion.
+    async fn question_references(
+        &self,
+        context: &CourseServiceContext,
+        question_id: String,
+    ) -> CourseResult<serde_json::Value>;
+
+    /// Imports questions one row at a time; per-row failures are reported in
+    /// the outcome instead of failing the whole batch.
+    async fn import_questions(
+        &self,
+        context: &CourseServiceContext,
+        commands: Vec<serde_json::Value>,
+    ) -> CourseResult<serde_json::Value>;
+
+    /// Applies a partial patch (tags / knowledge points / wrong-book flag /
+    /// status) to an explicit list of question ids.
+    async fn update_questions_batch(
+        &self,
+        context: &CourseServiceContext,
+        question_ids: Vec<String>,
+        patch: serde_json::Value,
+    ) -> CourseResult<u64>;
+
+    /// Random candidate selection for smart composition. The store picks the
+    /// rows (`ORDER BY random()`), the caller only bounds the count and the
+    /// exclusion list, so no unbounded in-memory collect happens.
+    async fn select_compose_candidates(
+        &self,
+        context: &CourseServiceContext,
+        spec: serde_json::Value,
+    ) -> CourseResult<Vec<QuestionItem>>;
+
+    /// Aggregated grade/subject/chapter/knowledge-point/tag taxonomy.
+    async fn retrieve_taxonomy(
+        &self,
+        context: &CourseServiceContext,
+        query: QuestionQuery,
+    ) -> CourseResult<serde_json::Value>;
+
+    /// Paper list page; returns `{ items, total }`.
+    async fn list_papers(
+        &self,
+        context: &CourseServiceContext,
+        query: CourseQuery,
+    ) -> CourseResult<serde_json::Value>;
+
+    /// Paper with its ordered item rows and embedded question snapshots.
+    async fn retrieve_paper(
+        &self,
+        context: &CourseServiceContext,
+        paper_id: String,
+    ) -> CourseResult<Option<serde_json::Value>>;
+
+    /// Inserts or updates a paper and replaces its item rows atomically.
+    async fn save_paper(
+        &self,
+        context: &CourseServiceContext,
+        command: serde_json::Value,
+    ) -> CourseResult<serde_json::Value>;
+
+    async fn delete_paper(
+        &self,
+        context: &CourseServiceContext,
+        paper_id: String,
+    ) -> CourseResult<()>;
+
+    async fn archive_paper(
+        &self,
+        context: &CourseServiceContext,
+        paper_id: String,
+    ) -> CourseResult<serde_json::Value>;
+
+    /// Handout list page; returns `{ items, total }`.
+    async fn list_handouts(
+        &self,
+        context: &CourseServiceContext,
+        query: CourseQuery,
+    ) -> CourseResult<serde_json::Value>;
+
+    /// Handout with its embedded question references.
+    async fn retrieve_handout(
+        &self,
+        context: &CourseServiceContext,
+        handout_id: String,
+    ) -> CourseResult<Option<serde_json::Value>>;
+
+    async fn save_handout(
+        &self,
+        context: &CourseServiceContext,
+        command: serde_json::Value,
+    ) -> CourseResult<serde_json::Value>;
+
+    async fn delete_handout(
+        &self,
+        context: &CourseServiceContext,
+        handout_id: String,
     ) -> CourseResult<()>;
 }

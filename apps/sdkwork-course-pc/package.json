@@ -31,6 +31,7 @@
     "@sdkwork/sdkwork-course-pc-live": "workspace:*",
     "@sdkwork/sdkwork-course-pc-progress": "workspace:*",
     "@sdkwork/sdkwork-course-pc-studio": "workspace:*",
+    "@sdkwork/sdkwork-course-pc-questionbank": "workspace:*",
     "@sdkwork/course-pc-console": "workspace:*",
     "@sdkwork/course-backend-sdk": "workspace:*",
     "@sdkwork/sdk-common": "workspace:*",

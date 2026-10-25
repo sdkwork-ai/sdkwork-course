@@ -4,6 +4,8 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
+use serde_json::Value;
+
 pub type CourseResult<T> = Result<T, CourseError>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -347,4 +349,167 @@ pub struct CourseEngagementItem {
     pub shares: i64,
     pub discussions: i64,
     pub students_count: i64,
+}
+
+// ── Question bank ───────────────────────────────────────────────────
+
+/// Supported question types. Values are stable wire codes.
+pub const QUESTION_TYPE_SINGLE_CHOICE: &str = "single_choice";
+pub const QUESTION_TYPE_MULTI_CHOICE: &str = "multi_choice";
+pub const QUESTION_TYPE_TRUE_FALSE: &str = "true_false";
+pub const QUESTION_TYPE_FILL_BLANK: &str = "fill_blank";
+pub const QUESTION_TYPE_SOLUTION: &str = "solution";
+pub const QUESTION_TYPE_ANALYSIS: &str = "analysis";
+
+/// Canonical section ordering for composed papers (大题顺序).
+pub const QUESTION_TYPE_SECTION_ORDER: [&str; 6] = [
+    QUESTION_TYPE_SINGLE_CHOICE,
+    QUESTION_TYPE_MULTI_CHOICE,
+    QUESTION_TYPE_TRUE_FALSE,
+    QUESTION_TYPE_FILL_BLANK,
+    QUESTION_TYPE_SOLUTION,
+    QUESTION_TYPE_ANALYSIS,
+];
+
+pub fn is_supported_question_type(question_type: &str) -> bool {
+    QUESTION_TYPE_SECTION_ORDER.contains(&question_type)
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct QuestionQuery {
+    pub page: Option<i64>,
+    pub page_size: Option<i64>,
+    pub q: Option<String>,
+    pub grade_level: Option<String>,
+    pub subject: Option<String>,
+    pub chapter: Option<String>,
+    pub knowledge_point: Option<String>,
+    pub question_type: Option<String>,
+    pub difficulty: Option<String>,
+    pub tag: Option<String>,
+    pub source_type: Option<String>,
+    pub wrong_book: Option<bool>,
+    pub status: Option<String>,
+    pub owner_user_id: Option<String>,
+}
+
+impl QuestionQuery {
+    pub fn limit(&self) -> i64 {
+        self.page_size.unwrap_or(20).clamp(1, 200)
+    }
+
+    pub fn offset(&self) -> i64 {
+        (self.page.unwrap_or(1).max(1) - 1) * self.limit()
+    }
+}
+
+fn empty_json_array() -> Value {
+    Value::Array(Vec::new())
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct QuestionItem {
+    pub id: String,
+    pub question_code: String,
+    pub grade_level: String,
+    pub subject: String,
+    pub chapter: Option<String>,
+    #[serde(default = "empty_json_array")]
+    pub knowledge_points: Value,
+    pub question_type: String,
+    pub stem: String,
+    #[serde(default = "empty_json_array")]
+    pub options: Value,
+    #[serde(default)]
+    pub answer: String,
+    pub analysis: Option<String>,
+    #[serde(default = "default_difficulty")]
+    pub difficulty: String,
+    #[serde(default = "default_zero_score")]
+    pub default_score: String,
+    #[serde(default = "default_source_type")]
+    pub source_type: String,
+    pub source_ref: Option<String>,
+    #[serde(default = "empty_json_array")]
+    pub tags: Value,
+    #[serde(default)]
+    pub wrong_book: bool,
+    pub wrong_note: Option<String>,
+    pub owner_user_id: Option<String>,
+    #[serde(default = "default_active_status")]
+    pub status: String,
+    #[serde(default)]
+    pub created_at: String,
+    #[serde(default)]
+    pub updated_at: String,
+    #[serde(default)]
+    pub version: i64,
+}
+
+fn default_difficulty() -> String {
+    "medium".to_string()
+}
+
+fn default_zero_score() -> String {
+    "0".to_string()
+}
+
+fn default_source_type() -> String {
+    "manual".to_string()
+}
+
+fn default_active_status() -> String {
+    "active".to_string()
+}
+
+impl Default for QuestionItem {
+    fn default() -> Self {
+        Self {
+            id: String::new(),
+            question_code: String::new(),
+            grade_level: String::new(),
+            subject: String::new(),
+            chapter: None,
+            knowledge_points: empty_json_array(),
+            question_type: String::new(),
+            stem: String::new(),
+            options: empty_json_array(),
+            answer: String::new(),
+            analysis: None,
+            difficulty: default_difficulty(),
+            default_score: default_zero_score(),
+            source_type: default_source_type(),
+            source_ref: None,
+            tags: empty_json_array(),
+            wrong_book: false,
+            wrong_note: None,
+            owner_user_id: None,
+            status: default_active_status(),
+            created_at: String::new(),
+            updated_at: String::new(),
+            version: 0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct QuestionPage {
+    pub items: Vec<QuestionItem>,
+    pub page: i64,
+    pub page_size: i64,
+    pub total: i64,
+}
+
+/// One (question type, difficulty) selection rule of a smart composition.
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ComposeBucket {
+    pub question_type: String,
+    pub difficulty: Option<String>,
+    pub count: i64,
+    /// Per-question score; falls back to the question's default score.
+    pub score: Option<String>,
 }

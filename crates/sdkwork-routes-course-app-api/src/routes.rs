@@ -10,6 +10,7 @@ use crate::service_state::CourseAppApiState;
 
 pub fn build_sdkwork_course_app_api_router(
     service: Arc<dyn sdkwork_content_course_service::CourseApplicationService>,
+    question_bank_service: Arc<dyn sdkwork_content_course_service::QuestionBankService>,
 ) -> Router {
     let prefix = "/app/v3/api";
     let router = Router::new()
@@ -47,7 +48,18 @@ pub fn build_sdkwork_course_app_api_router(
         .route(format!("{prefix}/studio/courses/{{courseId}}").as_str(), get(http_handlers::studio_courses_retrieve).put(http_handlers::studio_courses_update).delete(http_handlers::studio_courses_delete))
         .route(format!("{prefix}/studio/courses/{{courseId}}/submit").as_str(), post(http_handlers::studio_courses_submit))
         .route(format!("{prefix}/studio/courses/{{courseId}}/withdraw").as_str(), post(http_handlers::studio_courses_withdraw))
-        .with_state(CourseAppApiState::new(service));
+        .route(format!("{prefix}/question_bank/questions").as_str(), get(http_handlers::question_bank_questions_list).post(http_handlers::question_bank_questions_create))
+        .route(format!("{prefix}/question_bank/questions/import").as_str(), post(http_handlers::question_bank_questions_import))
+        .route(format!("{prefix}/question_bank/questions/batch_update").as_str(), post(http_handlers::question_bank_questions_batch_update))
+        .route(format!("{prefix}/question_bank/questions/batch_delete").as_str(), post(http_handlers::question_bank_questions_batch_delete))
+        .route(format!("{prefix}/question_bank/questions/{{questionId}}").as_str(), get(http_handlers::question_bank_questions_retrieve).put(http_handlers::question_bank_questions_update).delete(http_handlers::question_bank_questions_delete))
+        .route(format!("{prefix}/question_bank/taxonomy").as_str(), get(http_handlers::question_bank_taxonomy_retrieve))
+        .route(format!("{prefix}/question_bank/papers").as_str(), get(http_handlers::question_bank_papers_list).post(http_handlers::question_bank_papers_create))
+        .route(format!("{prefix}/question_bank/papers/{{paperId}}").as_str(), get(http_handlers::question_bank_papers_retrieve).put(http_handlers::question_bank_papers_update).delete(http_handlers::question_bank_papers_delete))
+        .route(format!("{prefix}/question_bank/papers/{{paperId}}/archive").as_str(), post(http_handlers::question_bank_papers_archive))
+        .route(format!("{prefix}/question_bank/handouts").as_str(), get(http_handlers::question_bank_handouts_list).post(http_handlers::question_bank_handouts_create))
+        .route(format!("{prefix}/question_bank/handouts/{{handoutId}}").as_str(), get(http_handlers::question_bank_handouts_retrieve).put(http_handlers::question_bank_handouts_update).delete(http_handlers::question_bank_handouts_delete))
+        .with_state(CourseAppApiState::new(service, question_bank_service));
 
     // Bare API router for gateway-owned Web Framework hosts (API_ASSEMBLY_SPEC
     // §4.1.1): the composed host's canonical pipeline (standalone gateway or
@@ -59,6 +71,7 @@ pub fn build_sdkwork_course_app_api_router(
 
 pub fn build_router(
     service: Arc<dyn sdkwork_content_course_service::CourseApplicationService>,
+    question_bank_service: Arc<dyn sdkwork_content_course_service::QuestionBankService>,
 ) -> Router {
-    build_sdkwork_course_app_api_router(service)
+    build_sdkwork_course_app_api_router(service, question_bank_service)
 }

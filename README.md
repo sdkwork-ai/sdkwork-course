@@ -64,6 +64,11 @@ sdkwork-course/
 - PC `/studio` — creator dashboard and draft editor (chapters, lessons, upload,
   collection ordering, submit/withdraw).
 - PC `/admin` — operator overview, review queue, course governance, categories.
+- PC `/questionbank` — local teaching question bank for institutions:
+  question authoring/import with grade/subject/chapter/knowledge-point
+  binding, wrong-book collection, smart + manual paper composition with
+  printable Word/PDF export (sealed line, name fields), and handout editing
+  that embeds bank questions.
 - H5 `/course` — mobile catalog with 课程/专栏/合集 filters and published-only
   content.
 

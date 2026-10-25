@@ -2,11 +2,30 @@
 -- (collection), and one UGC course waiting in the operator review queue.
 -- Tenant 100001 / org 0. Idempotent by primary key / unique membership.
 
+-- ── Author profiles for author-written showcase content ──────────────
+-- Columns and UGC courses are written by platform authors, not Bilibili
+-- uploaders, so their instructor profile mirrors the author identity.
+
+INSERT INTO course_instructor
+    (id, uuid, tenant_id, organization_id, user_id, display_name, title, bio, avatar_resource_snapshot, profile_links_json, expertise_tags_json, qualification_status, sort_order, status, created_at, created_by, updated_at, updated_by, version)
+VALUES
+    ('instructor-author-demo-creator-1', 'instructor-author-demo-creator-1', '100001', '0', NULL, '林知远', 'AI 效率 · 专栏作者', '在课程中心更新 AI 效率工作法专栏，分享可复用的提示词与自动化工作流。', NULL, '[]', '["AI效率","提示词","工作流"]', 'verified', 902, 'active', CURRENT_TIMESTAMP::text, 'seed', CURRENT_TIMESTAMP::text, 'seed', 0),
+    ('instructor-author-demo-creator-2', 'instructor-author-demo-creator-2', '100001', '0', NULL, '苏晚', 'AI 写作 · 训练营作者', '在课程中心开设 AI 写作训练营，帮助写作新手建立稳定的成稿流程。', NULL, '[]', '["AI写作","训练营","UGC"]', 'verified', 903, 'active', CURRENT_TIMESTAMP::text, 'seed', CURRENT_TIMESTAMP::text, 'seed', 0)
+ON CONFLICT (id) DO UPDATE SET
+    display_name = EXCLUDED.display_name,
+    title = EXCLUDED.title,
+    bio = EXCLUDED.bio,
+    avatar_resource_snapshot = EXCLUDED.avatar_resource_snapshot,
+    expertise_tags_json = EXCLUDED.expertise_tags_json,
+    status = EXCLUDED.status,
+    updated_at = EXCLUDED.updated_at;
+
 -- ── 专栏：AI 效率工作法 ─────────────────────────────────────────────
 
 INSERT INTO course_catalog
     (
         id, uuid, tenant_id, organization_id, course_code, category_id,
+        primary_instructor_id,
         title, subtitle, summary, description, difficulty_level, language_code,
         tags_json, cover_resource_snapshot, estimated_duration_seconds,
         lesson_count_snapshot, student_count_snapshot, rating_score_snapshot,
@@ -23,15 +42,16 @@ VALUES
         '0',
         'COL-AI-001',
         'course-category-ai',
+        'instructor-author-demo-creator-1',
         'AI 效率工作法',
         '用 AI 重构你的日常工作流',
-        '26 篇实战专栏，从信息整理、写作、会议到自动化，把 AI 变成每天都能用上的生产力工具。',
-        '这是一档面向知识工作者的 AI 实战专栏。每篇正文都给出可直接复用的提示词、工作流模板和工具组合，覆盖写作、研究、会议、数据分析与个人自动化。订阅后可同步更新后续 4 篇加餐内容。',
+        '3 篇实战专栏，从信息整理、写作、会议到自动化，把 AI 变成每天都能用上的生产力工具。',
+        '这是一档面向知识工作者的 AI 实战专栏，共 3 篇正文、约 1.77 小时。每篇都给出可直接复用的提示词、工作流模板和工具组合，依次覆盖信息整理、内容输出与流程自动化，帮助你把 AI 变成每天都能用上的生产力工具。',
         'intermediate',
         'zh-CN',
         '["AI效率","提示词","工作流","职场进阶"]',
-        'https://i1.hdslb.com/bfs/archive/e101c4c44c062ef36134a141dfeb0e517489f5e2.jpg',
-        9360,
+        'https://i1.hdslb.com/bfs/archive/cd98b440aed21c91b7f996aa3afb3d818dfaf919.jpg',
+        6360,
         3,
         2860,
         '4.9',
@@ -58,10 +78,13 @@ VALUES
         0
     )
 ON CONFLICT (id) DO UPDATE SET
+    primary_instructor_id = EXCLUDED.primary_instructor_id,
     title = EXCLUDED.title,
     subtitle = EXCLUDED.subtitle,
     summary = EXCLUDED.summary,
     description = EXCLUDED.description,
+    estimated_duration_seconds = EXCLUDED.estimated_duration_seconds,
+    lesson_count_snapshot = EXCLUDED.lesson_count_snapshot,
     cover_resource_snapshot = EXCLUDED.cover_resource_snapshot,
     price_amount = EXCLUDED.price_amount,
     original_price_amount = EXCLUDED.original_price_amount,
@@ -127,7 +150,7 @@ VALUES
         '把杂乱的信息流变成可检索的第二大脑',
         0,
         1,
-        3120,
+        1800,
         'tenant',
         'active',
         CURRENT_TIMESTAMP::text,
@@ -147,7 +170,7 @@ VALUES
         '从提纲到成稿的 AI 协作写作',
         1,
         1,
-        3120,
+        2160,
         'tenant',
         'active',
         CURRENT_TIMESTAMP::text,
@@ -167,7 +190,7 @@ VALUES
         '让重复工作自动跑起来',
         2,
         1,
-        3120,
+        2400,
         'tenant',
         'active',
         CURRENT_TIMESTAMP::text,
@@ -180,7 +203,8 @@ ON CONFLICT (id) DO UPDATE SET
     title = EXCLUDED.title,
     description = EXCLUDED.description,
     sort_order = EXCLUDED.sort_order,
-    lesson_count_snapshot = EXCLUDED.lesson_count_snapshot;
+    lesson_count_snapshot = EXCLUDED.lesson_count_snapshot,
+    duration_seconds_snapshot = EXCLUDED.duration_seconds_snapshot;
 
 INSERT INTO course_lesson
     (
@@ -277,6 +301,7 @@ ON CONFLICT (id) DO UPDATE SET
 INSERT INTO course_catalog
     (
         id, uuid, tenant_id, organization_id, course_code, category_id,
+        primary_instructor_id,
         title, subtitle, summary, description, difficulty_level, language_code,
         tags_json, cover_resource_snapshot, estimated_duration_seconds,
         lesson_count_snapshot, student_count_snapshot, rating_score_snapshot,
@@ -293,16 +318,17 @@ VALUES
         '0',
         'SET-AI-001',
         'course-category-ai',
+        'instructor-bili-46880349',
         'AI 工程师成长路径',
         '三门课，走完从入门到应用的全链路',
         '官方精选三门 AI 课程，按「基础认知 → 深度学习 → 提示词应用」顺序学习，适合想系统转型 AI 应用开发的工程师。',
-        '合集由课程中心官方维护，包含机器学习入门、深度学习核心方法与提示词工程三门课程。购买合集后可按推荐顺序学习，也可单独进入任意一门课程。',
+        '合集由课程中心官方维护，包含机器学习入门指南、深度学习与大模型原理、提示词工程实战三门课程，共 7 讲、约 9.3 小时。购买合集后可按照「基础认知 → 深度学习 → 提示词应用」的推荐顺序学习，也可单独进入任意一门课程。',
         'beginner',
         'zh-CN',
         '["AI工程师","学习路径","合集"]',
-        'https://i2.hdslb.com/bfs/archive/f062d5f0a407d0d6d8e3eaf2dd1af32e9099b956.jpg',
-        50400,
-        9,
+        'https://i1.hdslb.com/bfs/archive/2606dbfe0f821748fb8e1018f177453183c3114b.png',
+        33519,
+        7,
         6420,
         '4.8',
         936,
@@ -325,10 +351,13 @@ VALUES
         0
     )
 ON CONFLICT (id) DO UPDATE SET
+    primary_instructor_id = EXCLUDED.primary_instructor_id,
     title = EXCLUDED.title,
     subtitle = EXCLUDED.subtitle,
     summary = EXCLUDED.summary,
     description = EXCLUDED.description,
+    estimated_duration_seconds = EXCLUDED.estimated_duration_seconds,
+    lesson_count_snapshot = EXCLUDED.lesson_count_snapshot,
     cover_resource_snapshot = EXCLUDED.cover_resource_snapshot,
     is_free = EXCLUDED.is_free,
     is_collection = EXCLUDED.is_collection,
@@ -424,6 +453,7 @@ ON CONFLICT (tenant_id, course_id, linked_course_id, link_type) DO UPDATE SET
 INSERT INTO course_catalog
     (
         id, uuid, tenant_id, organization_id, course_code, category_id,
+        primary_instructor_id,
         title, subtitle, summary, description, difficulty_level, language_code,
         tags_json, cover_resource_snapshot, estimated_duration_seconds,
         lesson_count_snapshot, student_count_snapshot, rating_score_snapshot,
@@ -440,15 +470,16 @@ VALUES
         '0',
         'UGC-AI-001',
         'course-category-ai',
+        'instructor-author-demo-creator-2',
         'AI 写作训练营：从提纲到成稿',
-        '21 天完成 7 次实战写作',
-        '面向内容创作者的 AI 写作训练营，用 7 个真实选题练习判断、结构、论据与润色，每次作业都有可复用的提示词模板。',
-        '这是我第一次在平台开设训练营，课程包含 7 次实战练习和 2 次直播答疑。希望帮助写作新手建立稳定的成稿流程。',
+        '2 课实战写作',
+        '面向内容创作者的 AI 写作训练营，用 2 个真实选题练习结构、论据与润色，每次作业都有可复用的提示词模板。',
+        '面向内容创作者的 AI 写作训练营，共 2 课、约 1.5 小时。第 1 课用三个问题判断选题是否值得写，第 2 课从一句核心判断出发搭建文章结构，每次练习都配有可复用的提示词模板与结构检查清单。',
         'beginner',
         'zh-CN',
         '["AI写作","训练营","UGC"]',
-        'https://i2.hdslb.com/bfs/archive/828a7eb16d0ce66508ae3859462bae98c0faca52.jpg',
-        10800,
+        'https://i2.hdslb.com/bfs/archive/970f4644108bd8aeef8d201e0b5df1ad4807f3b2.jpg',
+        5400,
         2,
         0,
         '0',
@@ -472,9 +503,12 @@ VALUES
         0
     )
 ON CONFLICT (id) DO UPDATE SET
+    primary_instructor_id = EXCLUDED.primary_instructor_id,
     title = EXCLUDED.title,
     summary = EXCLUDED.summary,
     description = EXCLUDED.description,
+    estimated_duration_seconds = EXCLUDED.estimated_duration_seconds,
+    lesson_count_snapshot = EXCLUDED.lesson_count_snapshot,
     cover_resource_snapshot = EXCLUDED.cover_resource_snapshot,
     author_user_id = EXCLUDED.author_user_id,
     author_display_name = EXCLUDED.author_display_name,
@@ -511,7 +545,9 @@ VALUES
     )
 ON CONFLICT (id) DO UPDATE SET
     title = EXCLUDED.title,
-    description = EXCLUDED.description;
+    description = EXCLUDED.description,
+    lesson_count_snapshot = EXCLUDED.lesson_count_snapshot,
+    duration_seconds_snapshot = EXCLUDED.duration_seconds_snapshot;
 
 INSERT INTO course_lesson
     (

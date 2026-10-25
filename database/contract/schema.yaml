@@ -57,3 +57,18 @@ tables:
   - name: course_live_attendance
     lifecycle_status: active
     owner: course-platform
+  - name: course_question
+    lifecycle_status: active
+    owner: course-platform
+  - name: course_question_paper
+    lifecycle_status: active
+    owner: course-platform
+  - name: course_question_paper_item
+    lifecycle_status: active
+    owner: course-platform
+  - name: course_question_handout
+    lifecycle_status: active
+    owner: course-platform
+  - name: course_question_handout_item
+    lifecycle_status: active
+    owner: course-platform

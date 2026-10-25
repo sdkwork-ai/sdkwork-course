@@ -1,6 +1,8 @@
 // Fetch a real, category-aligned course catalog from the public Bilibili APIs.
 //
-// Output: database/seeds/catalog/bilibili-catalog.json
+// Output: database/seeds/catalog/bilibili-catalog.index.json (metadata + category
+// order) and one file per category under database/seeds/catalog/categories/, so a
+// single category can be reviewed and edited on its own.
 //
 // The script only reads public metadata (title, cover, duration, uploader,
 // multi-part chapter list). It never downloads video or image binaries: the
@@ -10,7 +12,20 @@
 //
 // Usage:
 //   node scripts/catalog/fetch-bilibili-catalog.mjs
-//   node scripts/catalog/fetch-bilibili-catalog.mjs --per-category 30 --max-lessons 120
+//   node scripts/catalog/fetch-bilibili-catalog.mjs --per-category 500 --pages 3
+//   node scripts/catalog/fetch-bilibili-catalog.mjs --only programming,ai --per-category 300
+//   node scripts/catalog/fetch-bilibili-catalog.mjs --reset-state
+//   node scripts/catalog/fetch-bilibili-catalog.mjs --single-min-seconds 3600
+//   node scripts/catalog/fetch-bilibili-catalog.mjs --reconsider
+//
+// The run is incremental and resumable:
+//   - datasets from earlier runs are kept and extended, never replaced
+//   - per-category JSON is flushed after every category, so Ctrl+C loses at most
+//     one category of progress
+//   - every view-API result is cached in bilibili-catalog.state.json, so reruns
+//     do not spend quota on videos that were already accepted or rejected
+//   - acceptance keys (source id + BVID) are deduplicated globally, so one video
+//     never shows up in two categories
 //
 // Adjust `--per-category` to scale the seed to as many courses as the public
 // catalog can supply. The resulting dataset stays fully reproducible.
@@ -20,23 +35,48 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import { CATALOG_SPEC, COURSE_SIGNAL, SPAM_AUTHOR, SPAM_TITLE } from './catalog-spec.mjs'
+import { CATALOG_PATHS, readCatalog, writeCatalog } from './catalog-store.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
-const OUT_FILE = path.join(ROOT, 'database/seeds/catalog/bilibili-catalog.json')
+const STATE_FILE = path.join(ROOT, 'database/seeds/catalog/bilibili-catalog.state.json')
 
 const args = parseArgs(process.argv.slice(2))
-const PER_CATEGORY = Number(args['per-category'] ?? 20)
+// Final number of courses kept per category. Existing courses are preserved and
+// the remainder is filled by the current run.
+const PER_CATEGORY = Number(args['per-category'] ?? 300)
 const MIN_LESSONS = Number(args['min-lessons'] ?? 6)
-const MAX_LESSONS = Number(args['max-lessons'] ?? 120)
+const MAX_LESSONS = Number(args['max-lessons'] ?? 300)
 const MIN_TOTAL_SECONDS = Number(args['min-seconds'] ?? 1800)
-const VIEW_BUDGET = Number(args['view-budget'] ?? 160)
+// A single-part video has no chapter list, but a long one is still a complete
+// lesson set. This threshold decides when a one-page video counts as a course.
+const SINGLE_MIN_SECONDS = Number(args['single-min-seconds'] ?? 1800)
+// How many view-API calls a single category may spend in one run.
+const VIEW_BUDGET = Number(args['view-budget'] ?? 900)
 // Caps how many courses a single uploader may contribute per category. Most
-// categories keep 2 for variety; narrow topics raise it so one prolific
-// instructor cannot starve the catalog.
-const MAX_PER_UPLOADER = Number(args['max-per-uploader'] ?? 2)
+// categories keep a small number for variety; raising it unlocks channels that
+// publish dozens of full courses.
+const MAX_PER_UPLOADER = Number(args['max-per-uploader'] ?? 6)
+// Search pages requested for every keyword. 30 results per page on Bilibili.
+const SEARCH_PAGES = Math.max(1, Number(args.pages ?? 3))
+// Parallel view requests. Search stays sequential to avoid anti-crawl challenges.
+const VIEW_CONCURRENCY = Math.max(1, Number(args.concurrency ?? 4))
+const SEARCH_DELAY = Math.max(600, Number(args['search-delay'] ?? 1400))
+const VIEW_DELAY = Math.max(100, Number(args['view-delay'] ?? 300))
+const RESET_STATE = Boolean(args['reset-state'])
+// Drops cached rejections so videos turned down by an older gate get another
+// chance without re-spending view calls on already accepted ones.
+const RECONSIDER = Boolean(args['reconsider'])
 // Accounts that are deactivated, abandoned, or ask not to be followed cannot
 // credit a paid catalog course.
 const JUNK_AUTHOR = /已注销|账号注销|已封禁|不再更新|不要关注|停更|未命名/u
+// Bilibili returns this generic TV illustration when a video or season has no
+// custom cover. Storing it would render every such course as the same grey
+// placeholder card, so it is treated as "no cover".
+const PLACEHOLDER_COVER = /viedeo_material_default|material_default|bfs\/templar|static\.hdslb\.com/i
+// A season's seed episode can be short while the whole playlist is long, so
+// playlist-shaped titles bypass the duration prefilter and reach the view API.
+const SEASON_HINT =
+  /合集|全集|全套|完结|系列|专辑|全\s*\d+\s*[集讲期pP]|共\s*\d+\s*[集讲期]|第\s*\d+\s*[集讲期]|从入门到|系统(?:课程|教程|学习)|训练营|公开课/i
 const ONLY = args.only ? String(args.only).split(',') : null
 
 const HEADERS = {
@@ -167,9 +207,13 @@ async function refreshSession() {
   }
 }
 
+// Returns `{ retryable: true }` when the request never produced a JSON body
+// (risk control or network), so the outcome is not cached as a permanent
+// rejection. A JSON body with no `data` means the video is really unavailable.
 async function fetchView(bvid) {
   const json = await requestJson(`https://api.bilibili.com/x/web-interface/view?bvid=${bvid}`)
-  return json?.data ?? null
+  if (!json) return { retryable: true }
+  return { retryable: false, view: json.data ?? null }
 }
 
 function cleanText(value) {
@@ -231,12 +275,71 @@ function httpsUrl(value) {
   return trimmed.replace(/^http:\/\//i, 'https://')
 }
 
+// Normalise a cover URL and drop Bilibili's default placeholder image.
+function realCover(value) {
+  const url = httpsUrl(value)
+  if (!url || PLACEHOLDER_COVER.test(url)) return ''
+  return url
+}
+
 function formatDurationText(seconds) {
   const total = Math.max(0, Math.round(seconds))
   const hours = Math.floor(total / 3600)
   const minutes = Math.floor((total % 3600) / 60)
   if (hours > 0) return `${hours} 小时 ${minutes} 分钟`
   return `${Math.max(1, minutes)} 分钟`
+}
+
+// Search results report duration as "mm:ss" or "h:mm:ss" instead of seconds.
+function searchDurationSeconds(value) {
+  const parts = String(value ?? '')
+    .trim()
+    .split(':')
+    .map((part) => Number(part))
+  if (parts.length === 0 || parts.some((part) => !Number.isFinite(part))) return 0
+  return parts.reduce((total, part) => total * 60 + part, 0)
+}
+
+// Small concurrency helper: runs up to `limit` mappers at a time while keeping
+// the result order stable, so acceptance decisions stay deterministic.
+async function mapLimit(items, limit, mapper) {
+  const results = new Array(items.length)
+  let cursor = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor
+      cursor += 1
+      results[index] = await mapper(items[index], index)
+    }
+  })
+  await Promise.all(workers)
+  return results
+}
+
+async function readFetchState() {
+  if (RESET_STATE) return { version: 1, viewed: {} }
+  try {
+    const parsed = JSON.parse(await fs.readFile(STATE_FILE, 'utf8'))
+    const viewed = parsed?.viewed ?? {}
+    // A gate change makes old rejections stale, while accepted videos stay
+    // accepted, so `--reconsider` drops only the rejected half of the cache.
+    if (RECONSIDER) {
+      for (const [bvid, outcome] of Object.entries(viewed)) {
+        if (outcome !== 'accepted') delete viewed[bvid]
+      }
+    }
+    return { version: 1, viewed }
+  } catch {
+    return { version: 1, viewed: {} }
+  }
+}
+
+// The cache keeps only terminal outcomes: `accepted` videos are already in the
+// dataset and `rejected` videos failed a stable gate, so neither needs another
+// view-API call on the next run.
+async function writeFetchState(state) {
+  state.updatedAt = new Date().toISOString()
+  await fs.writeFile(STATE_FILE, JSON.stringify(state), 'utf8')
 }
 
 function difficultyFor(title, fallback) {
@@ -338,7 +441,7 @@ function toCourse(spec, view, seed) {
   if (!instructorName || JUNK_AUTHOR.test(instructorName)) return null
   if (SPAM_AUTHOR.test(instructorName)) return null
   const instructorAvatar = httpsUrl(owner.face)
-  const videoCover = httpsUrl(view.pic)
+  const videoCover = realCover(view.pic)
   const season = view.ugc_season
   const seasonSections = season ? groupSeasonEpisodes(season.sections) : []
   const seasonLessonCount = seasonSections.reduce((total, item) => total + item.lessons.length, 0)
@@ -358,13 +461,19 @@ function toCourse(spec, view, seed) {
     // A season header can be an unrelated playlist name such as "计划采购仓库".
     // Only adopt it when it is itself on topic for the category.
     if (seasonTitle && isTopical(spec, seasonTitle)) courseTitle = seasonTitle
-    cover = httpsUrl(season.cover) || videoCover
+    // Many seasons have no custom cover; the episode cover is still real.
+    cover = realCover(season.cover) || videoCover
     sections = seasonSections
     externalRef = `season-${season.id ?? view.bvid}`
   } else {
     const pages = (view.pages ?? []).map((page) => ({ ...page, bvid: view.bvid }))
     const lessons = groupPagesIntoLessons(pages)
-    if (lessons.length < MIN_LESSONS || lessons.length > MAX_LESSONS) return null
+    const pageSeconds = lessons.reduce((total, lesson) => total + Number(lesson.duration ?? 0), 0)
+    // One long single-part video is accepted as a course; anything else still
+    // needs a real chapter list.
+    const singleLongVideo = lessons.length === 1 && pageSeconds >= SINGLE_MIN_SECONDS
+    if (lessons.length > MAX_LESSONS) return null
+    if (lessons.length < MIN_LESSONS && !singleLongVideo) return null
     sections = chunkLessons(lessons)
     externalRef = view.bvid
   }
@@ -453,7 +562,30 @@ function pickCandidates(listByQuery) {
   return ordered
 }
 
-async function collectCategory(spec) {
+function emptyReport(spec) {
+  return {
+    slug: spec.slug,
+    queries: spec.queries.length,
+    searchResults: 0,
+    usable: 0,
+    candidates: 0,
+    views: 0,
+    accepted: 0,
+    skippedState: 0,
+    skippedDuplicate: 0,
+    skippedShort: 0,
+    skippedGlobal: 0,
+    viewFailed: 0,
+    retryable: 0,
+    notCourse: 0,
+    offTopic: 0,
+    uploaderCapped: 0,
+  }
+}
+
+async function collectCategory(spec, context) {
+  const { globalSeen, titleKeys, uploaderCount, state, remaining } = context
+  const report = emptyReport(spec)
   const listByQuery = []
   for (const query of spec.queries) {
     // Search engines rarely repeat a long Chinese phrase verbatim in the video
@@ -464,134 +596,221 @@ async function collectCategory(spec) {
       .map((token) => token.toLowerCase())
       .filter((token) => token.length >= 2)
     const results = []
-    for (const page of [1, 2]) {
+    for (let page = 1; page <= SEARCH_PAGES; page += 1) {
       const items = await searchVideos(query, page)
       results.push(...items)
-      await sleep(1400)
+      await sleep(SEARCH_DELAY)
       if (items.length < 30) break
     }
-    listByQuery.push(
-      results.filter((item) => {
-        const title = cleanText(item.title)
-        const author = cleanText(item.author)
-        if (!title || title.length < 6) return false
-        if (!tokens.some((token) => title.toLowerCase().includes(token))) return false
-        if (!COURSE_SIGNAL.test(title)) return false
-        if (SPAM_TITLE.test(title) || SPAM_AUTHOR.test(author)) return false
-        if (!spec.include.test(title)) return false
-        if (spec.exclude.test(title)) return false
-        return true
-      }),
-    )
-    console.log(`  search · ${query} · ${listByQuery[listByQuery.length - 1].length} usable`)
+    report.searchResults += results.length
+    const usable = results.filter((item) => {
+      const title = cleanText(item.title)
+      const author = cleanText(item.author)
+      if (!title || title.length < 6) return false
+      if (!tokens.some((token) => title.toLowerCase().includes(token))) return false
+      if (!COURSE_SIGNAL.test(title)) return false
+      if (SPAM_TITLE.test(title) || SPAM_AUTHOR.test(author)) return false
+      if (!spec.include.test(title)) return false
+      if (spec.exclude.test(title)) return false
+      return true
+    })
+    report.usable += usable.length
+    listByQuery.push(usable)
+    console.log(`  search · ${query} · ${usable.length} usable`)
   }
 
   const ordered = pickCandidates(listByQuery)
-  const courses = []
-  const titleKeys = new Set()
-  const uploaderCount = new Map()
-  let attempts = 0
-
+  const candidates = []
   for (const candidate of ordered) {
-    if (courses.length >= PER_CATEGORY) break
-    if (attempts >= VIEW_BUDGET) break
-    attempts += 1
-
+    if (candidates.length >= VIEW_BUDGET) break
+    if (!candidate?.bvid) continue
+    // A cached terminal outcome means the video was already evaluated.
+    if (state.viewed[candidate.bvid]) {
+      report.skippedState += 1
+      continue
+    }
+    if (globalSeen.has(`bvid:${candidate.bvid}`)) {
+      report.skippedGlobal += 1
+      state.viewed[candidate.bvid] = 'accepted'
+      continue
+    }
     const key = normaliseTitle(candidate.title)
-    if (!key || titleKeys.has(key.slice(0, 22))) continue
+    if (!key || titleKeys.has(key.slice(0, 22))) {
+      report.skippedDuplicate += 1
+      continue
+    }
+    const title = cleanText(candidate.title)
+    const seconds = searchDurationSeconds(candidate.duration)
+    // A short single clip is almost never a full course. Playlist-shaped titles
+    // are kept because a season's seed episode can be short.
+    if (seconds > 0 && seconds < MIN_TOTAL_SECONDS && !SEASON_HINT.test(title)) {
+      report.skippedShort += 1
+      continue
+    }
+    candidates.push(candidate)
+  }
+  report.candidates = candidates.length
 
-    const view = await fetchView(candidate.bvid)
-    await sleep(300)
-    if (!view) continue
+  const courses = []
+  let stopped = remaining <= 0
 
-    const ownerMid = Number(view.owner?.mid ?? 0)
-    if ((uploaderCount.get(ownerMid) ?? 0) >= MAX_PER_UPLOADER) continue
+  for (let start = 0; start < candidates.length && !stopped; start += VIEW_CONCURRENCY) {
+    const batch = candidates.slice(start, start + VIEW_CONCURRENCY)
+    const views = await mapLimit(batch, VIEW_CONCURRENCY, async (candidate) => {
+      const result = await fetchView(candidate.bvid)
+      await sleep(VIEW_DELAY)
+      return result
+    })
+    report.views += batch.length
 
-    const course = toCourse(spec, view, { index: courses.length })
-    if (!course) continue
-    if (!isTopical(spec, course.title)) continue
+    for (let index = 0; index < batch.length; index += 1) {
+      if (courses.length >= remaining) {
+        stopped = true
+        break
+      }
+      const candidate = batch[index]
+      const result = views[index]
+      if (!result || result.retryable) {
+        // Transient failure: leave the cache untouched so the next run retries.
+        report.retryable += 1
+        continue
+      }
+      const view = result.view
+      if (!view) {
+        report.viewFailed += 1
+        state.viewed[candidate.bvid] = 'rejected'
+        continue
+      }
 
-    const courseKey = normaliseTitle(course.title)
-    if (!courseKey || titleKeys.has(courseKey.slice(0, 22))) continue
+      const ownerMid = Number(view.owner?.mid ?? 0)
+      if ((uploaderCount.get(ownerMid) ?? 0) >= MAX_PER_UPLOADER) {
+        report.uploaderCapped += 1
+        state.viewed[candidate.bvid] = 'rejected'
+        continue
+      }
 
-    titleKeys.add(key.slice(0, 22))
-    titleKeys.add(courseKey.slice(0, 22))
-    uploaderCount.set(ownerMid, (uploaderCount.get(ownerMid) ?? 0) + 1)
-    courses.push(course)
-    console.log(
-      `  + ${course.sourceType.padEnd(6)} ${course.sections.reduce((total, item) => total + item.lessons.length, 0)
-        .toString()
-        .padStart(3)} 讲  ${course.instructor.name.slice(0, 12).padEnd(13)} ${course.title.slice(0, 44)}`,
-    )
+      const course = toCourse(spec, view, { index: courses.length })
+      if (!course) {
+        report.notCourse += 1
+        state.viewed[candidate.bvid] = 'rejected'
+        continue
+      }
+      if (!isTopical(spec, course.title)) {
+        report.offTopic += 1
+        state.viewed[candidate.bvid] = 'rejected'
+        continue
+      }
+      if (globalSeen.has(course.idSeed) || globalSeen.has(`bvid:${course.bvid}`)) {
+        report.skippedGlobal += 1
+        state.viewed[candidate.bvid] = 'accepted'
+        continue
+      }
+
+      const courseKey = normaliseTitle(course.title)
+      if (!courseKey || titleKeys.has(courseKey.slice(0, 22))) {
+        report.skippedDuplicate += 1
+        state.viewed[candidate.bvid] = 'rejected'
+        continue
+      }
+
+      titleKeys.add(normaliseTitle(candidate.title).slice(0, 22))
+      titleKeys.add(courseKey.slice(0, 22))
+      globalSeen.add(course.idSeed)
+      globalSeen.add(`bvid:${course.bvid}`)
+      uploaderCount.set(ownerMid, (uploaderCount.get(ownerMid) ?? 0) + 1)
+      state.viewed[candidate.bvid] = 'accepted'
+      courses.push(course)
+      console.log(
+        `  + ${course.sourceType.padEnd(6)} ${course.sections.reduce((total, item) => total + item.lessons.length, 0)
+          .toString()
+          .padStart(3)} 讲  ${course.instructor.name.slice(0, 12).padEnd(13)} ${course.title.slice(0, 44)}`,
+      )
+    }
+
+    // Flush the cache every ~100 views so an interrupted run keeps its progress
+    // without rewriting the state file on every request.
+    if ((start / VIEW_CONCURRENCY) % 25 === 0) await writeFetchState(state)
   }
 
-  return courses
+  report.accepted = courses.length
+  return { courses, report }
 }
 
 async function readPreviousDataset() {
   try {
-    return JSON.parse(await fs.readFile(OUT_FILE, 'utf8'))
+    return await readCatalog()
   } catch {
     return null
   }
 }
 
-// `--only` refreshes a subset of categories. Unexplored categories and courses
-// collected by earlier runs are carried over, so repeated runs deepen the
-// catalog instead of replacing it.
-function mergeCategoryCourses(previous, spec, courses) {
-  const existing = previous?.categories?.find((item) => item.slug === spec.slug)?.courses ?? []
-  const merged = new Map()
-  for (const course of [...courses, ...existing]) {
-    if (!course?.idSeed || merged.has(course.idSeed)) continue
-    // Re-apply the current topic gates so tightened filters also prune
-    // courses that earlier runs already collected.
-    if (!isTopical(spec, course.title)) continue
-    if (JUNK_AUTHOR.test(String(course.instructor?.name ?? ''))) continue
-    merged.set(course.idSeed, course)
-  }
-  return [...merged.values()].slice(0, PER_CATEGORY)
+// Gates every stored course is re-checked against, so tightened filters also
+// prune courses collected by earlier runs.
+function passesStoredGates(spec, course) {
+  if (!course?.idSeed) return false
+  if (!isTopical(spec, course.title)) return false
+  if (JUNK_AUTHOR.test(String(course.instructor?.name ?? ''))) return false
+  // Older runs stored Bilibili's default placeholder cover; drop those so a
+  // rerun refetches the course instead of keeping a grey card.
+  if (!course.cover || PLACEHOLDER_COVER.test(String(course.cover))) return false
+  // The catalog ships real multi-part courses, plus single-part videos long
+  // enough to be a complete lesson set on their own.
+  if (!qualifiesAsCourse(courseLessonCount(course), Number(course.durationSeconds ?? 0))) return false
+  return true
 }
 
-async function main() {
-  console.log(`fetching bilibili catalog for ${CATALOG_SPEC.length} categories`)
-  await boot()
-  const previous = await readPreviousDataset()
+function qualifiesAsCourse(lessonCount, totalSeconds) {
+  if (lessonCount <= 0 || lessonCount > MAX_LESSONS) return false
+  if (lessonCount >= MIN_LESSONS) return true
+  return lessonCount === 1 && totalSeconds >= SINGLE_MIN_SECONDS
+}
+
+function courseLessonCount(course) {
+  return (course?.sections ?? []).reduce((total, section) => total + (section.lessons?.length ?? 0), 0)
+}
+
+// Existing courses are kept first, then the current run's discoveries fill the
+// remaining slots. Earlier runs therefore never vanish because of a rerun.
+function mergeCategoryCourses(existing, fetched, limit) {
+  const merged = new Map()
+  for (const course of [...existing, ...fetched]) {
+    if (!course?.idSeed || merged.has(course.idSeed)) continue
+    merged.set(course.idSeed, course)
+  }
+  return [...merged.values()].slice(0, limit)
+}
+
+// One video must not appear in two categories. The first category in spec order
+// keeps it; later duplicates are dropped.
+function dedupeAcrossCategories(categories) {
+  const seen = new Set()
+  let dropped = 0
+  for (const category of categories) {
+    const kept = []
+    for (const course of category.courses ?? []) {
+      const keys = [course.idSeed, course.bvid ? `bvid:${course.bvid}` : null].filter(Boolean)
+      if (keys.some((key) => seen.has(key))) {
+        dropped += 1
+        continue
+      }
+      keys.forEach((key) => seen.add(key))
+      kept.push(course)
+    }
+    category.courses = kept
+  }
+  return dropped
+}
+
+// Flush the dataset after every category so an interrupted run loses at most the
+// category that was in flight.
+async function writeDataset(snapshotBySlug) {
   const categories = []
   for (const spec of CATALOG_SPEC) {
-    if (ONLY && !ONLY.includes(spec.slug)) {
-      const kept = previous?.categories?.find((item) => item.slug === spec.slug)
-      if (kept) categories.push(kept)
-      continue
-    }
-    console.log(`\n=== ${spec.label} (${spec.slug}) ===`)
-    const fetched = await collectCategory(spec)
-    const courses = mergeCategoryCourses(previous, spec, fetched)
-    categories.push({
-      categoryId: spec.categoryId,
-      slug: spec.slug,
-      label: spec.label,
-      courses,
-    })
-    console.log(`  => ${courses.length} courses (${fetched.length} fetched)`)
+    const snapshot = snapshotBySlug.get(spec.slug)
+    if (!snapshot) continue
+    categories.push({ ...snapshot, courses: [...(snapshot.courses ?? [])] })
   }
-
-  const stats = categories.reduce(
-    (total, category) => {
-      const lessons = category.courses.reduce(
-        (count, course) => count + course.sections.reduce((sum, item) => sum + item.lessons.length, 0),
-        0,
-      )
-      const seconds = category.courses.reduce((count, course) => count + course.durationSeconds, 0)
-      return {
-        courses: total.courses + category.courses.length,
-        lessons: total.lessons + lessons,
-        hours: total.hours + seconds / 3600,
-      }
-    },
-    { courses: 0, lessons: 0, hours: 0 },
-  )
-
+  const dropped = dedupeAcrossCategories(categories)
   const dataset = {
     schemaVersion: 1,
     kind: 'sdkwork.course.catalog',
@@ -603,18 +822,114 @@ async function main() {
       notes:
         'Titles, covers, durations, chapters, and uploaders are read from the public Bilibili view API. Covers are the cover images of the same videos used by lesson playback.',
     },
-    stats: {
-      courses: stats.courses,
-      lessons: stats.lessons,
-      hours: Number(stats.hours.toFixed(1)),
-    },
     categories,
   }
+  const result = await writeCatalog(dataset)
+  return { dataset: { ...dataset, stats: result.stats }, dropped, touched: result.written }
+}
 
-  await fs.mkdir(path.dirname(OUT_FILE), { recursive: true })
-  await fs.writeFile(OUT_FILE, `${JSON.stringify(dataset, null, 2)}\n`, 'utf8')
-  console.log(`\nwrote ${OUT_FILE}`)
-  console.log(`courses=${stats.courses} lessons=${stats.lessons} hours=${stats.hours.toFixed(1)}`)
+async function main() {
+  console.log(`fetching bilibili catalog for ${CATALOG_SPEC.length} categories`)
+  await boot()
+  const previous = await readPreviousDataset()
+  const state = await readFetchState()
+  if (RESET_STATE) console.log('fetch state reset: previously rejected videos will be re-evaluated')
+  else if (RECONSIDER) console.log('fetch state: cached rejections dropped, accepted videos kept')
+  const reports = []
+
+  // Preload every dedup set from the stored dataset so a single video never
+  // lands in two categories, even across separate runs. Courses that fail the
+  // current gates, repeat a source id/BVID, or repeat a title inside their
+  // category are pruned here, which also cleans data from earlier runs.
+  const existingBySlug = new Map()
+  const snapshotBySlug = new Map()
+  const globalSeen = new Set()
+  for (const spec of CATALOG_SPEC) {
+    const raw = previous?.categories?.find((item) => item.slug === spec.slug)?.courses ?? []
+    const stored = []
+    const titleKeys = new Set()
+    for (const course of raw) {
+      if (!passesStoredGates(spec, course)) continue
+      const keys = [course.idSeed, course.bvid ? `bvid:${course.bvid}` : null].filter(Boolean)
+      if (keys.some((key) => globalSeen.has(key))) continue
+      const titleKey = normaliseTitle(course.title).slice(0, 22)
+      if (!titleKey || titleKeys.has(titleKey)) continue
+      titleKeys.add(titleKey)
+      keys.forEach((key) => globalSeen.add(key))
+      stored.push(course)
+    }
+    existingBySlug.set(spec.slug, stored)
+    snapshotBySlug.set(spec.slug, {
+      categoryId: spec.categoryId,
+      slug: spec.slug,
+      label: spec.label,
+      courses: stored,
+    })
+  }
+
+  for (const spec of CATALOG_SPEC) {
+    const existing = existingBySlug.get(spec.slug) ?? []
+    if (ONLY && !ONLY.includes(spec.slug)) {
+      console.log(`\n=== ${spec.label} (${spec.slug}) · kept ${existing.length} (not selected) ===`)
+      continue
+    }
+    console.log(`\n=== ${spec.label} (${spec.slug}) · existing ${existing.length} / target ${PER_CATEGORY} ===`)
+
+    const remaining = Math.max(0, PER_CATEGORY - existing.length)
+    const titleKeys = new Set(
+      existing.map((course) => normaliseTitle(course.title).slice(0, 22)).filter(Boolean),
+    )
+    const uploaderCount = new Map()
+    for (const course of existing) {
+      const mid = Number(course.instructor?.mid ?? 0)
+      uploaderCount.set(mid, (uploaderCount.get(mid) ?? 0) + 1)
+    }
+
+    let report = emptyReport(spec)
+    let courses = existing
+    if (remaining > 0) {
+      const fetched = await collectCategory(spec, {
+        globalSeen,
+        titleKeys,
+        uploaderCount,
+        state,
+        remaining,
+      })
+      report = fetched.report
+      courses = mergeCategoryCourses(existing, fetched.courses, PER_CATEGORY)
+    }
+
+    reports.push(report)
+    snapshotBySlug.set(spec.slug, {
+      categoryId: spec.categoryId,
+      slug: spec.slug,
+      label: spec.label,
+      courses,
+    })
+    await writeFetchState(state)
+    const written = await writeDataset(snapshotBySlug)
+    console.log(`  => ${courses.length} courses (added ${report.accepted}, dropped ${written.dropped})`)
+  }
+
+  const written = await writeDataset(snapshotBySlug)
+  if (reports.length > 0) {
+    console.log('\nsupply report')
+    for (const report of reports) {
+      console.log(
+        `  ${report.slug.padEnd(12)} accepted ${String(report.accepted).padStart(4)}` +
+          ` / views ${String(report.views).padStart(5)}` +
+          ` · cached ${report.skippedState} dup ${report.skippedDuplicate} short ${report.skippedShort}` +
+          ` global ${report.skippedGlobal} not-course ${report.notCourse} off-topic ${report.offTopic}` +
+          ` uploader ${report.uploaderCapped} failed ${report.viewFailed} retry ${report.retryable}`,
+      )
+    }
+  }
+  console.log(`\nwrote ${CATALOG_PATHS.INDEX_FILE} (+ ${CATALOG_PATHS.CATEGORY_DIR}/*.json)`)
+  console.log(`files changed=${written.touched.length} (${written.touched.join(', ')})`)
+  console.log(
+    `courses=${written.dataset.stats.courses} lessons=${written.dataset.stats.lessons} hours=${written.dataset.stats.hours}`,
+  )
+  console.log(`cross-category duplicates removed=${written.dropped}`)
 }
 
 await main()

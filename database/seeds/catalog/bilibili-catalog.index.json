@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.course.catalog",
+  "generatedAt": "2026-10-25T10:02:24.669Z",
+  "source": {
+    "provider": "bilibili",
+    "publicVideoUrl": "https://www.bilibili.com/video/",
+    "playerUrl": "https://player.bilibili.com/player.html",
+    "notes": "Titles, covers, durations, chapters, and uploaders are read from the public Bilibili view API. Covers are the cover images of the same videos used by lesson playback."
+  },
+  "stats": {
+    "courses": 2678,
+    "lessons": 120418,
+    "hours": 80390.1
+  },
+  "categories": [
+    {
+      "categoryId": "course-category-programming",
+      "slug": "programming",
+      "label": "编程开发",
+      "file": "categories/programming.json",
+      "stats": {
+        "courses": 518,
+        "lessons": 30538,
+        "hours": 11550.2
+      }
+    },
+    {
+      "categoryId": "course-category-ai",
+      "slug": "ai",
+      "label": "人工智能",
+      "file": "categories/ai.json",
+      "stats": {
+        "courses": 397,
+        "lessons": 19333,
+        "hours": 16211.7
+      }
+    },
+    {
+      "categoryId": "course-category-data",
+      "slug": "data",
+      "label": "数据分析",
+      "file": "categories/data.json",
+      "stats": {
+        "courses": 272,
+        "lessons": 13720,
+        "hours": 6784.3
+      }
+    },
+    {
+      "categoryId": "course-category-design",
+      "slug": "design",
+      "label": "设计创意",
+      "file": "categories/design.json",
+      "stats": {
+        "courses": 360,
+        "lessons": 14838,
+        "hours": 12198.6
+      }
+    },
+    {
+      "categoryId": "course-category-product",
+      "slug": "product",
+      "label": "产品经理",
+      "file": "categories/product.json",
+      "stats": {
+        "courses": 142,
+        "lessons": 5215,
+        "hours": 1769.1
+      }
+    },
+    {
+      "categoryId": "course-category-operations",
+      "slug": "operations",
+      "label": "运营营销",
+      "file": "categories/operations.json",
+      "stats": {
+        "courses": 176,
+        "lessons": 7270,
+        "hours": 2830.5
+      }
+    },
+    {
+      "categoryId": "course-category-workplace",
+      "slug": "workplace",
+      "label": "职场技能",
+      "file": "categories/workplace.json",
+      "stats": {
+        "courses": 165,
+        "lessons": 4158,
+        "hours": 2534.6
+      }
+    },
+    {
+      "categoryId": "course-category-language",
+      "slug": "language",
+      "label": "语言学习",
+      "file": "categories/language.json",
+      "stats": {
+        "courses": 308,
+        "lessons": 14229,
+        "hours": 10914.6
+      }
+    },
+    {
+      "categoryId": "course-category-finance",
+      "slug": "finance",
+      "label": "金融财经",
+      "file": "categories/finance.json",
+      "stats": {
+        "courses": 208,
+        "lessons": 7291,
+        "hours": 10589.8
+      }
+    },
+    {
+      "categoryId": "course-category-growth",
+      "slug": "growth",
+      "label": "个人成长",
+      "file": "categories/growth.json",
+      "stats": {
+        "courses": 132,
+        "lessons": 3826,
+        "hours": 5006.7
+      }
+    }
+  ]
+}

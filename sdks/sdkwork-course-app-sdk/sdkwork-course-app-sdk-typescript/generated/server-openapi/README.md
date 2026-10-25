@@ -27,14 +27,7 @@ client.setAuthToken('your-auth-token');
 client.setAccessToken('your-access-token');
 
 // Use the SDK
-const params = {
-  q: 'q',
-  cursor: 'cursor',
-  page: 3,
-  page_size: 4,
-  status: 'status',
-};
-const result = await client.courseApplications.current.list(params);
+const result = await client.questionBankTaxonomy.retrieve();
 ```
 
 ## Authentication
@@ -78,6 +71,10 @@ const client = new SdkworkAppClient({
 - `client.courseCollectionItems` - course_collection_items API
 - `client.studioCourses` - studio_courses API
 - `client.courseEntitlements` - course_entitlements API
+- `client.questionBankQuestions` - question_bank_questions API
+- `client.questionBankTaxonomy` - question_bank_taxonomy API
+- `client.questionBankPapers` - question_bank_papers API
+- `client.questionBankHandouts` - question_bank_handouts API
 
 ## Usage Examples
 
@@ -277,20 +274,57 @@ const body = {};
 const result = await client.courseEntitlements.grant(body);
 ```
 
+### question_bank_questions
+
+```typescript
+// question Bank Questions retrieve.
+const questionId = '1';
+const result = await client.questionBankQuestions.retrieve(questionId);
+```
+
+### question_bank_taxonomy
+
+```typescript
+// question Bank Taxonomy retrieve.
+const result = await client.questionBankTaxonomy.retrieve();
+```
+
+### question_bank_papers
+
+```typescript
+// question Bank Papers list.
+const params = {
+  q: 'q',
+  page: 2,
+  page_size: 3,
+  status: 'status',
+  owner_user_id: 'owner_user_id',
+};
+const result = await client.questionBankPapers.list(params);
+```
+
+### question_bank_handouts
+
+```typescript
+// question Bank Handouts list.
+const params = {
+  q: 'q',
+  page: 2,
+  page_size: 3,
+  grade: 'grade',
+  subject: 'subject',
+  owner_user_id: 'owner_user_id',
+};
+const result = await client.questionBankHandouts.list(params);
+```
+
 ## Error Handling
 
 ```typescript
 import { SdkworkAppClient, NetworkError, TimeoutError, AuthenticationError } from '@sdkwork/course-app-sdk';
 
 try {
-  const params = {
-    q: 'q',
-    cursor: 'cursor',
-    page: 3,
-    page_size: 4,
-    status: 'status',
-  };
-  const result = await client.courseApplications.current.list(params);
+  const result = await client.questionBankTaxonomy.retrieve();
 } catch (error) {
   if (error instanceof AuthenticationError) {
     console.error('Authentication failed:', error.message);

@@ -60,12 +60,12 @@ const APP_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
 const DECLARATION_PATH = resolve(APP_ROOT, 'specs/upload.declaration.json');
 /**
  * The canonical `appId` authority (`DRIVE_SPEC.md` §18.1 field rules). This application root has
- * no `sdkwork.app.config.json` of its own, so the authority is the repository-level config's
+ * no `agent.app.config.json` of its own, so the authority is the repository-level config's
  * `app.key`. Asserting against that file rather than against the constant alone keeps the check
  * independent of the value under test: a wrong literal on both sides of the
  * declaration/constant pair still fails here.
  */
-const REPO_CONFIG_PATH = resolve(APP_ROOT, '../../sdkwork.app.config.json');
+const REPO_CONFIG_PATH = resolve(APP_ROOT, '../../agent.app.config.json');
 /** §9.4 reserves `im` for Drive; an application must not declare or send it. */
 const RESERVED_SCENES = ['im'];
 
@@ -82,7 +82,7 @@ function loadCanonicalAppId(): string {
     app?: { key?: string };
   };
   const appId = config.backend?.appId ?? config.app?.key;
-  assert.ok(appId, 'sdkwork.app.config.json does not declare an app identity.');
+  assert.ok(appId, 'agent.app.config.json does not declare an app identity.');
   return appId;
 }
 
@@ -98,7 +98,7 @@ describe('upload declaration file', () => {
     assert.equal(loadDeclaration().appId, COURSE_PC_APP_ID);
   });
 
-  it('sources its declared appId from sdkwork.app.config.json', () => {
+  it('sources its declared appId from agent.app.config.json', () => {
     assert.equal(loadDeclaration().appId, loadCanonicalAppId());
     assert.equal(COURSE_PC_APP_ID, loadCanonicalAppId());
   });

@@ -14,7 +14,7 @@ use axum::{
 use sdkwork_routes_course_http_auth::{
     course_service_context_from_web, handler_value_to_response, map_auth_error, map_route_error,
 };
-use sdkwork_content_course_service::CourseServiceContext;
+use sdkwork_content_course_service::CourseQuery;
 use sdkwork_web_core::WebRequestContext;
 use serde_json::Value;
 
@@ -31,6 +31,23 @@ macro_rules! course_handler_query {
         let service = $state.service();
         let params = serde_json::to_value($query.0).unwrap_or(Value::Null);
         let course_query = crate::mapper::request::parse_course_query(&params);
+        match handlers::$handler(service.as_ref(), &context, course_query.clone()).await {
+            Ok(value) => handler_value_to_response(web_ctx, value, Some(&course_query)),
+            Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
+        }
+    }};
+}
+
+macro_rules! question_bank_course_query {
+    ($state:expr, $app_ctx:expr, $query:expr, $handler:ident) => {{
+        let web_ctx = Some(&$app_ctx);
+        let context = match course_service_context_from_web(&$app_ctx) {
+            Ok(context) => context,
+            Err(error) => return map_auth_error(web_ctx, error),
+        };
+        let service = $state.question_bank_service();
+        let params = serde_json::to_value($query.0).unwrap_or(Value::Null);
+        let course_query = crate::mapper::request::parse_question_bank_page_query(&params);
         match handlers::$handler(service.as_ref(), &context, course_query.clone()).await {
             Ok(value) => handler_value_to_response(web_ctx, value, Some(&course_query)),
             Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
@@ -445,4 +462,242 @@ pub async fn course_entitlements_grant(
         ),
         Err(error) => map_route_error(None, error.code(), error.message().to_owned()),
     }
+}
+
+// ── Question bank ───────────────────────────────────────────────────
+
+macro_rules! question_bank_query {
+    ($state:expr, $app_ctx:expr, $query:expr, $handler:ident, $parser:ident) => {{
+        let web_ctx = Some(&$app_ctx);
+        let context = match course_service_context_from_web(&$app_ctx) {
+            Ok(context) => context,
+            Err(error) => return map_auth_error(web_ctx, error),
+        };
+        let service = $state.question_bank_service();
+        let params = serde_json::to_value($query.0).unwrap_or(Value::Null);
+        let parsed = crate::mapper::request::$parser(&params);
+        match handlers::$handler(service.as_ref(), &context, parsed.clone()).await {
+            Ok(value) => handler_value_to_response(web_ctx, value, Some(&course_query_from_question(&parsed))),
+            Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
+        }
+    }};
+}
+
+macro_rules! question_bank_path {
+    ($state:expr, $app_ctx:expr, $path:expr, $handler:ident) => {{
+        let web_ctx = Some(&$app_ctx);
+        let context = match course_service_context_from_web(&$app_ctx) {
+            Ok(context) => context,
+            Err(error) => return map_auth_error(web_ctx, error),
+        };
+        let service = $state.question_bank_service();
+        match handlers::$handler(service.as_ref(), &context, $path).await {
+            Ok(value) => handler_value_to_response(web_ctx, value, None),
+            Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
+        }
+    }};
+}
+
+macro_rules! question_bank_path_body {
+    ($state:expr, $app_ctx:expr, $path:expr, $body:expr, $handler:ident) => {{
+        let web_ctx = Some(&$app_ctx);
+        let context = match course_service_context_from_web(&$app_ctx) {
+            Ok(context) => context,
+            Err(error) => return map_auth_error(web_ctx, error),
+        };
+        let service = $state.question_bank_service();
+        match handlers::$handler(service.as_ref(), &context, $path, $body.0).await {
+            Ok(value) => handler_value_to_response(web_ctx, value, None),
+            Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
+        }
+    }};
+}
+
+macro_rules! question_bank_body {
+    ($state:expr, $app_ctx:expr, $body:expr, $handler:ident) => {{
+        let web_ctx = Some(&$app_ctx);
+        let context = match course_service_context_from_web(&$app_ctx) {
+            Ok(context) => context,
+            Err(error) => return map_auth_error(web_ctx, error),
+        };
+        let service = $state.question_bank_service();
+        match handlers::$handler(service.as_ref(), &context, $body.0).await {
+            Ok(value) => handler_value_to_response(web_ctx, value, None),
+            Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
+        }
+    }};
+}
+
+/// List envelopes key off `CourseQuery`; the question bank query parser shares
+/// the same pagination fields so the page wrapping stays identical.
+fn course_query_from_question(query: &sdkwork_content_course_service::QuestionQuery) -> CourseQuery {
+    CourseQuery {
+        page: query.page,
+        page_size: query.page_size,
+        q: query.q.clone(),
+        ..CourseQuery::default()
+    }
+}
+
+pub async fn question_bank_questions_list(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    query: Query<BTreeMap<String, String>>,
+) -> Response {
+    question_bank_query!(state, app_ctx, query, question_bank_questions_list, parse_question_query)
+}
+
+pub async fn question_bank_questions_create(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    body: Json<Value>,
+) -> Response {
+    question_bank_body!(state, app_ctx, body, question_bank_questions_create)
+}
+
+pub async fn question_bank_questions_retrieve(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(questionId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, questionId, question_bank_questions_retrieve)
+}
+
+pub async fn question_bank_questions_update(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(questionId): Path<String>,
+    body: Json<Value>,
+) -> Response {
+    question_bank_path_body!(state, app_ctx, questionId, body, question_bank_questions_update)
+}
+
+pub async fn question_bank_questions_delete(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(questionId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, questionId, question_bank_questions_delete)
+}
+
+pub async fn question_bank_questions_import(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    body: Json<Value>,
+) -> Response {
+    question_bank_body!(state, app_ctx, body, question_bank_questions_import)
+}
+
+pub async fn question_bank_questions_batch_update(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    body: Json<Value>,
+) -> Response {
+    question_bank_body!(state, app_ctx, body, question_bank_questions_batch_update)
+}
+
+pub async fn question_bank_questions_batch_delete(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    body: Json<Value>,
+) -> Response {
+    question_bank_body!(state, app_ctx, body, question_bank_questions_batch_delete)
+}
+
+pub async fn question_bank_taxonomy_retrieve(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    query: Query<BTreeMap<String, String>>,
+) -> Response {
+    question_bank_query!(state, app_ctx, query, question_bank_taxonomy_retrieve, parse_question_query)
+}
+
+pub async fn question_bank_papers_list(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    query: Query<BTreeMap<String, String>>,
+) -> Response {
+    question_bank_course_query!(state, app_ctx, query, question_bank_papers_list)
+}
+
+pub async fn question_bank_papers_create(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    body: Json<Value>,
+) -> Response {
+    question_bank_body!(state, app_ctx, body, question_bank_papers_create)
+}
+
+pub async fn question_bank_papers_retrieve(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(paperId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, paperId, question_bank_papers_retrieve)
+}
+
+pub async fn question_bank_papers_update(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(paperId): Path<String>,
+    body: Json<Value>,
+) -> Response {
+    question_bank_path_body!(state, app_ctx, paperId, body, question_bank_papers_update)
+}
+
+pub async fn question_bank_papers_delete(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(paperId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, paperId, question_bank_papers_delete)
+}
+
+pub async fn question_bank_papers_archive(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(paperId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, paperId, question_bank_papers_archive)
+}
+
+pub async fn question_bank_handouts_list(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    query: Query<BTreeMap<String, String>>,
+) -> Response {
+    question_bank_course_query!(state, app_ctx, query, question_bank_handouts_list)
+}
+
+pub async fn question_bank_handouts_create(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    body: Json<Value>,
+) -> Response {
+    question_bank_body!(state, app_ctx, body, question_bank_handouts_create)
+}
+
+pub async fn question_bank_handouts_retrieve(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(handoutId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, handoutId, question_bank_handouts_retrieve)
+}
+
+pub async fn question_bank_handouts_update(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(handoutId): Path<String>,
+    body: Json<Value>,
+) -> Response {
+    question_bank_path_body!(state, app_ctx, handoutId, body, question_bank_handouts_update)
+}
+
+pub async fn question_bank_handouts_delete(
+    State(state): State<CourseAppApiState>,
+    app_ctx: WebRequestContext,
+    Path(handoutId): Path<String>,
+) -> Response {
+    question_bank_path!(state, app_ctx, handoutId, question_bank_handouts_delete)
 }

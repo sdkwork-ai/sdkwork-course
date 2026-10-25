@@ -59,6 +59,10 @@ Non-goals:
   governance, category management, review statistics.
 - Learner surfaces: home merchandising, filterable catalog, detail with
   curriculum, player, my learning.
+- Question bank (题库, local teaching aid): question authoring and batch import
+  bound to grade/subject/chapter/knowledge point, wrong-book collection,
+  smart and manual paper composition with printable Word/PDF export (sealed
+  line, name fields), and handout editing that embeds bank questions.
 
 ## 5. User Scenarios
 
@@ -72,6 +76,13 @@ Non-goals:
    learner sees the ordered learning path.
 5. An operator takes a published course offline with a reason; the author sees
    the feedback and can revise it.
+6. A teacher seeds the local bank with junior-high math questions, composes a
+   smart weekly quiz (10 single-choice + 4 fill-blank + 2 solutions), prints it
+   with the sealed-line layout, and later re-composes a fresh variant from the
+   same ratio without duplicate questions.
+7. A teacher assembles a handout for one lesson period, inserts two bank
+   questions as worked examples plus classroom practice, and exports it to
+   Word for after-class distribution.
 
 ## 6. Success Metrics
 

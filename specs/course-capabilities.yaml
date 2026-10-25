@@ -34,6 +34,9 @@ capabilities:
       - collection_link
       - studio_authoring
       - curriculum
+      - question_bank
+      - question_paper
+      - question_handout
     requiredLayers:
       - kind: contracts
         path: sdks/_shared/course-contracts

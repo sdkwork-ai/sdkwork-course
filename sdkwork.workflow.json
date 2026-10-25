@@ -6,7 +6,7 @@
     "name": "sdkwork-course",
     "repository": "sdkwork-ai/sdkwork-course",
     "sourcePath": ".",
-    "configPath": "sdkwork.app.config.json"
+    "configPath": "agent.app.config.json"
   },
   "release": {
     "artifactPrefix": "sdkwork-course",

@@ -19,6 +19,10 @@ import { CourseCurriculumApi, createCourseCurriculumApi } from './api/course-cur
 import { CourseCollectionItemsApi, createCourseCollectionItemsApi } from './api/course-collection-items';
 import { StudioCoursesApi, createStudioCoursesApi } from './api/studio-courses';
 import { CourseEntitlementsApi, createCourseEntitlementsApi } from './api/course-entitlements';
+import { QuestionBankQuestionsApi, createQuestionBankQuestionsApi } from './api/question-bank-questions';
+import { QuestionBankTaxonomyApi, createQuestionBankTaxonomyApi } from './api/question-bank-taxonomy';
+import { QuestionBankPapersApi, createQuestionBankPapersApi } from './api/question-bank-papers';
+import { QuestionBankHandoutsApi, createQuestionBankHandoutsApi } from './api/question-bank-handouts';
 
 export class SdkworkAppClient {
   private httpClient: HttpClient;
@@ -40,6 +44,10 @@ export class SdkworkAppClient {
   public readonly courseCollectionItems: CourseCollectionItemsApi;
   public readonly studioCourses: StudioCoursesApi;
   public readonly courseEntitlements: CourseEntitlementsApi;
+  public readonly questionBankQuestions: QuestionBankQuestionsApi;
+  public readonly questionBankTaxonomy: QuestionBankTaxonomyApi;
+  public readonly questionBankPapers: QuestionBankPapersApi;
+  public readonly questionBankHandouts: QuestionBankHandoutsApi;
 
   constructor(config: SdkworkAppConfig) {
     this.httpClient = createHttpClient(config);
@@ -76,6 +84,14 @@ export class SdkworkAppClient {
     this.studioCourses = createStudioCoursesApi(this.httpClient);
 
     this.courseEntitlements = createCourseEntitlementsApi(this.httpClient);
+
+    this.questionBankQuestions = createQuestionBankQuestionsApi(this.httpClient);
+
+    this.questionBankTaxonomy = createQuestionBankTaxonomyApi(this.httpClient);
+
+    this.questionBankPapers = createQuestionBankPapersApi(this.httpClient);
+
+    this.questionBankHandouts = createQuestionBankHandoutsApi(this.httpClient);
   }
   setAuthToken(token: string): this {
     this.httpClient.setAuthToken(token);

@@ -17,3 +17,7 @@ export { CourseCurriculumApi, createCourseCurriculumApi } from './course-curricu
 export { CourseCollectionItemsApi, createCourseCollectionItemsApi } from './course-collection-items';
 export { StudioCoursesApi, createStudioCoursesApi } from './studio-courses';
 export { CourseEntitlementsApi, createCourseEntitlementsApi } from './course-entitlements';
+export { QuestionBankQuestionsApi, createQuestionBankQuestionsApi } from './question-bank-questions';
+export { QuestionBankTaxonomyApi, createQuestionBankTaxonomyApi } from './question-bank-taxonomy';
+export { QuestionBankPapersApi, createQuestionBankPapersApi } from './question-bank-papers';
+export { QuestionBankHandoutsApi, createQuestionBankHandoutsApi } from './question-bank-handouts';

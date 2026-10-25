@@ -40,6 +40,7 @@
         "common/018_catalog_language.sql",
         "common/019_catalog_finance.sql",
         "common/020_catalog_growth.sql",
+        "common/021_question_bank.sql",
         "common/001_bootstrap.sql"
       ],
       "locales": {

@@ -11,7 +11,7 @@ fn optional_postgres_database_url() -> Option<String> {
 
 #[test]
 fn course_repository_schema_lists_the_professional_course_tables() {
-    assert_eq!(COURSE_TABLES.len(), 15);
+    assert_eq!(COURSE_TABLES.len(), 21);
     assert!(COURSE_TABLES.contains(&"course_catalog"));
     assert!(COURSE_TABLES.contains(&"course_catalog_link"));
     assert!(COURSE_TABLES.contains(&"course_offering"));
@@ -19,6 +19,11 @@ fn course_repository_schema_lists_the_professional_course_tables() {
     assert!(COURSE_TABLES.contains(&"course_learning_progress"));
     assert!(COURSE_TABLES.contains(&"course_lesson_progress"));
     assert!(COURSE_TABLES.contains(&"course_audit_log"));
+    assert!(COURSE_TABLES.contains(&"course_question"));
+    assert!(COURSE_TABLES.contains(&"course_question_paper"));
+    assert!(COURSE_TABLES.contains(&"course_question_paper_item"));
+    assert!(COURSE_TABLES.contains(&"course_question_handout"));
+    assert!(COURSE_TABLES.contains(&"course_question_handout_item"));
 
     let repository = EmptyCourseRepository::new();
     assert_eq!(repository, EmptyCourseRepository);
@@ -51,6 +56,6 @@ async fn course_repository_applies_the_database_baseline_schema() {
         .await
         .expect("course table count");
 
-    assert_eq!(table_count, 16);
-    assert_eq!(repository.table_names().len(), 16);
+    assert_eq!(table_count, 21);
+    assert_eq!(repository.table_names().len(), 21);
 }

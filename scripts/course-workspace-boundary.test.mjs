@@ -12,7 +12,7 @@ const requiredFiles = [
   "package.json",
   "pnpm-workspace.yaml",
   "Cargo.toml",
-  "sdkwork.app.config.json",
+  "agent.app.config.json",
   "deployments/deploy.yaml",
   "specs/course-capabilities.yaml",
   "specs/database/course-schema.contract.json",
@@ -98,8 +98,19 @@ const forbiddenScanAllowlist = new Set([
   "scripts/course-workspace-boundary.test.mjs",
   // The catalog seeds quote real Bilibili chapter titles, which can contain
   // hyphenated English words such as "product-management". That is course copy,
-  // not course-owned commerce or product domain code.
-  "database/seeds/catalog/bilibili-catalog.json",
+  // not course-owned commerce or product domain code. The catalog is stored as an
+  // index plus one file per category, so every file is allowlisted.
+  "database/seeds/catalog/bilibili-catalog.index.json",
+  "database/seeds/catalog/categories/programming.json",
+  "database/seeds/catalog/categories/ai.json",
+  "database/seeds/catalog/categories/data.json",
+  "database/seeds/catalog/categories/design.json",
+  "database/seeds/catalog/categories/product.json",
+  "database/seeds/catalog/categories/operations.json",
+  "database/seeds/catalog/categories/workplace.json",
+  "database/seeds/catalog/categories/language.json",
+  "database/seeds/catalog/categories/finance.json",
+  "database/seeds/catalog/categories/growth.json",
   "database/seeds/common/010_course_catalog_instructors.sql",
   "database/seeds/common/011_catalog_programming.sql",
   "database/seeds/common/012_catalog_ai.sql",

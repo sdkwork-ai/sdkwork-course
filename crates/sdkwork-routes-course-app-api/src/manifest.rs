@@ -73,7 +73,27 @@ pub fn build_route_manifest() -> Value {
             { "operationId": "course_reactions_delete", "method": "DELETE", "path": "/course_reactions/{reactionId}" },
             { "operationId": "course_applications_create", "method": "POST", "path": "/course_applications" },
             { "operationId": "course_applications_current_list", "method": "GET", "path": "/course_applications" },
-            { "operationId": "course_applications_retrieve", "method": "GET", "path": "/course_applications/{applicationId}" }
+            { "operationId": "course_applications_retrieve", "method": "GET", "path": "/course_applications/{applicationId}" },
+            { "operationId": "question_bank_questions_list", "method": "GET", "path": "/question_bank/questions" },
+            { "operationId": "question_bank_questions_create", "method": "POST", "path": "/question_bank/questions" },
+            { "operationId": "question_bank_questions_import", "method": "POST", "path": "/question_bank/questions/import" },
+            { "operationId": "question_bank_questions_batch_update", "method": "POST", "path": "/question_bank/questions/batch_update" },
+            { "operationId": "question_bank_questions_retrieve", "method": "GET", "path": "/question_bank/questions/{questionId}" },
+            { "operationId": "question_bank_questions_update", "method": "PUT", "path": "/question_bank/questions/{questionId}" },
+            { "operationId": "question_bank_questions_delete", "method": "DELETE", "path": "/question_bank/questions/{questionId}" },
+            { "operationId": "question_bank_questions_batch_delete", "method": "POST", "path": "/question_bank/questions/batch_delete" },
+            { "operationId": "question_bank_taxonomy_retrieve", "method": "GET", "path": "/question_bank/taxonomy" },
+            { "operationId": "question_bank_papers_list", "method": "GET", "path": "/question_bank/papers" },
+            { "operationId": "question_bank_papers_create", "method": "POST", "path": "/question_bank/papers" },
+            { "operationId": "question_bank_papers_retrieve", "method": "GET", "path": "/question_bank/papers/{paperId}" },
+            { "operationId": "question_bank_papers_update", "method": "PUT", "path": "/question_bank/papers/{paperId}" },
+            { "operationId": "question_bank_papers_delete", "method": "DELETE", "path": "/question_bank/papers/{paperId}" },
+            { "operationId": "question_bank_papers_archive", "method": "POST", "path": "/question_bank/papers/{paperId}/archive" },
+            { "operationId": "question_bank_handouts_list", "method": "GET", "path": "/question_bank/handouts" },
+            { "operationId": "question_bank_handouts_create", "method": "POST", "path": "/question_bank/handouts" },
+            { "operationId": "question_bank_handouts_retrieve", "method": "GET", "path": "/question_bank/handouts/{handoutId}" },
+            { "operationId": "question_bank_handouts_update", "method": "PUT", "path": "/question_bank/handouts/{handoutId}" },
+            { "operationId": "question_bank_handouts_delete", "method": "DELETE", "path": "/question_bank/handouts/{handoutId}" }
         ]
     })
 }

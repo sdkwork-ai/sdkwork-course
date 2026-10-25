@@ -1035,6 +1035,9 @@ importers:
       '@sdkwork/sdkwork-course-pc-progress':
         specifier: workspace:*
         version: link:packages/sdkwork-course-pc-progress
+      '@sdkwork/sdkwork-course-pc-questionbank':
+        specifier: workspace:*
+        version: link:packages/sdkwork-course-pc-questionbank
       '@sdkwork/sdkwork-course-pc-studio':
         specifier: workspace:*
         version: link:packages/sdkwork-course-pc-studio
@@ -1401,6 +1404,27 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+
+  apps/sdkwork-course-pc/packages/sdkwork-course-pc-questionbank:
+    dependencies:
+      '@sdkwork/sdkwork-course-pc-commons':
+        specifier: workspace:*
+        version: link:../sdkwork-course-pc-commons
+      '@sdkwork/sdkwork-course-pc-core':
+        specifier: workspace:*
+        version: link:../sdkwork-course-pc-core
+      '@sdkwork/sdkwork-course-pc-courses':
+        specifier: workspace:*
+        version: link:../sdkwork-course-pc-courses
+      lucide-react:
+        specifier: 'catalog:'
+        version: 1.60.0(@types/react@19.3.0)(react@19.3.1)
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
 
   apps/sdkwork-course-pc/packages/sdkwork-course-pc-studio:
     dependencies:

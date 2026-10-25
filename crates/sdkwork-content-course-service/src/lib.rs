@@ -15,11 +15,13 @@ pub use domain::commands::{
     is_supported_course_kind, normalize_course_kind,
 };
 pub use domain::models::{
-    CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
-    CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem, CourseCurriculum, CourseEngagementItem, CourseError,
-    CourseItem, CourseLessonItem, CourseLessonMutationRequest, CourseMutationRequest, CoursePage,
-    CourseQuery, CourseResourceItem, CourseResult, CourseSectionItem, CourseSectionMutationRequest,
-    CourseStudioDetail,
+    ComposeBucket, CourseApplicationCreateRequest, CourseApplicationItem,
+    CourseApplicationReviewRequest, CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem,
+    CourseCurriculum, CourseEngagementItem, CourseError, CourseItem, CourseLessonItem,
+    CourseLessonMutationRequest, CourseMutationRequest, CoursePage, CourseQuery, CourseResourceItem,
+    CourseResult, CourseSectionItem, CourseSectionMutationRequest, CourseStudioDetail,
+    QuestionItem, QuestionPage, QuestionQuery, QUESTION_TYPE_SECTION_ORDER,
+    is_supported_question_type,
 };
 pub use ports::provider::{
     CourseAuditEventPort, CourseDrivePort, CourseEntitlementPort, CourseLiveProviderPort,
@@ -30,9 +32,10 @@ pub use ports::repository::{
     CourseCategoryRepository, CourseEnrollmentRepository,
     CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
     CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-    CourseResourceRepository,
+    CourseResourceRepository, QuestionBankRepository,
 };
 pub use service::course_service::{CourseApplicationService, CourseServiceImpl};
+pub use service::question_bank_service::{QuestionBankService, QuestionBankServiceImpl};
 
 #[cfg(test)]
 mod tests {
@@ -54,5 +57,16 @@ mod tests {
         };
         assert_eq!(query.limit(), 200);
         assert_eq!(query.offset(), 200);
+    }
+
+    #[test]
+    fn question_query_clamps_page_size() {
+        let query = QuestionQuery {
+            page: Some(3),
+            page_size: Some(1_000),
+            ..QuestionQuery::default()
+        };
+        assert_eq!(query.limit(), 200);
+        assert_eq!(query.offset(), 400);
     }
 }

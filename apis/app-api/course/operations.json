@@ -314,6 +314,199 @@
       "operationId": "courseEntitlements.grant",
       "resource": "courseEntitlements",
       "authMode": "anonymous"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/questions",
+      "operationId": "questionBankQuestions.list",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "grade",
+        "subject",
+        "chapter",
+        "knowledge_point",
+        "question_type",
+        "difficulty",
+        "tag",
+        "source",
+        "wrong_book",
+        "status"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/questions",
+      "operationId": "questionBankQuestions.create",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.questionbank.question_created"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/questions/{questionId}",
+      "operationId": "questionBankQuestions.retrieve",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token"
+    },
+    {
+      "method": "PUT",
+      "path": "/app/v3/api/question_bank/questions/{questionId}",
+      "operationId": "questionBankQuestions.update",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.questionbank.question_updated"
+    },
+    {
+      "method": "DELETE",
+      "path": "/app/v3/api/question_bank/questions/{questionId}",
+      "operationId": "questionBankQuestions.delete",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.question_deleted"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/questions/import",
+      "operationId": "questionBankQuestions.import",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.questions_imported"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/questions/batch_update",
+      "operationId": "questionBankQuestions.batchUpdate",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.questions_batch_updated"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/questions/batch_delete",
+      "operationId": "questionBankQuestions.batchDelete",
+      "resource": "questionBankQuestions",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.questions_batch_deleted"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/taxonomy",
+      "operationId": "questionBankTaxonomy.retrieve",
+      "resource": "questionBankTaxonomy",
+      "authMode": "dual-token",
+      "query": [
+        "grade",
+        "subject"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/papers",
+      "operationId": "questionBankPapers.list",
+      "resource": "questionBankPapers",
+      "authMode": "dual-token",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "status",
+        "owner_user_id"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/papers",
+      "operationId": "questionBankPapers.create",
+      "resource": "questionBankPapers",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.questionbank.paper_composed"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/papers/{paperId}",
+      "operationId": "questionBankPapers.retrieve",
+      "resource": "questionBankPapers",
+      "authMode": "dual-token"
+    },
+    {
+      "method": "PUT",
+      "path": "/app/v3/api/question_bank/papers/{paperId}",
+      "operationId": "questionBankPapers.update",
+      "resource": "questionBankPapers",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.questionbank.paper_updated"
+    },
+    {
+      "method": "DELETE",
+      "path": "/app/v3/api/question_bank/papers/{paperId}",
+      "operationId": "questionBankPapers.delete",
+      "resource": "questionBankPapers",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.paper_deleted"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/papers/{paperId}/archive",
+      "operationId": "questionBankPapers.archive",
+      "resource": "questionBankPapers",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.paper_archived"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/handouts",
+      "operationId": "questionBankHandouts.list",
+      "resource": "questionBankHandouts",
+      "authMode": "dual-token",
+      "query": [
+        "q",
+        "page",
+        "page_size",
+        "grade",
+        "subject",
+        "owner_user_id"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/question_bank/handouts",
+      "operationId": "questionBankHandouts.create",
+      "resource": "questionBankHandouts",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.questionbank.handout_created"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/question_bank/handouts/{handoutId}",
+      "operationId": "questionBankHandouts.retrieve",
+      "resource": "questionBankHandouts",
+      "authMode": "dual-token"
+    },
+    {
+      "method": "PUT",
+      "path": "/app/v3/api/question_bank/handouts/{handoutId}",
+      "operationId": "questionBankHandouts.update",
+      "resource": "questionBankHandouts",
+      "authMode": "dual-token",
+      "idempotency": "recommended",
+      "auditEvent": "course.questionbank.handout_updated"
+    },
+    {
+      "method": "DELETE",
+      "path": "/app/v3/api/question_bank/handouts/{handoutId}",
+      "operationId": "questionBankHandouts.delete",
+      "resource": "questionBankHandouts",
+      "authMode": "dual-token",
+      "auditEvent": "course.questionbank.handout_deleted"
     }
   ]
 }

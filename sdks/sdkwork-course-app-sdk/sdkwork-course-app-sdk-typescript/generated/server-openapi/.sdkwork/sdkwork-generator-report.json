@@ -12,129 +12,31 @@
   "mode": "apply",
   "hasChanges": true,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "e37d205da4dce347b31fa3c38be5cf246abd8b0f7e04c82ea546c4f3e2849942",
+  "changeFingerprint": "aea2ec353bdecc7523b386b8bb15a46c684fc0a91b31d9111fff11a233f996be",
   "changeImpact": {
     "schemaVersion": 1,
     "areas": [
-      "api-surface",
-      "models",
-      "runtime",
-      "build-metadata",
-      "publish-workflow",
-      "documentation",
-      "custom-scaffold",
-      "unknown"
+      "api-surface"
     ],
     "details": [
       {
         "area": "api-surface",
         "paths": [
-          "src/api/base.ts",
-          "src/api/course-applications.ts",
-          "src/api/course-categories.ts",
-          "src/api/course-collection-items.ts",
-          "src/api/course-curriculum.ts",
-          "src/api/course-engagement.ts",
-          "src/api/course-enrollments.ts",
-          "src/api/course-entitlements.ts",
-          "src/api/course-lesson-progress.ts",
-          "src/api/course-lesson-resources.ts",
-          "src/api/course-lessons.ts",
-          "src/api/course-live-sessions.ts",
-          "src/api/course-offerings.ts",
-          "src/api/course-progress.ts",
-          "src/api/course-reactions.ts",
-          "src/api/course-sections.ts",
-          "src/api/courses.ts",
-          "src/api/index.ts",
-          "src/api/paths.ts",
-          "src/api/studio-courses.ts",
-          "src/http/client.ts",
-          "src/sdk.ts"
-        ]
-      },
-      {
-        "area": "models",
-        "paths": [
-          "src/types/common.ts",
-          "src/types/course-command-body.ts",
-          "src/types/field-error.ts",
-          "src/types/index.ts",
-          "src/types/page-info.ts",
-          "src/types/problem-detail.ts",
-          "src/types/sdk-work-api-response.ts",
-          "src/types/sdk-work-command-data.ts",
-          "src/types/sdk-work-command-response.ts",
-          "src/types/sdk-work-list-response.ts",
-          "src/types/sdk-work-page-data.ts",
-          "src/types/sdk-work-platform-error-code.ts",
-          "src/types/sdk-work-resource-data.ts",
-          "src/types/sdk-work-resource-response.ts"
-        ]
-      },
-      {
-        "area": "runtime",
-        "paths": [
-          "src/auth/index.ts",
-          "src/http/client.ts",
-          "src/http/index.ts"
-        ]
-      },
-      {
-        "area": "build-metadata",
-        "paths": [
-          "package.json",
-          "sdkwork-sdk.json",
-          "tsconfig.json"
-        ]
-      },
-      {
-        "area": "publish-workflow",
-        "paths": [
-          "bin/publish-core.mjs",
-          "bin/publish.ps1",
-          "bin/publish.sh",
-          "bin/sdk-gen.bat",
-          "bin/sdk-gen.sh"
-        ]
-      },
-      {
-        "area": "documentation",
-        "paths": [
-          "CHANGELOG.md",
-          "custom/README.md",
-          "README.md"
-        ]
-      },
-      {
-        "area": "custom-scaffold",
-        "paths": [
-          "custom/build-runtime.mjs",
-          "custom/README.md"
-        ]
-      },
-      {
-        "area": "unknown",
-        "paths": [
-          "LICENSE",
-          "src/index.ts"
+          "src/api/question-bank-questions.ts"
         ]
       }
     ],
     "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required."
+    "summary": "Detected impact areas: api-surface. Verification is required."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "high",
+    "riskLevel": "medium",
     "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
     "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "manual-review-required",
-      "preserved-legacy-files",
-      "unknown-impact",
       "verification-required"
     ]
   },
@@ -146,7 +48,7 @@
         "id": "verify-check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface.",
         "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -164,7 +66,7 @@
         "id": "verify-build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface.",
         "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -183,13 +85,13 @@
   "verificationPlan": {
     "shouldRun": true,
     "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "summary": "Detected impact areas: api-surface. Verification is required. Run the required verification commands now against the generated SDK output.",
     "steps": [
       {
         "id": "check",
         "title": "Unified package check",
         "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface.",
         "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -207,7 +109,7 @@
         "id": "build",
         "title": "Unified package build",
         "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface.",
         "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
         "command": "node",
         "args": [
@@ -237,23 +139,27 @@
     "localVersions": []
   },
   "stats": {
-    "totalFiles": 52,
+    "totalFiles": 56,
     "models": 12,
-    "apis": 17,
+    "apis": 21,
     "types": 14
   },
   "warnings": [],
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 52,
-    "skippedScaffoldFiles": 0,
-    "skippedUnchangedGeneratedFiles": 0,
+    "writtenFiles": 1,
+    "skippedScaffoldFiles": 2,
+    "skippedUnchangedGeneratedFiles": 53,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "e37d205da4dce347b31fa3c38be5cf246abd8b0f7e04c82ea546c4f3e2849942",
+    "changeFingerprint": "aea2ec353bdecc7523b386b8bb15a46c684fc0a91b31d9111fff11a233f996be",
     "changes": {
-      "createdGeneratedFiles": [
+      "createdGeneratedFiles": [],
+      "updatedGeneratedFiles": [
+        "src/api/question-bank-questions.ts"
+      ],
+      "unchangedGeneratedFiles": [
         "bin/publish-core.mjs",
         "bin/publish.ps1",
         "bin/publish.sh",
@@ -283,6 +189,9 @@
         "src/api/courses.ts",
         "src/api/index.ts",
         "src/api/paths.ts",
+        "src/api/question-bank-handouts.ts",
+        "src/api/question-bank-papers.ts",
+        "src/api/question-bank-taxonomy.ts",
         "src/api/studio-courses.ts",
         "src/auth/index.ts",
         "src/http/client.ts",
@@ -305,137 +214,40 @@
         "src/types/sdk-work-resource-response.ts",
         "tsconfig.json"
       ],
-      "updatedGeneratedFiles": [],
-      "unchangedGeneratedFiles": [],
       "deletedGeneratedFiles": [],
-      "scaffoldedFiles": [
+      "scaffoldedFiles": [],
+      "preservedScaffoldFiles": [
         "custom/build-runtime.mjs",
         "custom/README.md"
       ],
-      "preservedScaffoldFiles": [],
       "backedUpFiles": []
     },
     "impact": {
       "schemaVersion": 1,
       "areas": [
-        "api-surface",
-        "models",
-        "runtime",
-        "build-metadata",
-        "publish-workflow",
-        "documentation",
-        "custom-scaffold",
-        "unknown"
+        "api-surface"
       ],
       "details": [
         {
           "area": "api-surface",
           "paths": [
-            "src/api/base.ts",
-            "src/api/course-applications.ts",
-            "src/api/course-categories.ts",
-            "src/api/course-collection-items.ts",
-            "src/api/course-curriculum.ts",
-            "src/api/course-engagement.ts",
-            "src/api/course-enrollments.ts",
-            "src/api/course-entitlements.ts",
-            "src/api/course-lesson-progress.ts",
-            "src/api/course-lesson-resources.ts",
-            "src/api/course-lessons.ts",
-            "src/api/course-live-sessions.ts",
-            "src/api/course-offerings.ts",
-            "src/api/course-progress.ts",
-            "src/api/course-reactions.ts",
-            "src/api/course-sections.ts",
-            "src/api/courses.ts",
-            "src/api/index.ts",
-            "src/api/paths.ts",
-            "src/api/studio-courses.ts",
-            "src/http/client.ts",
-            "src/sdk.ts"
-          ]
-        },
-        {
-          "area": "models",
-          "paths": [
-            "src/types/common.ts",
-            "src/types/course-command-body.ts",
-            "src/types/field-error.ts",
-            "src/types/index.ts",
-            "src/types/page-info.ts",
-            "src/types/problem-detail.ts",
-            "src/types/sdk-work-api-response.ts",
-            "src/types/sdk-work-command-data.ts",
-            "src/types/sdk-work-command-response.ts",
-            "src/types/sdk-work-list-response.ts",
-            "src/types/sdk-work-page-data.ts",
-            "src/types/sdk-work-platform-error-code.ts",
-            "src/types/sdk-work-resource-data.ts",
-            "src/types/sdk-work-resource-response.ts"
-          ]
-        },
-        {
-          "area": "runtime",
-          "paths": [
-            "src/auth/index.ts",
-            "src/http/client.ts",
-            "src/http/index.ts"
-          ]
-        },
-        {
-          "area": "build-metadata",
-          "paths": [
-            "package.json",
-            "sdkwork-sdk.json",
-            "tsconfig.json"
-          ]
-        },
-        {
-          "area": "publish-workflow",
-          "paths": [
-            "bin/publish-core.mjs",
-            "bin/publish.ps1",
-            "bin/publish.sh",
-            "bin/sdk-gen.bat",
-            "bin/sdk-gen.sh"
-          ]
-        },
-        {
-          "area": "documentation",
-          "paths": [
-            "CHANGELOG.md",
-            "custom/README.md",
-            "README.md"
-          ]
-        },
-        {
-          "area": "custom-scaffold",
-          "paths": [
-            "custom/build-runtime.mjs",
-            "custom/README.md"
-          ]
-        },
-        {
-          "area": "unknown",
-          "paths": [
-            "LICENSE",
-            "src/index.ts"
+            "src/api/question-bank-questions.ts"
           ]
         }
       ],
       "requiresVerification": true,
-      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required."
+      "summary": "Detected impact areas: api-surface. Verification is required."
     },
     "verificationPlan": {
       "shouldRun": true,
       "runPhase": "now",
-      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "summary": "Detected impact areas: api-surface. Verification is required. Run the required verification commands now against the generated SDK output.",
       "steps": [
         {
           "id": "check",
           "title": "Unified package check",
           "required": true,
-          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface.",
           "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -453,7 +265,7 @@
           "id": "build",
           "title": "Unified package build",
           "required": true,
-          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface.",
           "workingDirectory": "D:\\sdkwork-space\\sdkwork-course\\sdks\\sdkwork-course-app-sdk\\sdkwork-course-app-sdk-typescript\\generated\\server-openapi",
           "command": "node",
           "args": [
@@ -471,19 +283,16 @@
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "high",
+      "riskLevel": "medium",
       "nextAction": "verify",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
       "summary": "Changes have been applied. Run the required verification plan now.",
       "reasons": [
-        "manual-review-required",
-        "preserved-legacy-files",
-        "unknown-impact",
         "verification-required"
       ]
     },
     "backedUpFiles": [],
-    "preservedLegacyFiles": true
+    "preservedLegacyFiles": false
   }
 }

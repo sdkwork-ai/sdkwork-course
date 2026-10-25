@@ -97,6 +97,36 @@
       "owner": "course-platform",
       "compliance_level": "L2",
       "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_question",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_question_paper",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_question_paper_item",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_question_handout",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
+    },
+    {
+      "table_name": "course_question_handout_item",
+      "owner": "course-platform",
+      "compliance_level": "L2",
+      "lifecycle_status": "active"
     }
   ]
 }

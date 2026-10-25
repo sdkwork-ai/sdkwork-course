@@ -42,6 +42,9 @@ config/*.local.toml
 **/.sdkwork/sdkwork-generator-manifest.json
 **/.sdkwork/sdkwork-generator-report.json
 
+# Bilibili catalog fetcher cache (view-API outcomes), regenerated on demand
+/database/seeds/catalog/bilibili-catalog.state.json
+
 # SDKWork local-only and generated artifacts
 .env
 .env.*
@@ -111,3 +114,8 @@ etc/**/*.local.*
 # the emit-beside-source case is expressible as a path-scoped ignore here too.
 /apps/sdkwork-course-pc/packages/*/src/**/*.js
 /apps/sdkwork-course-pc/packages/*/src/**/*.d.ts
+
+# Scratch probe scripts and one-off fixup helpers (never commit).
+# No repository in the fleet tracks tmp-* scripts; added by repo-commit sweep.
+/scripts/tmp-*
+/apps/sdkwork-course-pc/fix_tones.py

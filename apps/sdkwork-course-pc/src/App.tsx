@@ -37,6 +37,13 @@ import {
   StudioCourseEditorPage,
   StudioCourseListPage,
 } from '@sdkwork/sdkwork-course-pc-studio'
+import {
+  QuestionBankPage,
+  QuestionHandoutEditorPage,
+  QuestionHandoutsPage,
+  QuestionPaperDetailPage,
+  QuestionPapersPage,
+} from '@sdkwork/sdkwork-course-pc-questionbank'
 import { ConsoleCourse } from '@sdkwork/course-pc-console'
 import { ErrorBoundary, cn } from '@sdkwork/sdkwork-course-pc-commons'
 
@@ -56,6 +63,7 @@ const NAV_ITEMS = [
   { to: '/courses?kind=column', label: '专栏', end: true },
   { to: '/courses?kind=collection', label: '合集', end: true },
   { to: '/live', label: '直播', end: false },
+  { to: '/questionbank', label: '题库', end: false },
 ]
 
 function isNavItemActive(
@@ -65,6 +73,7 @@ function isNavItemActive(
 ): boolean {
   if (item.to === '/') return pathname === '/'
   if (item.to === '/live') return pathname === '/live' || pathname.startsWith('/live/')
+  if (item.to === '/questionbank') return pathname.startsWith('/questionbank')
   if (item.to.includes('kind=')) {
     if (pathname !== '/courses') return false
     const kind = new URLSearchParams(search).get('kind')
@@ -157,7 +166,7 @@ function AppShell() {
               <GraduationCap className="h-5 w-5" />
             </span>
             <span className="hidden text-[15px] font-bold tracking-tight text-slate-900 sm:block">
-              SDKWork 课程中心
+              课程中心
             </span>
           </Link>
 
@@ -436,6 +445,46 @@ function AppShell() {
             }
           />
           <Route
+            path="/questionbank"
+            element={
+              <RequireAuth>
+                <QuestionBankPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/questionbank/papers"
+            element={
+              <RequireAuth>
+                <QuestionPapersPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/questionbank/papers/:paperId"
+            element={
+              <RequireAuth>
+                <QuestionPaperDetailPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/questionbank/handouts"
+            element={
+              <RequireAuth>
+                <QuestionHandoutsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/questionbank/handouts/:handoutId"
+            element={
+              <RequireAuth>
+                <QuestionHandoutEditorPage />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <RequireAuth>
@@ -449,7 +498,7 @@ function AppShell() {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1760px] flex-col gap-2 px-4 py-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} SDKWork Course · 专业在线课程与内容运营平台</p>
+          <p>© {new Date().getFullYear()} 课程中心 · 专业在线课程与内容运营平台</p>
           <div className="flex flex-wrap items-center gap-4">
             <Link to="/courses" className="hover:text-slate-800">
               课程中心

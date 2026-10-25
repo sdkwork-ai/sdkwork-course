@@ -44,7 +44,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "53df1ff1a0dc77010b4d20fcba103458cc33855e8702032af5f872ccd41a296d"
+      "sha256": "c46300f11487a58ee705304402cc4d1454a58f98cbca68c4b8d83b20c95b0405"
     },
     {
       "path": "sdkwork-sdk.json",
@@ -120,11 +120,27 @@
     },
     {
       "path": "src/api/index.ts",
-      "sha256": "a4fbfd3ce7f9a35238b3fb51ea018b0779264bbaed0b612ec2407daa44547952"
+      "sha256": "cd7adaf6237c873b29cca3d3912d57d8a6eff8f77ea6785ed4acbf229ffd37ca"
     },
     {
       "path": "src/api/paths.ts",
       "sha256": "4ffed7b7d576dc11081bf6b43511465d3a5db410bd25c425ef47b69b154981ad"
+    },
+    {
+      "path": "src/api/question-bank-handouts.ts",
+      "sha256": "df6416758a5f8c78368b0b5542a1dd2d1cfaa7d3208f892f2d9373534e4b101d"
+    },
+    {
+      "path": "src/api/question-bank-papers.ts",
+      "sha256": "711d5912e734c9399a7df530b8d8cfd56a6080ed1840a2244562556a018440e7"
+    },
+    {
+      "path": "src/api/question-bank-questions.ts",
+      "sha256": "ad742e174471f0b1fd51105b258d7c1f4cbeab8303b5e364e92ebc610f2f7bf7"
+    },
+    {
+      "path": "src/api/question-bank-taxonomy.ts",
+      "sha256": "2a27e0eb28e2692897952a8134fed94c09b1b8c5748634c6d9f2324a52679939"
     },
     {
       "path": "src/api/studio-courses.ts",
@@ -148,7 +164,7 @@
     },
     {
       "path": "src/sdk.ts",
-      "sha256": "237a930dbe2c7910971fe553d1cf76ecd8d425d1d6f763dc5f8861d0847d133d"
+      "sha256": "01d84ded843a96956e6bbbc882fa410805a6c70ef50dcb65151b4c1d3e6ffd28"
     },
     {
       "path": "src/types/common.ts",
