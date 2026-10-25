@@ -119,3 +119,15 @@ etc/**/*.local.*
 # No repository in the fleet tracks tmp-* scripts; added by repo-commit sweep.
 /scripts/tmp-*
 /apps/sdkwork-course-pc/fix_tones.py
+
+# ---- auto-audited: local artifacts that must never be committed ----
+*.key
+*.pem
+*.p12
+*.pfx
+*.keystore
+tmp/
+temp/
+*.tmp
+*.temp
+.next/
