@@ -14,9 +14,21 @@
   },
   "dependencies": [
     {
+      "id": "sdkwork-app-topology",
+      "repository": "sdkwork-ai/sdkwork-app-topology",
+      "refInput": "SDKWORK_APP_TOPOLOGY_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
+    },
+    {
       "id": "sdkwork-appbase",
       "repository": "sdkwork-ai/sdkwork-appbase",
       "refInput": "SDKWORK_APPBASE_REF",
+      "tokenSecret": "SDKWORK_RELEASE_TOKEN"
+    },
+    {
+      "id": "sdkwork-comments",
+      "repository": "sdkwork-ai/sdkwork-comments",
+      "refInput": "SDKWORK_COMMENTS_REF",
       "tokenSecret": "SDKWORK_RELEASE_TOKEN"
     },
     {

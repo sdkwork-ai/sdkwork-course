@@ -58,6 +58,12 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+      // The generated SDK tree vendors its own npm-installed `@sdkwork/*`
+      // copies for standalone rollup builds. Force dev resolution onto the
+      // workspace-linked copies so the app and every feature package share
+      // one module instance per package; otherwise the dev prebundle serves
+      // the stale vendored export surface and pages render blank.
+      dedupe: ['@sdkwork/sdk-common'],
       // Workspace packages are consumed as TypeScript sources; keep compiled
       // `.js` residue from shadowing `.ts`/`.tsx` in dev and production builds.
       extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],

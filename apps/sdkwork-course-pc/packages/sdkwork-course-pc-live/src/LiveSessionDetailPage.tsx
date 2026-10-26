@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   Button,
   EmptyState,
@@ -9,97 +9,73 @@ import {
   PageHeader,
   formatCompactCount,
 } from '@sdkwork/sdkwork-course-pc-commons'
-import {
-  extractSdkItem,
-  readEntityNumber,
-  readEntityString,
-  useCourseSdk,
-} from '@sdkwork/sdkwork-course-pc-core'
+import { extractSdkItem, useCourseSdk } from '@sdkwork/sdkwork-course-pc-core'
+import { isLiveNow, isScheduledStatus, liveCoverHue, mapLiveSession, type LiveSessionView } from './liveRoomModel'
 
 export function LiveSessionDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const sdk = useCourseSdk()
   const [feedback, setFeedback] = useState<string | null>(null)
-  const [joined, setJoined] = useState(false)
   const [reminded, setReminded] = useState(false)
+  const [replayLoading, setReplayLoading] = useState(false)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['liveSession', id],
     queryFn: async () => sdk.courseLiveSessions.retrieve(id!),
     enabled: !!id,
+    refetchInterval: 30_000,
+    retry: 1,
   })
 
   const record = extractSdkItem(data)
-  const session = record
-    ? {
-        id: readEntityString(record, 'id', 'liveSessionId'),
-        title: readEntityString(record, 'title', 'name'),
-        description: readEntityString(record, 'description') || undefined,
-        liveStatus: readEntityString(record, 'liveStatus', 'live_status', 'status') || 'scheduled',
-        scheduledStartAt:
-          readEntityString(record, 'scheduledStartAt', 'scheduled_start_at') ||
-          new Date().toISOString(),
-        scheduledEndAt:
-          readEntityString(record, 'scheduledEndAt', 'scheduled_end_at') || new Date().toISOString(),
-        actualEndAt: readEntityString(record, 'actualEndAt', 'actual_end_at') || undefined,
-        providerRoomRef:
-          readEntityString(record, 'providerRoomRef', 'provider_room_ref') || undefined,
-        attendees: readEntityNumber(record, 'attendeeCountSnapshot', 'attendee_count_snapshot') ?? 0,
-      }
-    : null
+  const session = record ? mapLiveSession(record) : null
 
-  const joinMutation = useMutation({
-    mutationFn: () => sdk.courseLiveSessions.join(id!, {}),
-    onSuccess: () => setJoined(true),
-  })
-
-  useEffect(() => {
-    if (!joined || !id) return undefined
-    const timer = window.setInterval(() => {
-      void sdk.courseLiveSessions.heartbeat(id, {}).catch(() => undefined)
-    }, 60_000)
-    return () => {
-      window.clearInterval(timer)
-      void sdk.courseLiveSessions.leave(id, {}).catch(() => undefined)
-    }
-  }, [joined, id, sdk])
-
+  // Entering the room is an in-app navigation; the room page owns the
+  // join → heartbeat → leave attendance lifecycle itself.
   const enterLiveRoom = () => {
-    setFeedback('正在加入直播...')
-    void joinMutation
-      .mutateAsync()
-      .then(() => {
-        setFeedback('已加入直播，正在打开直播间')
-        if (session?.providerRoomRef) {
-          window.open(session.providerRoomRef, '_blank', 'noopener,noreferrer')
-        } else {
-          setFeedback('直播间地址尚未配置，请联系课程运营')
-        }
-      })
-      .catch(() => {
-        setFeedback('加入直播失败，请稍后再试')
-      })
+    if (!session?.id) return
+    navigate(`/live/${session.id}/room`)
   }
 
-  const showReplay = () => {
-    setFeedback('回放正在整理中，开放后会在这里展示')
+  const showReplay = async () => {
+    if (!id) return
+    setReplayLoading(true)
+    try {
+      const payload = extractSdkItem(await sdk.courseLiveSessions.replay.retrieve(id))
+      const url =
+        payload && typeof payload === 'object'
+          ? Object.values(payload as Record<string, unknown>).find(
+              (value): value is string => typeof value === 'string' && /^https?:\/\//u.test(value),
+            )
+          : undefined
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      } else {
+        setFeedback('回放正在整理中，开放后会在这里展示')
+      }
+    } catch {
+      setFeedback('回放正在整理中，开放后会在这里展示')
+    } finally {
+      setReplayLoading(false)
+    }
   }
 
   if (isLoading) return <LoadingSpinner text="加载直播详情..." />
 
-  if (error || !session) {
+  if (error || !session || !session.id) {
     return (
       <EmptyState
         icon="!"
         title="直播不存在"
         description="无法找到该直播课程"
-        action={<Button onClick={() => window.location.reload()}>重新加载</Button>}
+        action={<Button onClick={() => navigate('/live')}>返回直播列表</Button>}
       />
     )
   }
 
-  const isLive = session.liveStatus === 'live'
-  const isScheduled = session.liveStatus === 'scheduled'
+  const isLive = isLiveNow(session)
+  const isScheduled = isScheduledStatus(session)
 
   return (
     <div className="space-y-4">
@@ -110,20 +86,40 @@ export function LiveSessionDetailPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-slate-900/5 bg-slate-950 text-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(244,63,94,0.35),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.25),transparent_45%)]" />
-            <div className="relative z-10 text-center">
+            {session.coverUrl ? (
+              <>
+                <img
+                  src={session.coverUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-2xl"
+                />
+                <img
+                  src={session.coverUrl}
+                  alt={session.title}
+                  className="absolute inset-0 m-auto h-full w-auto max-w-full object-contain"
+                />
+              </>
+            ) : (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 20% 20%, hsl(${liveCoverHue(session.id)} 72% 42% / 0.5), transparent 45%), radial-gradient(circle at 80% 80%, hsl(${(liveCoverHue(session.id) + 48) % 360} 70% 38% / 0.45), transparent 50%)`,
+                }}
+              />
+            )}
+            <div className="relative z-10 rounded-2xl bg-slate-950/55 px-8 py-6 text-center backdrop-blur-sm sm:px-10">
               {isLive ? (
                 <>
                   <span className="inline-flex items-center gap-2 rounded-full bg-rose-500/15 px-4 py-1.5 text-sm font-bold text-rose-300">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-rose-400" />
                     直播进行中
                   </span>
-                  <p className="mt-4 text-2xl font-bold">AI Agent 公开课直播现场</p>
+                  <p className="mt-4 text-2xl font-bold">{session.title}</p>
                   <p className="mt-2 text-sm text-slate-300">
-                    {formatCompactCount(session.attendees)} 人正在观看
+                    {formatCompactCount(session.attendeeCount)} 人正在观看
                   </p>
                   <Button className="mt-5" onClick={enterLiveRoom}>
-                    {joined ? '已加入直播' : '加入直播'}
+                    进入直播间
                   </Button>
                 </>
               ) : isScheduled ? (
@@ -131,7 +127,9 @@ export function LiveSessionDetailPage() {
                   <span className="text-5xl">⏱</span>
                   <p className="mt-4 text-2xl font-bold">直播即将开始</p>
                   <p className="mt-2 text-sm text-slate-300">
-                    {new Date(session.scheduledStartAt).toLocaleString('zh-CN')}
+                    {session.scheduledStartAt
+                      ? new Date(session.scheduledStartAt).toLocaleString('zh-CN')
+                      : '开播时间待定'}
                   </p>
                   <Button
                     className="mt-5"
@@ -149,11 +147,11 @@ export function LiveSessionDetailPage() {
                   <span className="text-5xl">🎬</span>
                   <p className="mt-4 text-2xl font-bold">直播已结束</p>
                   <p className="mt-2 text-sm text-slate-300">
-                    {session.actualEndAt
-                      ? new Date(session.actualEndAt).toLocaleString('zh-CN')
-                      : new Date(session.scheduledEndAt).toLocaleString('zh-CN')}
+                    {(session.actualEndAt || session.scheduledEndAt)
+                      ? new Date(session.actualEndAt || session.scheduledEndAt).toLocaleString('zh-CN')
+                      : ''}
                   </p>
-                  <Button className="mt-5" onClick={showReplay}>
+                  <Button className="mt-5" loading={replayLoading} onClick={() => void showReplay()}>
                     查看回放
                   </Button>
                 </>
@@ -192,28 +190,44 @@ export function LiveSessionDetailPage() {
               <div>
                 <dt className="text-xs text-slate-400">开始时间</dt>
                 <dd className="mt-0.5 font-semibold text-slate-900">
-                  {new Date(session.scheduledStartAt).toLocaleString('zh-CN')}
+                  {session.scheduledStartAt
+                    ? new Date(session.scheduledStartAt).toLocaleString('zh-CN')
+                    : '待定'}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-slate-400">结束时间</dt>
                 <dd className="mt-0.5 font-semibold text-slate-900">
-                  {new Date(session.scheduledEndAt).toLocaleString('zh-CN')}
+                  {session.scheduledEndAt
+                    ? new Date(session.scheduledEndAt).toLocaleString('zh-CN')
+                    : '待定'}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-slate-400">观看人数</dt>
                 <dd className="mt-0.5 font-semibold text-slate-900">
-                  {formatCompactCount(session.attendees)} 人
+                  {formatCompactCount(session.attendeeCount)} 人
                 </dd>
               </div>
             </dl>
 
             <div className="mt-5">
               {isLive ? (
-                <Button fullWidth onClick={enterLiveRoom}>
-                  {joined ? '已加入直播' : '加入直播'}
-                </Button>
+                <>
+                  <Button fullWidth onClick={enterLiveRoom}>
+                    进入直播间
+                  </Button>
+                  {session.providerRoomRef ? (
+                    <a
+                      href={session.providerRoomRef}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 block text-center text-xs font-medium text-slate-400 hover:text-indigo-600"
+                    >
+                      或在服务商页面观看
+                    </a>
+                  ) : null}
+                </>
               ) : isScheduled ? (
                 <Button
                   fullWidth
@@ -226,7 +240,7 @@ export function LiveSessionDetailPage() {
                   {reminded ? '已预约' : '预约提醒'}
                 </Button>
               ) : (
-                <Button fullWidth onClick={showReplay}>
+                <Button fullWidth loading={replayLoading} onClick={() => void showReplay()}>
                   查看回放
                 </Button>
               )}
@@ -234,7 +248,7 @@ export function LiveSessionDetailPage() {
           </div>
 
           <div className="rounded-xl border border-slate-100 bg-white p-4 text-xs leading-relaxed text-slate-500">
-            直播由课程中心统一排期。加入后会跳转到直播服务商房间；回放由讲师上传后开放。
+            直播由课程中心统一排期。进入直播间后可以观看直播画面，并在互动区自由发言；回放由讲师上传后开放。
           </div>
         </aside>
       </div>

@@ -25,6 +25,14 @@ fn sqlx_storage_error(error: sqlx::Error) -> CourseError {
     CourseError::storage(error.to_string())
 }
 
+/// Parses the live-session metadata bag for catalog reads; malformed or blank
+/// JSON degrades to an empty object so legacy rows never break the response.
+fn parse_live_session_metadata(metadata_json: Option<&str>) -> Value {
+    metadata_json
+        .and_then(|raw| serde_json::from_str(raw).ok())
+        .unwrap_or_else(|| serde_json::json!({}))
+}
+
 /// Recomputes the live-session attendee snapshot from active attendance rows.
 async fn refresh_live_attendee_count(
     pool: &sqlx::PgPool,
@@ -3265,11 +3273,13 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     String,
                     Option<String>,
                     String,
+                    String,
+                    Option<String>,
                 ),
             >(
                 r#"
                 SELECT id, title, description, live_status, scheduled_start_at,
-                       scheduled_end_at, actual_start_at, status
+                       scheduled_end_at, actual_start_at, status, course_id, metadata_json
                 FROM course_live_session
                 WHERE tenant_id = $1 AND deleted_at IS NULL
                 ORDER BY scheduled_start_at DESC
@@ -3286,7 +3296,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             let items: Vec<Value> = sessions
                 .into_iter()
                 .map(
-                    |(id, title, desc, live_status, start, end, actual_start, status)| {
+                    |(id, title, desc, live_status, start, end, actual_start, status, course_id, metadata_json)| {
                         serde_json::json!({
                             "id": id,
                             "title": title,
@@ -3295,7 +3305,9 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                             "scheduledStartAt": start,
                             "scheduledEndAt": end,
                             "actualStartAt": actual_start,
-                            "status": status
+                            "status": status,
+                            "courseId": course_id,
+                            "metadata": parse_live_session_metadata(metadata_json.as_deref()),
                         })
                     },
                 )
@@ -3325,12 +3337,14 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     Option<String>,
                     i32,
                     String,
+                    String,
+                    Option<String>,
                 ),
             >(
                 r#"
                 SELECT id, title, description, live_status, scheduled_start_at,
                        scheduled_end_at, actual_start_at, actual_end_at, provider_room_ref,
-                       attendee_count_snapshot, status
+                       attendee_count_snapshot, status, course_id, metadata_json
                 FROM course_live_session
                 WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
                 "#,
@@ -3354,6 +3368,8 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     room_ref,
                     attendee_count,
                     status,
+                    course_id,
+                    metadata_json,
                 )| {
                     serde_json::json!({
                         "id": id,
@@ -3366,7 +3382,9 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                         "actualEndAt": actual_end,
                         "providerRoomRef": room_ref,
                         "attendeeCountSnapshot": attendee_count,
-                        "status": status
+                        "status": status,
+                        "courseId": course_id,
+                        "metadata": parse_live_session_metadata(metadata_json.as_deref()),
                     })
                 },
             ))

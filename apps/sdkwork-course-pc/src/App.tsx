@@ -31,7 +31,11 @@ import {
 import { LoginPage, RegisterPage } from '@sdkwork/sdkwork-course-pc-auth'
 import { CourseDetailPage, CourseListPage, HomePage } from '@sdkwork/sdkwork-course-pc-courses'
 import { LessonPlayerPage } from '@sdkwork/sdkwork-course-pc-lessons'
-import { LiveSessionListPage, LiveSessionDetailPage } from '@sdkwork/sdkwork-course-pc-live'
+import {
+  LiveRoomPage,
+  LiveSessionDetailPage,
+  LiveSessionListPage,
+} from '@sdkwork/sdkwork-course-pc-live'
 import { MyLearningPage } from '@sdkwork/sdkwork-course-pc-progress'
 import {
   StudioCourseEditorPage,
@@ -150,7 +154,8 @@ function AppShell() {
   }
 
   const fullBleedCourseSurface =
-    /^\/courses\/[^/]+(?:\/play|\/learn\/[^/]+)?$/.test(location.pathname)
+    /^\/courses\/[^/]+(?:\/play|\/learn\/[^/]+)?$/.test(location.pathname) ||
+    /^\/live\/[^/]+\/room$/.test(location.pathname)
 
   return (
     <div className="course-app-surface flex min-h-screen flex-col">
@@ -420,6 +425,7 @@ function AppShell() {
           />
           <Route path="/live" element={<LiveSessionListPage />} />
           <Route path="/live/:id" element={<LiveSessionDetailPage />} />
+          <Route path="/live/:id/room" element={<LiveRoomPage />} />
           <Route
             path="/my"
             element={
