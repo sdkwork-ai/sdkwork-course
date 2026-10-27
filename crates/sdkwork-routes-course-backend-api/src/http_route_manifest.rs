@@ -7,415 +7,484 @@ const HTTP_ROUTES: &[HttpRoute] = &[
         "/backend/v3/api/course_categories",
         "course",
         "courseCategories.list",
-    ).with_required_permission("course.categories.read"),
+    )
+    .with_required_permission("course.categories.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_categories",
         "course",
         "courseCategories.create",
-    ).with_required_permission("course.categories.write"),
+    )
+    .with_required_permission("course.categories.write"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_categories/{categoryId}",
         "course",
         "courseCategories.update",
-    ).with_required_permission("course.categories.write"),
+    )
+    .with_required_permission("course.categories.write"),
     HttpRoute::dual_token(
         HttpMethod::Delete,
         "/backend/v3/api/course_categories/{categoryId}",
         "course",
         "courseCategories.delete",
-    ).with_required_permission("course.categories.write"),
+    )
+    .with_required_permission("course.categories.write"),
     HttpRoute::dual_token(
         HttpMethod::Put,
         "/backend/v3/api/course_categories/reorder",
         "course",
         "courseCategories.reorder",
-    ).with_required_permission("course.categories.write"),
+    )
+    .with_required_permission("course.categories.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_instructors",
         "course",
         "courseInstructors.list",
-    ).with_required_permission("course.instructors.read"),
+    )
+    .with_required_permission("course.instructors.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_instructors",
         "course",
         "courseInstructors.create",
-    ).with_required_permission("course.instructors.write"),
+    )
+    .with_required_permission("course.instructors.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_instructors/{instructorId}",
         "course",
         "courseInstructors.retrieve",
-    ).with_required_permission("course.instructors.read"),
+    )
+    .with_required_permission("course.instructors.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_instructors/{instructorId}",
         "course",
         "courseInstructors.update",
-    ).with_required_permission("course.instructors.write"),
+    )
+    .with_required_permission("course.instructors.write"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_instructors/{instructorId}/status",
         "course",
         "courseInstructors.status.update",
-    ).with_required_permission("course.instructors.write"),
+    )
+    .with_required_permission("course.instructors.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/courses",
         "course",
         "courses.list",
-    ).with_required_permission("course.courses.read"),
+    )
+    .with_required_permission("course.courses.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses",
         "course",
         "courses.create",
-    ).with_required_permission("course.courses.write"),
+    )
+    .with_required_permission("course.courses.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/courses/{courseId}",
         "course",
         "courses.retrieve",
-    ).with_required_permission("course.courses.read"),
+    )
+    .with_required_permission("course.courses.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/courses/{courseId}",
         "course",
         "courses.update",
-    ).with_required_permission("course.courses.write"),
+    )
+    .with_required_permission("course.courses.write"),
     HttpRoute::dual_token(
         HttpMethod::Delete,
         "/backend/v3/api/courses/{courseId}",
         "course",
         "courses.delete",
-    ).with_required_permission("course.courses.write"),
+    )
+    .with_required_permission("course.courses.write"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses/{courseId}/publish",
         "course",
         "courses.publish",
-    ).with_required_permission("course.courses.publish"),
+    )
+    .with_required_permission("course.courses.publish"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses/{courseId}/unpublish",
         "course",
         "courses.unpublish",
-    ).with_required_permission("course.courses.publish"),
+    )
+    .with_required_permission("course.courses.publish"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/courses/{courseId}/offerings",
         "course",
         "courseOfferings.list",
-    ).with_required_permission("course.offerings.read"),
+    )
+    .with_required_permission("course.offerings.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses/{courseId}/offerings",
         "course",
         "courseOfferings.create",
-    ).with_required_permission("course.offerings.write"),
+    )
+    .with_required_permission("course.offerings.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_offerings/{offeringId}",
         "course",
         "courseOfferings.retrieve",
-    ).with_required_permission("course.offerings.read"),
+    )
+    .with_required_permission("course.offerings.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_offerings/{offeringId}",
         "course",
         "courseOfferings.update",
-    ).with_required_permission("course.offerings.write"),
+    )
+    .with_required_permission("course.offerings.write"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_offerings/{offeringId}/publish",
         "course",
         "courseOfferings.publish",
-    ).with_required_permission("course.offerings.write"),
+    )
+    .with_required_permission("course.offerings.write"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_offerings/{offeringId}/close",
         "course",
         "courseOfferings.close",
-    ).with_required_permission("course.offerings.write"),
+    )
+    .with_required_permission("course.offerings.write"),
     HttpRoute::dual_token(
         HttpMethod::Delete,
         "/backend/v3/api/course_offerings/{offeringId}",
         "course",
         "courseOfferings.delete",
-    ).with_required_permission("course.offerings.write"),
+    )
+    .with_required_permission("course.offerings.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/courses/{courseId}/sections",
         "course",
         "courseSections.list",
-    ).with_required_permission("course.lessons.read"),
+    )
+    .with_required_permission("course.lessons.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses/{courseId}/sections",
         "course",
         "courseSections.create",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_sections/{sectionId}",
         "course",
         "courseSections.update",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Delete,
         "/backend/v3/api/course_sections/{sectionId}",
         "course",
         "courseSections.delete",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Put,
         "/backend/v3/api/courses/{courseId}/sections/reorder",
         "course",
         "courseSections.reorder",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/courses/{courseId}/lessons",
         "course",
         "courseLessons.list",
-    ).with_required_permission("course.lessons.read"),
+    )
+    .with_required_permission("course.lessons.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses/{courseId}/lessons",
         "course",
         "courseLessons.create",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_lessons/{lessonId}",
         "course",
         "courseLessons.retrieve",
-    ).with_required_permission("course.lessons.read"),
+    )
+    .with_required_permission("course.lessons.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_lessons/{lessonId}",
         "course",
         "courseLessons.update",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Delete,
         "/backend/v3/api/course_lessons/{lessonId}",
         "course",
         "courseLessons.delete",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Put,
         "/backend/v3/api/courses/{courseId}/lessons/reorder",
         "course",
         "courseLessons.reorder",
-    ).with_required_permission("course.lessons.write"),
+    )
+    .with_required_permission("course.lessons.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_lessons/{lessonId}/resources",
         "course",
         "courseResources.list",
-    ).with_required_permission("course.resources.read"),
+    )
+    .with_required_permission("course.resources.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_lessons/{lessonId}/resources",
         "course",
         "courseResources.create",
-    ).with_required_permission("course.resources.write"),
+    )
+    .with_required_permission("course.resources.write"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_resources/{resourceRefId}",
         "course",
         "courseResources.update",
-    ).with_required_permission("course.resources.write"),
+    )
+    .with_required_permission("course.resources.write"),
     HttpRoute::dual_token(
         HttpMethod::Delete,
         "/backend/v3/api/course_resources/{resourceRefId}",
         "course",
         "courseResources.delete",
-    ).with_required_permission("course.resources.write"),
+    )
+    .with_required_permission("course.resources.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_live_sessions",
         "course",
         "courseLiveSessions.list",
-    ).with_required_permission("course.live_sessions.read"),
+    )
+    .with_required_permission("course.live_sessions.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_live_sessions",
         "course",
         "courseLiveSessions.create",
-    ).with_required_permission("course.live_sessions.write"),
+    )
+    .with_required_permission("course.live_sessions.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_live_sessions/{liveSessionId}",
         "course",
         "courseLiveSessions.retrieve",
-    ).with_required_permission("course.live_sessions.read"),
+    )
+    .with_required_permission("course.live_sessions.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_live_sessions/{liveSessionId}",
         "course",
         "courseLiveSessions.update",
-    ).with_required_permission("course.live_sessions.write"),
+    )
+    .with_required_permission("course.live_sessions.write"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_live_sessions/{liveSessionId}/start",
         "course",
         "courseLiveSessions.start",
-    ).with_required_permission("course.live_sessions.operate"),
+    )
+    .with_required_permission("course.live_sessions.operate"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_live_sessions/{liveSessionId}/end",
         "course",
         "courseLiveSessions.end",
-    ).with_required_permission("course.live_sessions.operate"),
+    )
+    .with_required_permission("course.live_sessions.operate"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_live_sessions/{liveSessionId}/cancel",
         "course",
         "courseLiveSessions.cancel",
-    ).with_required_permission("course.live_sessions.operate"),
+    )
+    .with_required_permission("course.live_sessions.operate"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_live_sessions/{liveSessionId}/replay",
         "course",
         "courseLiveSessions.replay.attach",
-    ).with_required_permission("course.live_sessions.write"),
+    )
+    .with_required_permission("course.live_sessions.write"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_live_sessions/{liveSessionId}/replay/publish",
         "course",
         "courseLiveSessions.replay.publish",
-    ).with_required_permission("course.live_sessions.write"),
+    )
+    .with_required_permission("course.live_sessions.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_enrollments",
         "course",
         "courseEnrollments.list",
-    ).with_required_permission("course.enrollments.read"),
+    )
+    .with_required_permission("course.enrollments.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_enrollments/grants",
         "course",
         "courseEnrollments.grant",
-    ).with_required_permission("course.enrollments.write"),
+    )
+    .with_required_permission("course.enrollments.write"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_enrollments/{enrollmentId}/revoke",
         "course",
         "courseEnrollments.revoke",
-    ).with_required_permission("course.enrollments.write"),
+    )
+    .with_required_permission("course.enrollments.write"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_progress",
         "course",
         "courseProgress.list",
-    ).with_required_permission("course.progress.read"),
+    )
+    .with_required_permission("course.progress.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_enrollments/{enrollmentId}/progress",
         "course",
         "courseProgress.retrieve",
-    ).with_required_permission("course.progress.read"),
+    )
+    .with_required_permission("course.progress.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_lesson_progress/{lessonProgressId}",
         "course",
         "courseLessonProgress.repair",
-    ).with_required_permission("course.progress.repair"),
+    )
+    .with_required_permission("course.progress.repair"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reactions",
         "course",
         "courseReactions.list",
-    ).with_required_permission("course.reactions.read"),
+    )
+    .with_required_permission("course.reactions.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_applications",
         "course",
         "courseApplications.list",
-    ).with_required_permission("course.applications.read"),
+    )
+    .with_required_permission("course.applications.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_applications/{applicationId}",
         "course",
         "courseApplications.retrieve",
-    ).with_required_permission("course.applications.read"),
+    )
+    .with_required_permission("course.applications.read"),
     HttpRoute::dual_token(
         HttpMethod::Patch,
         "/backend/v3/api/course_applications/{applicationId}/review",
         "course",
         "courseApplications.review",
-    ).with_required_permission("course.applications.review"),
+    )
+    .with_required_permission("course.applications.review"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_applications/{applicationId}/convert",
         "course",
         "courseApplications.convertToCourse",
-    ).with_required_permission("course.applications.review"),
+    )
+    .with_required_permission("course.applications.review"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reports/overview",
         "course",
         "courseReports.overview.retrieve",
-    ).with_required_permission("course.reports.read"),
+    )
+    .with_required_permission("course.reports.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reports/learning",
         "course",
         "courseReports.learning.list",
-    ).with_required_permission("course.reports.read"),
+    )
+    .with_required_permission("course.reports.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reports/live_sessions",
         "course",
         "courseReports.liveSessions.list",
-    ).with_required_permission("course.reports.read"),
+    )
+    .with_required_permission("course.reports.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_audit_logs",
         "course",
         "courseAuditLogs.list",
-    ).with_required_permission("course.audit_logs.read"),
+    )
+    .with_required_permission("course.audit_logs.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_audit_logs/{auditLogId}",
         "course",
         "courseAuditLogs.retrieve",
-    ).with_required_permission("course.audit_logs.read"),
+    )
+    .with_required_permission("course.audit_logs.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reviews",
         "course",
         "courseReviews.list",
-    ).with_required_permission("course.reviews.read"),
+    )
+    .with_required_permission("course.reviews.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reviews/stats",
         "course",
         "courseReviews.stats",
-    ).with_required_permission("course.reviews.read"),
+    )
+    .with_required_permission("course.reviews.read"),
     HttpRoute::dual_token(
         HttpMethod::Get,
         "/backend/v3/api/course_reviews/{courseId}",
         "course",
         "courseReviews.retrieve",
-    ).with_required_permission("course.reviews.read"),
+    )
+    .with_required_permission("course.reviews.read"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/course_reviews/{courseId}/review",
         "course",
         "courseReviews.review",
-    ).with_required_permission("course.reviews.review"),
+    )
+    .with_required_permission("course.reviews.review"),
     HttpRoute::dual_token(
         HttpMethod::Post,
         "/backend/v3/api/courses/{courseId}/offline",
         "course",
         "courses.offline",
-    ).with_required_permission("course.courses.publish"),
+    )
+    .with_required_permission("course.courses.publish"),
 ];
 
 pub fn course_backend_api_http_route_manifest() -> HttpRouteManifest {

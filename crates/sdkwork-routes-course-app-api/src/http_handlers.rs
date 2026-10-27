@@ -11,10 +11,10 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use sdkwork_content_course_service::CourseQuery;
 use sdkwork_routes_course_http_auth::{
     course_service_context_from_web, handler_value_to_response, map_auth_error, map_route_error,
 };
-use sdkwork_content_course_service::CourseQuery;
 use sdkwork_web_core::WebRequestContext;
 use serde_json::Value;
 
@@ -99,7 +99,6 @@ macro_rules! course_handler_body {
         }
     }};
 }
-
 
 pub async fn course_categories_list(
     State(state): State<CourseAppApiState>,
@@ -228,7 +227,13 @@ pub async fn course_lesson_progress_update(
     Path(lessonId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, lessonId, body, course_lesson_progress_update)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        lessonId,
+        body,
+        course_lesson_progress_update
+    )
 }
 
 pub async fn course_lesson_progress_watch_positions_update(
@@ -237,7 +242,13 @@ pub async fn course_lesson_progress_watch_positions_update(
     Path(lessonId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, lessonId, body, course_lesson_progress_watch_positions_update)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        lessonId,
+        body,
+        course_lesson_progress_watch_positions_update
+    )
 }
 
 pub async fn course_live_sessions_list(
@@ -269,7 +280,12 @@ pub async fn course_live_sessions_heartbeat(
     app_ctx: WebRequestContext,
     Path(liveSessionId): Path<String>,
 ) -> Response {
-    course_handler_path!(state, app_ctx, liveSessionId, course_live_sessions_heartbeat)
+    course_handler_path!(
+        state,
+        app_ctx,
+        liveSessionId,
+        course_live_sessions_heartbeat
+    )
 }
 
 pub async fn course_live_sessions_leave(
@@ -285,7 +301,12 @@ pub async fn course_live_sessions_replay_retrieve(
     app_ctx: WebRequestContext,
     Path(liveSessionId): Path<String>,
 ) -> Response {
-    course_handler_path!(state, app_ctx, liveSessionId, course_live_sessions_replay_retrieve)
+    course_handler_path!(
+        state,
+        app_ctx,
+        liveSessionId,
+        course_live_sessions_replay_retrieve
+    )
 }
 
 pub async fn course_engagement_retrieve(
@@ -423,7 +444,10 @@ pub async fn course_entitlements_grant(
         .ok()
         .filter(|value| !value.trim().is_empty());
     let Some(expected) = expected else {
-        return (StatusCode::SERVICE_UNAVAILABLE, "entitlement grant is not configured")
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "entitlement grant is not configured",
+        )
             .into_response();
     };
     let provided = headers
@@ -433,14 +457,23 @@ pub async fn course_entitlements_grant(
     if provided != expected {
         return (StatusCode::FORBIDDEN, "invalid entitlement grant secret").into_response();
     }
-    let offering_id = body.get("offeringId").and_then(Value::as_str).unwrap_or_default();
+    let offering_id = body
+        .get("offeringId")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
     let learner_user_id = body
         .get("learnerUserId")
         .and_then(Value::as_str)
         .unwrap_or_default();
-    let purchase_ref = body.get("purchaseRef").and_then(Value::as_str).unwrap_or_default();
+    let purchase_ref = body
+        .get("purchaseRef")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
     if offering_id.is_empty() || learner_user_id.is_empty() || purchase_ref.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, "invalid entitlement grant payload")
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "invalid entitlement grant payload",
+        )
             .into_response();
     }
     let service = state.service();
@@ -477,7 +510,11 @@ macro_rules! question_bank_query {
         let params = serde_json::to_value($query.0).unwrap_or(Value::Null);
         let parsed = crate::mapper::request::$parser(&params);
         match handlers::$handler(service.as_ref(), &context, parsed.clone()).await {
-            Ok(value) => handler_value_to_response(web_ctx, value, Some(&course_query_from_question(&parsed))),
+            Ok(value) => handler_value_to_response(
+                web_ctx,
+                value,
+                Some(&course_query_from_question(&parsed)),
+            ),
             Err(error) => map_route_error(web_ctx, error.code(), error.message().to_owned()),
         }
     }};
@@ -530,7 +567,9 @@ macro_rules! question_bank_body {
 
 /// List envelopes key off `CourseQuery`; the question bank query parser shares
 /// the same pagination fields so the page wrapping stays identical.
-fn course_query_from_question(query: &sdkwork_content_course_service::QuestionQuery) -> CourseQuery {
+fn course_query_from_question(
+    query: &sdkwork_content_course_service::QuestionQuery,
+) -> CourseQuery {
     CourseQuery {
         page: query.page,
         page_size: query.page_size,
@@ -544,7 +583,13 @@ pub async fn question_bank_questions_list(
     app_ctx: WebRequestContext,
     query: Query<BTreeMap<String, String>>,
 ) -> Response {
-    question_bank_query!(state, app_ctx, query, question_bank_questions_list, parse_question_query)
+    question_bank_query!(
+        state,
+        app_ctx,
+        query,
+        question_bank_questions_list,
+        parse_question_query
+    )
 }
 
 pub async fn question_bank_questions_create(
@@ -569,7 +614,13 @@ pub async fn question_bank_questions_update(
     Path(questionId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    question_bank_path_body!(state, app_ctx, questionId, body, question_bank_questions_update)
+    question_bank_path_body!(
+        state,
+        app_ctx,
+        questionId,
+        body,
+        question_bank_questions_update
+    )
 }
 
 pub async fn question_bank_questions_delete(
@@ -609,7 +660,13 @@ pub async fn question_bank_taxonomy_retrieve(
     app_ctx: WebRequestContext,
     query: Query<BTreeMap<String, String>>,
 ) -> Response {
-    question_bank_query!(state, app_ctx, query, question_bank_taxonomy_retrieve, parse_question_query)
+    question_bank_query!(
+        state,
+        app_ctx,
+        query,
+        question_bank_taxonomy_retrieve,
+        parse_question_query
+    )
 }
 
 pub async fn question_bank_papers_list(
@@ -691,7 +748,13 @@ pub async fn question_bank_handouts_update(
     Path(handoutId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    question_bank_path_body!(state, app_ctx, handoutId, body, question_bank_handouts_update)
+    question_bank_path_body!(
+        state,
+        app_ctx,
+        handoutId,
+        body,
+        question_bank_handouts_update
+    )
 }
 
 pub async fn question_bank_handouts_delete(

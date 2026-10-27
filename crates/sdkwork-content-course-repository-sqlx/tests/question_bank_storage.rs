@@ -15,7 +15,9 @@ async fn optional_pool() -> Option<sqlx::PgPool> {
     match connect_course_database_pool_from_env().await {
         Ok(pool) => Some(pool.as_postgres().expect("postgres pool").clone()),
         Err(error) => {
-            eprintln!("skipping question bank storage test: no resolvable database profile ({error})");
+            eprintln!(
+                "skipping question bank storage test: no resolvable database profile ({error})"
+            );
             None
         }
     }
@@ -68,7 +70,10 @@ async fn question_bank_repository_round_trip_on_postgres() {
 
     // ── question insert: generated question_code, i64 decode of INTEGER cols ──
     let created = repo
-        .save_question(&context, question_command("1 + 1 = ______", "fill_blank", "easy"))
+        .save_question(
+            &context,
+            question_command("1 + 1 = ______", "fill_blank", "easy"),
+        )
         .await
         .expect("insert question");
     assert!(created.id.starts_with('q') || !created.id.is_empty());
@@ -129,7 +134,10 @@ async fn question_bank_repository_round_trip_on_postgres() {
     let mut update = question_command("1 + 2 = ______", "fill_blank", "easy");
     update["id"] = serde_json::Value::String(created.id.clone());
     update["question_code"] = serde_json::Value::String(String::new());
-    let updated = repo.save_question(&context, update).await.expect("update question");
+    let updated = repo
+        .save_question(&context, update)
+        .await
+        .expect("update question");
     assert_eq!(updated.question_code, created.question_code);
     assert_eq!(updated.stem, "1 + 2 = ______");
     assert_eq!(updated.version, 1);
@@ -194,35 +202,64 @@ async fn question_bank_repository_round_trip_on_postgres() {
             { "question_id": created.id, "section_no": "2", "sort_order": 0, "score": "4" },
         ],
     });
-    let paper = repo.save_paper(&context, paper_command).await.expect("save paper");
-    assert_eq!(paper.get("examDurationSeconds").and_then(serde_json::Value::as_i64), Some(5400));
-    assert_eq!(paper.get("questionCount").and_then(serde_json::Value::as_i64), Some(2));
+    let paper = repo
+        .save_paper(&context, paper_command)
+        .await
+        .expect("save paper");
+    assert_eq!(
+        paper
+            .get("examDurationSeconds")
+            .and_then(serde_json::Value::as_i64),
+        Some(5400)
+    );
+    assert_eq!(
+        paper
+            .get("questionCount")
+            .and_then(serde_json::Value::as_i64),
+        Some(2)
+    );
     let items = paper
         .get("items")
         .and_then(serde_json::Value::as_array)
         .cloned()
         .unwrap_or_default();
     assert_eq!(items.len(), 2);
-    assert_eq!(items[0].get("sectionNo").and_then(serde_json::Value::as_str), Some("1"));
+    assert_eq!(
+        items[0]
+            .get("sectionNo")
+            .and_then(serde_json::Value::as_str),
+        Some("1")
+    );
     assert!(items[0]
         .get("question")
         .map(|question| !question.is_null())
         .unwrap_or(false));
-    let paper_id = paper.get("id").and_then(serde_json::Value::as_str).unwrap().to_string();
+    let paper_id = paper
+        .get("id")
+        .and_then(serde_json::Value::as_str)
+        .unwrap()
+        .to_string();
 
     // ── reference guard: question is in a paper, deletion must count it ──
     let references = repo
         .question_references(&context, choice.id.clone())
         .await
         .expect("references");
-    assert_eq!(references.get("paperCount").and_then(serde_json::Value::as_i64), Some(1));
+    assert_eq!(
+        references
+            .get("paperCount")
+            .and_then(serde_json::Value::as_i64),
+        Some(1)
+    );
 
     let archived = repo
         .archive_paper(&context, paper_id.clone())
         .await
         .expect("archive paper");
     assert_eq!(
-        archived.get("paperStatus").and_then(serde_json::Value::as_str),
+        archived
+            .get("paperStatus")
+            .and_then(serde_json::Value::as_str),
         Some("archived")
     );
 
@@ -244,7 +281,10 @@ async fn question_bank_repository_round_trip_on_postgres() {
             { "question_id": created.id, "sort_order": 1, "usage_role": "example" },
         ],
     });
-    let handout = repo.save_handout(&context, handout_command).await.expect("save handout");
+    let handout = repo
+        .save_handout(&context, handout_command)
+        .await
+        .expect("save handout");
     let handout_id = handout
         .get("id")
         .and_then(serde_json::Value::as_str)
@@ -257,14 +297,21 @@ async fn question_bank_repository_round_trip_on_postgres() {
         .unwrap_or_default();
     assert_eq!(handout_items.len(), 1);
     assert_eq!(
-        handout_items[0].get("usageRole").and_then(serde_json::Value::as_str),
+        handout_items[0]
+            .get("usageRole")
+            .and_then(serde_json::Value::as_str),
         Some("example")
     );
     let references = repo
         .question_references(&context, created.id.clone())
         .await
         .expect("handout references");
-    assert_eq!(references.get("handoutCount").and_then(serde_json::Value::as_i64), Some(1));
+    assert_eq!(
+        references
+            .get("handoutCount")
+            .and_then(serde_json::Value::as_i64),
+        Some(1)
+    );
 
     // ── taxonomy aggregates from the seeded rows ──
     let taxonomy = repo
@@ -285,22 +332,39 @@ async fn question_bank_repository_round_trip_on_postgres() {
         .list_papers(&context, CourseQuery::default())
         .await
         .expect("list papers");
-    assert_eq!(papers.get("total").and_then(serde_json::Value::as_i64), Some(1));
+    assert_eq!(
+        papers.get("total").and_then(serde_json::Value::as_i64),
+        Some(1)
+    );
     let handouts = repo
         .list_handouts(&context, CourseQuery::default())
         .await
         .expect("list handouts");
-    assert_eq!(handouts.get("total").and_then(serde_json::Value::as_i64), Some(1));
+    assert_eq!(
+        handouts.get("total").and_then(serde_json::Value::as_i64),
+        Some(1)
+    );
 
     // ── deletion: blocked by nothing once references are gone, then cleanup ──
-    repo.delete_handout(&context, handout_id).await.expect("delete handout");
-    repo.delete_paper(&context, paper_id).await.expect("delete paper");
+    repo.delete_handout(&context, handout_id)
+        .await
+        .expect("delete handout");
+    repo.delete_paper(&context, paper_id)
+        .await
+        .expect("delete paper");
     let references = repo
         .question_references(&context, choice.id.clone())
         .await
         .expect("references after deletes");
-    assert_eq!(references.get("paperCount").and_then(serde_json::Value::as_i64), Some(0));
-    repo.delete_question(&context, choice.id).await.expect("delete question");
+    assert_eq!(
+        references
+            .get("paperCount")
+            .and_then(serde_json::Value::as_i64),
+        Some(0)
+    );
+    repo.delete_question(&context, choice.id)
+        .await
+        .expect("delete question");
 
     cleanup_tenant(&pool, &tenant).await;
 }
@@ -350,8 +414,11 @@ async fn question_bank_demo_seed_covers_every_junior_high_subject() {
         eprintln!("demo question bank seed not applied to this database; skipping");
         return;
     }
-    let subjects: std::collections::BTreeSet<&str> =
-        page.items.iter().map(|item| item.subject.as_str()).collect();
+    let subjects: std::collections::BTreeSet<&str> = page
+        .items
+        .iter()
+        .map(|item| item.subject.as_str())
+        .collect();
     for subject in ["math", "english", "history", "geography", "biology"] {
         assert!(
             subjects.contains(subject),
@@ -359,7 +426,9 @@ async fn question_bank_demo_seed_covers_every_junior_high_subject() {
         );
     }
     assert!(
-        page.items.iter().any(|item| item.source_type == "real_exam"),
+        page.items
+            .iter()
+            .any(|item| item.source_type == "real_exam"),
         "demo seed must include real-exam sourced questions"
     );
     assert!(

@@ -6,22 +6,21 @@ pub mod service;
 pub mod test_support;
 
 pub use domain::commands::{
-    CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
-    CourseLessonKind, CourseLessonProgressCommand, CourseLiveJoinGrant, CourseLiveSessionCommand,
-    CourseMediaResourceRef, CourseOfflineCommand, CourseOfferingCommand, CourseOfferingType,
-    CourseProgressStatus, CourseReviewDecisionCommand, CourseServiceContext,
-    CourseStudioDraftCommand, CourseStudioLessonDraft, CourseStudioResourceDraft,
-    CourseStudioSectionDraft, COURSE_KIND_COLLECTION, COURSE_KIND_COLUMN, COURSE_KIND_STANDARD,
-    is_supported_course_kind, normalize_course_kind,
+    is_supported_course_kind, normalize_course_kind, CourseAuditCommand, CourseCatalogCommand,
+    CourseEnrollmentCommand, CourseLessonCommand, CourseLessonKind, CourseLessonProgressCommand,
+    CourseLiveJoinGrant, CourseLiveSessionCommand, CourseMediaResourceRef, CourseOfferingCommand,
+    CourseOfferingType, CourseOfflineCommand, CourseProgressStatus, CourseReviewDecisionCommand,
+    CourseServiceContext, CourseStudioDraftCommand, CourseStudioLessonDraft,
+    CourseStudioResourceDraft, CourseStudioSectionDraft, COURSE_KIND_COLLECTION,
+    COURSE_KIND_COLUMN, COURSE_KIND_STANDARD,
 };
 pub use domain::models::{
-    ComposeBucket, CourseApplicationCreateRequest, CourseApplicationItem,
-    CourseApplicationReviewRequest, CourseAuditLogItem, CourseCategoryItem, CourseCollectionItem,
-    CourseCurriculum, CourseEngagementItem, CourseError, CourseItem, CourseLessonItem,
-    CourseLessonMutationRequest, CourseMutationRequest, CoursePage, CourseQuery, CourseResourceItem,
-    CourseResult, CourseSectionItem, CourseSectionMutationRequest, CourseStudioDetail,
-    QuestionItem, QuestionPage, QuestionQuery, QUESTION_TYPE_SECTION_ORDER,
-    is_supported_question_type,
+    is_supported_question_type, ComposeBucket, CourseApplicationCreateRequest,
+    CourseApplicationItem, CourseApplicationReviewRequest, CourseAuditLogItem, CourseCategoryItem,
+    CourseCollectionItem, CourseCurriculum, CourseEngagementItem, CourseError, CourseItem,
+    CourseLessonItem, CourseLessonMutationRequest, CourseMutationRequest, CoursePage, CourseQuery,
+    CourseResourceItem, CourseResult, CourseSectionItem, CourseSectionMutationRequest,
+    CourseStudioDetail, QuestionItem, QuestionPage, QuestionQuery, QUESTION_TYPE_SECTION_ORDER,
 };
 pub use ports::provider::{
     CourseAuditEventPort, CourseDrivePort, CourseEntitlementPort, CourseLiveProviderPort,
@@ -29,10 +28,10 @@ pub use ports::provider::{
 };
 pub use ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseEnrollmentRepository,
-    CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
-    CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-    CourseResourceRepository, QuestionBankRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository, CourseInstructorRepository,
+    CourseLessonRepository, CourseLiveSessionRepository, CourseOfferingRepository,
+    CourseProgressRepository, CourseReactionRepository, CourseResourceRepository,
+    QuestionBankRepository,
 };
 pub use service::course_service::{CourseApplicationService, CourseServiceImpl};
 pub use service::question_bank_service::{QuestionBankService, QuestionBankServiceImpl};

@@ -96,7 +96,6 @@ macro_rules! course_handler_body {
     }};
 }
 
-
 pub async fn course_categories_list(
     State(state): State<CourseBackendApiState>,
     app_ctx: WebRequestContext,
@@ -168,7 +167,13 @@ pub async fn course_instructors_update(
     Path(instructorId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, instructorId, body, course_instructors_update)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        instructorId,
+        body,
+        course_instructors_update
+    )
 }
 
 pub async fn course_instructors_status_update(
@@ -177,7 +182,13 @@ pub async fn course_instructors_status_update(
     Path(instructorId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, instructorId, body, course_instructors_status_update)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        instructorId,
+        body,
+        course_instructors_status_update
+    )
 }
 
 pub async fn courses_list(
@@ -453,7 +464,13 @@ pub async fn course_live_sessions_update(
     Path(liveSessionId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, liveSessionId, body, course_live_sessions_update)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        liveSessionId,
+        body,
+        course_live_sessions_update
+    )
 }
 
 pub async fn course_live_sessions_start(
@@ -486,7 +503,13 @@ pub async fn course_live_sessions_replay_attach(
     Path(liveSessionId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, liveSessionId, body, course_live_sessions_replay_attach)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        liveSessionId,
+        body,
+        course_live_sessions_replay_attach
+    )
 }
 
 pub async fn course_live_sessions_replay_publish(
@@ -494,7 +517,12 @@ pub async fn course_live_sessions_replay_publish(
     app_ctx: WebRequestContext,
     Path(liveSessionId): Path<String>,
 ) -> Response {
-    course_handler_path!(state, app_ctx, liveSessionId, course_live_sessions_replay_publish)
+    course_handler_path!(
+        state,
+        app_ctx,
+        liveSessionId,
+        course_live_sessions_replay_publish
+    )
 }
 
 pub async fn course_enrollments_list(
@@ -543,7 +571,13 @@ pub async fn course_lesson_progress_repair(
     Path(lessonProgressId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, lessonProgressId, body, course_lesson_progress_repair)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        lessonProgressId,
+        body,
+        course_lesson_progress_repair
+    )
 }
 
 pub async fn course_reactions_list(
@@ -576,7 +610,13 @@ pub async fn course_applications_review(
     Path(applicationId): Path<String>,
     body: Json<Value>,
 ) -> Response {
-    course_handler_path_body!(state, app_ctx, applicationId, body, course_applications_review)
+    course_handler_path_body!(
+        state,
+        app_ctx,
+        applicationId,
+        body,
+        course_applications_review
+    )
 }
 
 pub async fn course_applications_convert_to_course(
@@ -584,7 +624,12 @@ pub async fn course_applications_convert_to_course(
     app_ctx: WebRequestContext,
     Path(applicationId): Path<String>,
 ) -> Response {
-    course_handler_path!(state, app_ctx, applicationId, course_applications_convert_to_course)
+    course_handler_path!(
+        state,
+        app_ctx,
+        applicationId,
+        course_applications_convert_to_course
+    )
 }
 
 pub async fn course_reports_overview_retrieve(

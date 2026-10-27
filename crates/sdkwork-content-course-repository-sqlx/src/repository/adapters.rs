@@ -3,16 +3,14 @@ use sqlx::Row;
 
 use sdkwork_content_course_service::domain::models::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
-    CourseAuditLogItem, CourseCategoryItem,
-    CourseError, CourseItem, CourseLessonItem, CoursePage, CourseQuery, CourseResult,
-    CourseSectionItem,
+    CourseAuditLogItem, CourseCategoryItem, CourseError, CourseItem, CourseLessonItem, CoursePage,
+    CourseQuery, CourseResult, CourseSectionItem,
 };
 use sdkwork_content_course_service::ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseEnrollmentRepository,
-    CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
-    CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-    CourseResourceRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository, CourseInstructorRepository,
+    CourseLessonRepository, CourseLiveSessionRepository, CourseOfferingRepository,
+    CourseProgressRepository, CourseReactionRepository, CourseResourceRepository,
 };
 use sdkwork_content_course_service::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
@@ -28,39 +26,26 @@ fn sqlx_storage_error(error: sqlx::Error) -> CourseError {
 
 // ── Category ────────────────────────────────────────────────────────
 
-
 // ── Instructor ──────────────────────────────────────────────────────
-
 
 // ── Catalog ─────────────────────────────────────────────────────────
 
-
 // ── Offering ────────────────────────────────────────────────────────
-
 
 // ── Lesson / Section ────────────────────────────────────────────────
 
-
 // ── Live Session ────────────────────────────────────────────────────
-
 
 // ── Enrollment ──────────────────────────────────────────────────────
 
-
 // ── Progress ────────────────────────────────────────────────────────
-
 
 // ── Comment ─────────────────────────────────────────────────────────
 
-
 // ── Application ─────────────────────────────────────────────────────
-
 
 // ── Audit Log ───────────────────────────────────────────────────────
 
-
 // ── Resource ────────────────────────────────────────────────────────
 
-
 // ── Reaction ────────────────────────────────────────────────────────
-

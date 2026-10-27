@@ -1,8 +1,8 @@
 use sdkwork_content_course_repository_sqlx::PostgresCourseRepository;
 use sdkwork_content_course_service::{
-    CourseCatalogRepository, CourseEnrollmentRepository, CourseLessonKind,
-    CourseMediaResourceRef, CourseReviewDecisionCommand, CourseServiceContext,
-    CourseStudioDraftCommand, CourseStudioLessonDraft, CourseStudioSectionDraft,
+    CourseCatalogRepository, CourseEnrollmentRepository, CourseLessonKind, CourseMediaResourceRef,
+    CourseReviewDecisionCommand, CourseServiceContext, CourseStudioDraftCommand,
+    CourseStudioLessonDraft, CourseStudioSectionDraft,
 };
 use sqlx::PgPool;
 
@@ -98,12 +98,14 @@ async fn studio_authoring_submit_and_review_publish_flow() {
     assert_eq!(created.kind, "standard");
     assert_eq!(created.publish_status, "draft");
     assert_eq!(created.lessons_count, 1);
-    assert!(
-        !repository
-            .has_active_enrollment(&creator, created.id.clone(), "studio-flow-test-creator".to_owned())
-            .await
-            .expect("enrollment check")
-    );
+    assert!(!repository
+        .has_active_enrollment(
+            &creator,
+            created.id.clone(),
+            "studio-flow-test-creator".to_owned()
+        )
+        .await
+        .expect("enrollment check"));
 
     let detail = repository
         .retrieve_course_detail(&creator, created.id.clone())
@@ -112,8 +114,14 @@ async fn studio_authoring_submit_and_review_publish_flow() {
         .expect("detail exists");
     assert_eq!(detail.sections.len(), 1);
     assert_eq!(detail.lessons.len(), 1);
-    assert_eq!(detail.course.author_user_id.as_deref(), Some("studio-flow-test-creator"));
-    assert_eq!(detail.course.category_id.as_deref(), Some("course-category-ai"));
+    assert_eq!(
+        detail.course.author_user_id.as_deref(),
+        Some("studio-flow-test-creator")
+    );
+    assert_eq!(
+        detail.course.category_id.as_deref(),
+        Some("course-category-ai")
+    );
 
     let mut updated = draft(&title);
     updated.course_id = Some(created.id.clone());
@@ -182,7 +190,13 @@ async fn studio_authoring_submit_and_review_publish_flow() {
         .review_stats(&operator)
         .await
         .expect("review stats");
-    assert!(stats.get("published").and_then(|value| value.as_i64()).unwrap_or(0) >= 1);
+    assert!(
+        stats
+            .get("published")
+            .and_then(|value| value.as_i64())
+            .unwrap_or(0)
+            >= 1
+    );
 
     // Cleanup: published content has an offering and an enrollment guard, so the
     // test removes the fixture directly.
@@ -281,4 +295,3 @@ async fn collection_draft_links_published_courses() {
         .await
         .expect("cleanup collection");
 }
-

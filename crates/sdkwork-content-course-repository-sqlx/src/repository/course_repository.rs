@@ -8,10 +8,9 @@ use crate::db::schema::COURSE_TABLES;
 use sdkwork_content_course_service::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
     CourseAuditCommand, CourseAuditLogItem, CourseCatalogCommand, CourseCategoryItem,
-    CourseEnrollmentCommand, CourseError,
-    CourseItem, CourseLessonCommand, CourseLessonItem, CourseLessonProgressCommand,
-    CourseLiveSessionCommand, CourseOfferingCommand, CoursePage, CourseQuery, CourseResult,
-    CourseSectionItem, CourseServiceContext,
+    CourseEnrollmentCommand, CourseError, CourseItem, CourseLessonCommand, CourseLessonItem,
+    CourseLessonProgressCommand, CourseLiveSessionCommand, CourseOfferingCommand, CoursePage,
+    CourseQuery, CourseResult, CourseSectionItem, CourseServiceContext,
 };
 
 pub type CourseRepositoryFuture<'a, T> = Pin<Box<dyn Future<Output = CourseResult<T>> + Send + 'a>>;
@@ -358,7 +357,6 @@ impl EmptyCourseRepository {
         Self
     }
 }
-
 
 fn sqlx_storage_error(error: sqlx::Error) -> CourseError {
     CourseError::storage(error.to_string())

@@ -85,9 +85,7 @@ pub async fn course_collection_items_list(
             "Course is not a collection".to_string(),
         ));
     }
-    let items = service
-        .list_collection_items(context, course_id)
-        .await?;
+    let items = service.list_collection_items(context, course_id).await?;
     Ok(ok(serde_json::to_value(items).unwrap_or_default()))
 }
 
@@ -132,9 +130,7 @@ pub async fn course_enrollments_create(
             .map(|s| s.to_string()),
     };
     let enrollment_id = service.enroll(context, command).await?;
-    Ok(ok(
-        serde_json::json!({ "enrollmentId": enrollment_id }),
-    ))
+    Ok(ok(serde_json::json!({ "enrollmentId": enrollment_id })))
 }
 
 pub async fn course_enrollments_current_list(
@@ -142,10 +138,9 @@ pub async fn course_enrollments_current_list(
     context: &CourseServiceContext,
     query: CourseQuery,
 ) -> CourseRouteResult<Value> {
-    let user_id = context
-        .user_id
-        .clone()
-        .ok_or_else(|| CourseRouteError::invalid("An authenticated user is required".to_string()))?;
+    let user_id = context.user_id.clone().ok_or_else(|| {
+        CourseRouteError::invalid("An authenticated user is required".to_string())
+    })?;
     let items = service.list_enrollments(context, query).await?;
     let owned = items
         .into_iter()

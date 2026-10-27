@@ -685,9 +685,7 @@ pub async fn course_applications_retrieve(
         .retrieve_application(context, application_id)
         .await?;
     match result {
-        Some(application) => Ok(ok(
-            serde_json::to_value(application).unwrap_or_default(),
-        )),
+        Some(application) => Ok(ok(serde_json::to_value(application).unwrap_or_default())),
         None => Err(CourseRouteError::not_found("Application not found")),
     }
 }

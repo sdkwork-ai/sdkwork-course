@@ -2,7 +2,7 @@ use sdkwork_api_course_assembly::assemble_api_router;
 use sdkwork_iam_web_adapter::{
     build_web_framework_builder, iam_web_request_context_resolver_from_env,
 };
-use sdkwork_web_bootstrap::{ApiModuleRegistry, infra_public_path_prefixes};
+use sdkwork_web_bootstrap::{infra_public_path_prefixes, ApiModuleRegistry};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

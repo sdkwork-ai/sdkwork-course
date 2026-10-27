@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 
 use crate::domain::commands::CourseServiceContext;
 use crate::domain::models::{
-    is_supported_question_type, ComposeBucket, CourseError, CourseQuery, CourseResult, QuestionItem,
-    QuestionPage, QuestionQuery, QUESTION_TYPE_SECTION_ORDER,
+    is_supported_question_type, ComposeBucket, CourseError, CourseQuery, CourseResult,
+    QuestionItem, QuestionPage, QuestionQuery, QUESTION_TYPE_SECTION_ORDER,
 };
 use crate::ports::repository::QuestionBankRepository;
 
@@ -615,13 +615,18 @@ impl QuestionBankService for QuestionBankServiceImpl {
         let mut failures: Vec<Value> = Vec::new();
         for (index, row) in normalized_rows.iter().enumerate() {
             if let Err(error) = validate_question_fields(row) {
-                failures.push(import_failure(index, &format!(
-                    "gradeLevel={} subject={} questionType={}: {}",
-                    row.get("grade_level").and_then(Value::as_str).unwrap_or(""),
-                    row.get("subject").and_then(Value::as_str).unwrap_or(""),
-                    row.get("question_type").and_then(Value::as_str).unwrap_or(""),
-                    error.message(),
-                )));
+                failures.push(import_failure(
+                    index,
+                    &format!(
+                        "gradeLevel={} subject={} questionType={}: {}",
+                        row.get("grade_level").and_then(Value::as_str).unwrap_or(""),
+                        row.get("subject").and_then(Value::as_str).unwrap_or(""),
+                        row.get("question_type")
+                            .and_then(Value::as_str)
+                            .unwrap_or(""),
+                        error.message(),
+                    ),
+                ));
             }
         }
         if !failures.is_empty() {
@@ -794,10 +799,7 @@ impl QuestionBankService for QuestionBankServiceImpl {
                     "exclude_ids": excluded,
                     "limit": bucket.count,
                 });
-                let mut candidates = self
-                    .repo
-                    .select_compose_candidates(context, spec)
-                    .await?;
+                let mut candidates = self.repo.select_compose_candidates(context, spec).await?;
                 if candidates.len() < bucket.count as usize {
                     return Err(CourseError::invalid(format!(
                         "Not enough questions for {} ({}): found {}, need {}",
@@ -807,8 +809,7 @@ impl QuestionBankService for QuestionBankServiceImpl {
                         bucket.count
                     )));
                 }
-                let per_question_score =
-                    bucket.score.clone().unwrap_or_default();
+                let per_question_score = bucket.score.clone().unwrap_or_default();
                 for question in candidates.drain(..) {
                     excluded.push(question.id.clone());
                     selected.push((question, per_question_score.clone()));
@@ -895,7 +896,10 @@ impl QuestionBankService for QuestionBankServiceImpl {
 
         let mut paper_wire = command.clone();
         if let Some(object) = paper_wire.as_object_mut() {
-            object.insert("scoreAllocation".to_string(), Value::Array(allocation_entries));
+            object.insert(
+                "scoreAllocation".to_string(),
+                Value::Array(allocation_entries),
+            );
             object.insert("totalScore".to_string(), Value::String(total_score.clone()));
             let mut scope_value = scope_snapshot;
             if let Some(scope_object) = scope_value.as_object_mut() {
@@ -903,12 +907,8 @@ impl QuestionBankService for QuestionBankServiceImpl {
             }
             object.insert("scope".to_string(), scope_value);
         }
-        let repo_command = build_paper_repo_command(
-            None,
-            self.actor_user_id(context),
-            &paper_wire,
-            repo_items,
-        );
+        let repo_command =
+            build_paper_repo_command(None, self.actor_user_id(context), &paper_wire, repo_items);
         self.repo.save_paper(context, repo_command).await
     }
 
@@ -923,24 +923,17 @@ impl QuestionBankService for QuestionBankServiceImpl {
         if let Some(object) = wire.as_object_mut() {
             // A partial PUT must inherit every field it does not carry;
             // otherwise the repo write would reset it to an empty default.
-            for key in [
-                "title",
-                "examDurationSeconds",
-                "headerNote",
-                "sealedLine",
-            ] {
+            for key in ["title", "examDurationSeconds", "headerNote", "sealedLine"] {
                 object
                     .entry(key)
                     .or_insert_with(|| existing.get(key).cloned().unwrap_or(Value::Null));
             }
-            object
-                .entry("mode")
-                .or_insert_with(|| {
-                    existing
-                        .get("paperMode")
-                        .cloned()
-                        .unwrap_or(Value::String("manual".to_string()))
-                });
+            object.entry("mode").or_insert_with(|| {
+                existing
+                    .get("paperMode")
+                    .cloned()
+                    .unwrap_or(Value::String("manual".to_string()))
+            });
             object
                 .entry("gradeLevel")
                 .or_insert_with(|| existing.get("gradeLevel").cloned().unwrap_or(Value::Null));
@@ -954,7 +947,10 @@ impl QuestionBankService for QuestionBankServiceImpl {
                 .entry("paperStatus")
                 .or_insert_with(|| existing.get("paperStatus").cloned().unwrap_or(Value::Null));
             if !object.contains_key("scope") {
-                object.insert("scope".to_string(), existing.get("scope").cloned().unwrap_or(json!({})));
+                object.insert(
+                    "scope".to_string(),
+                    existing.get("scope").cloned().unwrap_or(json!({})),
+                );
             }
             if !object.contains_key("scoreAllocation") {
                 object.insert(
@@ -997,12 +993,7 @@ impl QuestionBankService for QuestionBankServiceImpl {
                 .collect()
         };
 
-        let repo_command = build_paper_repo_command(
-            Some(paper_id),
-            None,
-            &wire,
-            repo_items,
-        );
+        let repo_command = build_paper_repo_command(Some(paper_id), None, &wire, repo_items);
         self.repo.save_paper(context, repo_command).await
     }
 
@@ -1071,12 +1062,7 @@ impl QuestionBankService for QuestionBankServiceImpl {
             let owner = existing.get("ownerUserId").and_then(Value::as_str);
             self.ensure_owner(context, owner, "handout")?;
         }
-        let repo_command = build_handout_repo_command(
-            handout_id,
-            owner_user_id,
-            &command,
-            &blocks,
-        );
+        let repo_command = build_handout_repo_command(handout_id, owner_user_id, &command, &blocks);
         self.repo.save_handout(context, repo_command).await
     }
 
@@ -1113,8 +1099,7 @@ impl QuestionBankService for QuestionBankServiceImpl {
         } else {
             array_field(&command, "body")
         };
-        let repo_command =
-            build_handout_repo_command(Some(handout_id), None, &wire, &blocks);
+        let repo_command = build_handout_repo_command(Some(handout_id), None, &wire, &blocks);
         self.repo.save_handout(context, repo_command).await
     }
 
@@ -1163,9 +1148,13 @@ mod tests {
             normalized.get("question_type").and_then(Value::as_str),
             Some("single_choice")
         );
-        let options: Vec<Value> =
-            serde_json::from_str(normalized.get("options_json").and_then(Value::as_str).unwrap())
-                .unwrap();
+        let options: Vec<Value> = serde_json::from_str(
+            normalized
+                .get("options_json")
+                .and_then(Value::as_str)
+                .unwrap(),
+        )
+        .unwrap();
         assert_eq!(options.len(), 1);
         let points: Vec<Value> = serde_json::from_str(
             normalized
@@ -1184,9 +1173,7 @@ mod tests {
             Some("0")
         );
         assert_eq!(
-            normalized
-                .get("question_code")
-                .and_then(Value::as_str),
+            normalized.get("question_code").and_then(Value::as_str),
             Some("")
         );
     }
@@ -1276,7 +1263,9 @@ mod tests {
             _context: &CourseServiceContext,
             _command: Value,
         ) -> CourseResult<QuestionItem> {
-            Err(CourseError::storage("fake repo: save_question not exercised"))
+            Err(CourseError::storage(
+                "fake repo: save_question not exercised",
+            ))
         }
 
         async fn delete_question(
@@ -1485,12 +1474,18 @@ mod tests {
         });
         let command = build_paper_repo_command(None, Some("t1".to_string()), &wire, vec![]);
         let paper = command.get("paper").unwrap();
-        assert_eq!(paper.get("grade_level").and_then(Value::as_str), Some("grade7"));
+        assert_eq!(
+            paper.get("grade_level").and_then(Value::as_str),
+            Some("grade7")
+        );
         assert_eq!(
             paper.get("exam_duration_seconds").and_then(Value::as_i64),
             Some(5400)
         );
-        assert_eq!(paper.get("total_score").and_then(Value::as_str), Some("100"));
+        assert_eq!(
+            paper.get("total_score").and_then(Value::as_str),
+            Some("100")
+        );
         assert!(paper.get("owner_user_id").and_then(Value::as_str) == Some("t1"));
     }
 }

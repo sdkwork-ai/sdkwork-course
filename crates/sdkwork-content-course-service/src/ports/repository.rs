@@ -175,7 +175,8 @@ pub trait CourseCatalogRepository: Send + Sync {
         query: CourseQuery,
     ) -> CourseResult<CoursePage>;
 
-    async fn review_stats(&self, context: &CourseServiceContext) -> CourseResult<serde_json::Value>;
+    async fn review_stats(&self, context: &CourseServiceContext)
+        -> CourseResult<serde_json::Value>;
 }
 
 #[async_trait::async_trait]

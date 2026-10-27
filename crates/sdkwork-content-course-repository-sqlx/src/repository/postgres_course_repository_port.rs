@@ -11,10 +11,9 @@ use sqlx::Row;
 use sdkwork_content_course_service::{
     CourseApplicationCreateRequest, CourseApplicationItem, CourseApplicationReviewRequest,
     CourseAuditCommand, CourseAuditLogItem, CourseCatalogCommand, CourseCategoryItem,
-    CourseEnrollmentCommand, CourseError,
-    CourseItem, CourseLessonCommand, CourseLessonItem, CourseLessonProgressCommand,
-    CourseLiveSessionCommand, CourseOfferingCommand, CoursePage, CourseQuery,
-    CourseResult, CourseSectionItem, CourseServiceContext,
+    CourseEnrollmentCommand, CourseError, CourseItem, CourseLessonCommand, CourseLessonItem,
+    CourseLessonProgressCommand, CourseLiveSessionCommand, CourseOfferingCommand, CoursePage,
+    CourseQuery, CourseResult, CourseSectionItem, CourseServiceContext,
 };
 
 use super::course_repository::{
@@ -1501,7 +1500,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             }
 
             let description = read_str("description", "description");
-            let sort_order = read_i64("sortWeight", "sort_order", read_i64("sortOrder", "sort_order", 0));
+            let sort_order = read_i64(
+                "sortWeight",
+                "sort_order",
+                read_i64("sortOrder", "sort_order", 0),
+            );
             let status = read_str("status", "status").unwrap_or("active");
             let version = read_i64("version", "version", 0);
             let now = chrono::Utc::now().to_rfc3339();
@@ -2775,7 +2778,10 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // source_provider / external_bvid have no dedicated columns on
             // course_application; preserve them in metadata_json instead of
             // dropping them at the boundary.
-            let mut metadata = request.metadata.clone().unwrap_or_else(|| serde_json::json!({}));
+            let mut metadata = request
+                .metadata
+                .clone()
+                .unwrap_or_else(|| serde_json::json!({}));
             if let Some(obj) = metadata.as_object_mut() {
                 if !obj.contains_key("sourceProvider") && !request.source_provider.is_empty() {
                     obj.insert(
@@ -3105,7 +3111,18 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             let items: Vec<Value> = offerings
                 .into_iter()
                 .map(
-                    |(id, code, title, offering_type, delivery_mode, access_mode, policy, start_at, end_at, status)| {
+                    |(
+                        id,
+                        code,
+                        title,
+                        offering_type,
+                        delivery_mode,
+                        access_mode,
+                        policy,
+                        start_at,
+                        end_at,
+                        status,
+                    )| {
                         serde_json::json!({
                             "id": id,
                             "offeringCode": code,
@@ -3296,7 +3313,18 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             let items: Vec<Value> = sessions
                 .into_iter()
                 .map(
-                    |(id, title, desc, live_status, start, end, actual_start, status, course_id, metadata_json)| {
+                    |(
+                        id,
+                        title,
+                        desc,
+                        live_status,
+                        start,
+                        end,
+                        actual_start,
+                        status,
+                        course_id,
+                        metadata_json,
+                    )| {
                         serde_json::json!({
                             "id": id,
                             "title": title,

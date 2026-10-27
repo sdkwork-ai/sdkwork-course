@@ -145,9 +145,7 @@ impl PostgresCourseRepository {
         let sections = self
             .list_sections_for(course_id, &context.tenant_id)
             .await?;
-        let lessons = self
-            .list_lessons_for(course_id, &context.tenant_id)
-            .await?;
+        let lessons = self.list_lessons_for(course_id, &context.tenant_id).await?;
         let resources = self
             .list_resources_for(course_id, &context.tenant_id)
             .await?;
@@ -169,17 +167,18 @@ impl PostgresCourseRepository {
         context: &CourseServiceContext,
         course_id: &str,
     ) -> CourseResult<Option<CourseCurriculum>> {
-        let Some(_course) = self
-            .retrieve_course_detail_impl(context, course_id)
-            .await?
-        else {
+        let Some(_course) = self.retrieve_course_detail_impl(context, course_id).await? else {
             return Ok(None);
         };
         Ok(Some(CourseCurriculum {
             course_id: course_id.to_string(),
-            sections: self.list_sections_for(course_id, &context.tenant_id).await?,
+            sections: self
+                .list_sections_for(course_id, &context.tenant_id)
+                .await?,
             lessons: self.list_lessons_for(course_id, &context.tenant_id).await?,
-            resources: self.list_resources_for(course_id, &context.tenant_id).await?,
+            resources: self
+                .list_resources_for(course_id, &context.tenant_id)
+                .await?,
         }))
     }
 
@@ -188,7 +187,8 @@ impl PostgresCourseRepository {
         context: &CourseServiceContext,
         course_id: &str,
     ) -> CourseResult<Vec<CourseCollectionItem>> {
-        self.collection_items_for(course_id, &context.tenant_id).await
+        self.collection_items_for(course_id, &context.tenant_id)
+            .await
     }
 
     async fn list_sections_for(
@@ -311,8 +311,7 @@ impl PostgresCourseRepository {
             .cover
             .as_ref()
             .map(|cover| serde_json::to_string(cover).unwrap_or_default());
-        let tags_json =
-            serde_json::to_string(&command.tags).unwrap_or_else(|_| "[]".to_string());
+        let tags_json = serde_json::to_string(&command.tags).unwrap_or_else(|_| "[]".to_string());
         let author_display_name = command
             .author_display_name
             .as_deref()
@@ -778,7 +777,8 @@ impl PostgresCourseRepository {
         if decision == "approve" {
             let course_code: String = row.try_get("course_code").map_err(storage_error)?;
             let is_free: i64 = row.try_get("is_free").map_err(storage_error)?;
-            let price_amount: Option<String> = row.try_get("price_amount").map_err(storage_error)?;
+            let price_amount: Option<String> =
+                row.try_get("price_amount").map_err(storage_error)?;
             let currency: Option<String> = row.try_get("currency").map_err(storage_error)?;
             ensure_default_offering(
                 &mut tx,
@@ -881,10 +881,7 @@ impl PostgresCourseRepository {
         .await
     }
 
-    pub async fn review_stats_impl(
-        &self,
-        context: &CourseServiceContext,
-    ) -> CourseResult<Value> {
+    pub async fn review_stats_impl(&self, context: &CourseServiceContext) -> CourseResult<Value> {
         let row = sqlx::query(
             r#"
             SELECT
@@ -918,9 +915,7 @@ impl PostgresCourseRepository {
         .map_err(storage_error)?;
 
         let pending: i64 = row.try_get("pending").map_err(storage_error)?;
-        let changes_requested: i64 = row
-            .try_get("changes_requested")
-            .map_err(storage_error)?;
+        let changes_requested: i64 = row.try_get("changes_requested").map_err(storage_error)?;
         let published: i64 = row.try_get("published").map_err(storage_error)?;
         let ugc_total: i64 = row.try_get("ugc_total").map_err(storage_error)?;
         let ugc_published: i64 = row.try_get("ugc_published").map_err(storage_error)?;

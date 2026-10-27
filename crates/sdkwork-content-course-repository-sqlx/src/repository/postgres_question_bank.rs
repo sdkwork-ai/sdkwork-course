@@ -7,11 +7,11 @@
 use serde_json::{json, Value};
 use sqlx::{PgPool, Row};
 
-use sdkwork_content_course_service::domain::models::{
-    QuestionItem, QuestionPage, QuestionQuery,
-};
-use sdkwork_content_course_service::{CourseError, CourseQuery, CourseResult, CourseServiceContext};
+use sdkwork_content_course_service::domain::models::{QuestionItem, QuestionPage, QuestionQuery};
 use sdkwork_content_course_service::ports::repository::QuestionBankRepository;
+use sdkwork_content_course_service::{
+    CourseError, CourseQuery, CourseResult, CourseServiceContext,
+};
 
 use super::course_repository::PostgresCourseRepository;
 
@@ -252,24 +252,79 @@ async fn write_question(
             WHERE id = $21 AND tenant_id = $22 AND version = $23 AND deleted_at IS NULL
             "#,
         )
-        .bind(command.get("question_code").and_then(Value::as_str).unwrap_or(""))
-        .bind(command.get("grade_level").and_then(Value::as_str).unwrap_or(""))
+        .bind(
+            command
+                .get("question_code")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
+        )
+        .bind(
+            command
+                .get("grade_level")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
+        )
         .bind(command.get("subject").and_then(Value::as_str).unwrap_or(""))
         .bind(command.get("chapter").and_then(Value::as_str))
-        .bind(command.get("knowledge_points_json").and_then(Value::as_str).unwrap_or("[]"))
-        .bind(command.get("question_type").and_then(Value::as_str).unwrap_or(""))
+        .bind(
+            command
+                .get("knowledge_points_json")
+                .and_then(Value::as_str)
+                .unwrap_or("[]"),
+        )
+        .bind(
+            command
+                .get("question_type")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
+        )
         .bind(command.get("stem").and_then(Value::as_str).unwrap_or(""))
-        .bind(command.get("options_json").and_then(Value::as_str).unwrap_or("[]"))
+        .bind(
+            command
+                .get("options_json")
+                .and_then(Value::as_str)
+                .unwrap_or("[]"),
+        )
         .bind(command.get("answer").and_then(Value::as_str).unwrap_or(""))
         .bind(command.get("analysis").and_then(Value::as_str))
-        .bind(command.get("difficulty").and_then(Value::as_str).unwrap_or("medium"))
-        .bind(command.get("default_score").and_then(Value::as_str).unwrap_or("0"))
-        .bind(command.get("source_type").and_then(Value::as_str).unwrap_or("manual"))
+        .bind(
+            command
+                .get("difficulty")
+                .and_then(Value::as_str)
+                .unwrap_or("medium"),
+        )
+        .bind(
+            command
+                .get("default_score")
+                .and_then(Value::as_str)
+                .unwrap_or("0"),
+        )
+        .bind(
+            command
+                .get("source_type")
+                .and_then(Value::as_str)
+                .unwrap_or("manual"),
+        )
         .bind(command.get("source_ref").and_then(Value::as_str))
-        .bind(command.get("tags_json").and_then(Value::as_str).unwrap_or("[]"))
-        .bind(i64::from(command.get("wrong_book").and_then(Value::as_bool).unwrap_or(false)))
+        .bind(
+            command
+                .get("tags_json")
+                .and_then(Value::as_str)
+                .unwrap_or("[]"),
+        )
+        .bind(i64::from(
+            command
+                .get("wrong_book")
+                .and_then(Value::as_bool)
+                .unwrap_or(false),
+        ))
         .bind(command.get("wrong_note").and_then(Value::as_str))
-        .bind(command.get("status").and_then(Value::as_str).unwrap_or("active"))
+        .bind(
+            command
+                .get("status")
+                .and_then(Value::as_str)
+                .unwrap_or("active"),
+        )
         .bind(&now)
         .bind(context.actor_id.clone())
         .bind(question_id)
@@ -316,24 +371,74 @@ async fn write_question(
     .bind(&context.tenant_id)
     .bind(&context.organization_id)
     .bind(&question_code)
-    .bind(command.get("grade_level").and_then(Value::as_str).unwrap_or(""))
+    .bind(
+        command
+            .get("grade_level")
+            .and_then(Value::as_str)
+            .unwrap_or(""),
+    )
     .bind(command.get("subject").and_then(Value::as_str).unwrap_or(""))
     .bind(command.get("chapter").and_then(Value::as_str))
-    .bind(command.get("knowledge_points_json").and_then(Value::as_str).unwrap_or("[]"))
-    .bind(command.get("question_type").and_then(Value::as_str).unwrap_or(""))
+    .bind(
+        command
+            .get("knowledge_points_json")
+            .and_then(Value::as_str)
+            .unwrap_or("[]"),
+    )
+    .bind(
+        command
+            .get("question_type")
+            .and_then(Value::as_str)
+            .unwrap_or(""),
+    )
     .bind(command.get("stem").and_then(Value::as_str).unwrap_or(""))
-    .bind(command.get("options_json").and_then(Value::as_str).unwrap_or("[]"))
+    .bind(
+        command
+            .get("options_json")
+            .and_then(Value::as_str)
+            .unwrap_or("[]"),
+    )
     .bind(command.get("answer").and_then(Value::as_str).unwrap_or(""))
     .bind(command.get("analysis").and_then(Value::as_str))
-    .bind(command.get("difficulty").and_then(Value::as_str).unwrap_or("medium"))
-    .bind(command.get("default_score").and_then(Value::as_str).unwrap_or("0"))
-    .bind(command.get("source_type").and_then(Value::as_str).unwrap_or("manual"))
+    .bind(
+        command
+            .get("difficulty")
+            .and_then(Value::as_str)
+            .unwrap_or("medium"),
+    )
+    .bind(
+        command
+            .get("default_score")
+            .and_then(Value::as_str)
+            .unwrap_or("0"),
+    )
+    .bind(
+        command
+            .get("source_type")
+            .and_then(Value::as_str)
+            .unwrap_or("manual"),
+    )
     .bind(command.get("source_ref").and_then(Value::as_str))
-    .bind(command.get("tags_json").and_then(Value::as_str).unwrap_or("[]"))
-    .bind(i64::from(command.get("wrong_book").and_then(Value::as_bool).unwrap_or(false)))
+    .bind(
+        command
+            .get("tags_json")
+            .and_then(Value::as_str)
+            .unwrap_or("[]"),
+    )
+    .bind(i64::from(
+        command
+            .get("wrong_book")
+            .and_then(Value::as_bool)
+            .unwrap_or(false),
+    ))
     .bind(command.get("wrong_note").and_then(Value::as_str))
     .bind(command.get("owner_user_id").and_then(Value::as_str))
-    .bind(command.get("status").and_then(Value::as_str).unwrap_or("active"))
+    .bind(
+        command
+            .get("status")
+            .and_then(Value::as_str)
+            .unwrap_or("active"),
+    )
     .bind(&now)
     .bind(context.actor_id.clone())
     .bind(&now)
@@ -682,15 +787,24 @@ impl QuestionBankRepository for PostgresCourseRepository {
         spec: Value,
     ) -> CourseResult<Vec<QuestionItem>> {
         let filter = QuestionFilter {
-            grade_level: spec.get("grade_level").and_then(Value::as_str).map(str::to_owned),
-            subject: spec.get("subject").and_then(Value::as_str).map(str::to_owned),
+            grade_level: spec
+                .get("grade_level")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
+            subject: spec
+                .get("subject")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
             chapter: None,
             knowledge_point: None,
             question_type: spec
                 .get("question_type")
                 .and_then(Value::as_str)
                 .map(str::to_owned),
-            difficulty: spec.get("difficulty").and_then(Value::as_str).map(str::to_owned),
+            difficulty: spec
+                .get("difficulty")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
             tag: None,
             source_type: None,
             wrong_book: None,
@@ -728,7 +842,11 @@ impl QuestionBankRepository for PostgresCourseRepository {
                     .collect::<Vec<_>>()
             })
             .unwrap_or_default();
-        let limit: i64 = spec.get("limit").and_then(Value::as_i64).unwrap_or(10).clamp(1, 200);
+        let limit: i64 = spec
+            .get("limit")
+            .and_then(Value::as_i64)
+            .unwrap_or(10)
+            .clamp(1, 200);
 
         let rows = sqlx::query(QUESTION_COMPOSE_SQL)
             .bind(&context.tenant_id)
@@ -737,13 +855,21 @@ impl QuestionBankRepository for PostgresCourseRepository {
             .bind(filter.subject.clone())
             .bind(filter.question_type.clone())
             .bind(filter.difficulty.clone())
-            .bind(if chapters.is_empty() { None } else { Some(chapters) })
+            .bind(if chapters.is_empty() {
+                None
+            } else {
+                Some(chapters)
+            })
             .bind(if knowledge_points.is_empty() {
                 None
             } else {
                 Some(knowledge_points)
             })
-            .bind(if exclude_ids.is_empty() { None } else { Some(exclude_ids) })
+            .bind(if exclude_ids.is_empty() {
+                None
+            } else {
+                Some(exclude_ids)
+            })
             .bind(limit)
             .fetch_all(self.pool())
             .await
@@ -842,10 +968,7 @@ impl QuestionBankRepository for PostgresCourseRepository {
     ) -> CourseResult<Value> {
         let status_filter = query.status.clone().filter(|v| !v.is_empty() && v != "all");
         let q_filter = query.q.clone().filter(|v| !v.is_empty());
-        let owner_filter = query
-            .author_user_id
-            .clone()
-            .filter(|v| !v.is_empty());
+        let owner_filter = query.author_user_id.clone().filter(|v| !v.is_empty());
 
         let total: i64 = sqlx::query_scalar(
             r#"
@@ -917,7 +1040,11 @@ impl QuestionBankRepository for PostgresCourseRepository {
         command: Value,
     ) -> CourseResult<Value> {
         let paper = command.get("paper").cloned().unwrap_or(Value::Null);
-        let items = command.get("items").and_then(Value::as_array).cloned().unwrap_or_default();
+        let items = command
+            .get("items")
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default();
         let now = chrono::Utc::now().to_rfc3339();
         let existing_id = paper.get("id").and_then(Value::as_str).map(str::to_owned);
         let owner_user_id = paper
@@ -940,16 +1067,56 @@ impl QuestionBankRepository for PostgresCourseRepository {
                 "#,
             )
             .bind(paper.get("title").and_then(Value::as_str).unwrap_or(""))
-            .bind(paper.get("grade_level").and_then(Value::as_str).unwrap_or(""))
+            .bind(
+                paper
+                    .get("grade_level")
+                    .and_then(Value::as_str)
+                    .unwrap_or(""),
+            )
             .bind(paper.get("subject").and_then(Value::as_str).unwrap_or(""))
-            .bind(paper.get("paper_mode").and_then(Value::as_str).unwrap_or("manual"))
-            .bind(paper.get("exam_duration_seconds").and_then(Value::as_i64).unwrap_or(0))
-            .bind(paper.get("total_score").and_then(Value::as_str).unwrap_or("0"))
-            .bind(paper.get("scope_json").and_then(Value::as_str).unwrap_or("{}"))
-            .bind(paper.get("score_allocation_json").and_then(Value::as_str).unwrap_or("[]"))
+            .bind(
+                paper
+                    .get("paper_mode")
+                    .and_then(Value::as_str)
+                    .unwrap_or("manual"),
+            )
+            .bind(
+                paper
+                    .get("exam_duration_seconds")
+                    .and_then(Value::as_i64)
+                    .unwrap_or(0),
+            )
+            .bind(
+                paper
+                    .get("total_score")
+                    .and_then(Value::as_str)
+                    .unwrap_or("0"),
+            )
+            .bind(
+                paper
+                    .get("scope_json")
+                    .and_then(Value::as_str)
+                    .unwrap_or("{}"),
+            )
+            .bind(
+                paper
+                    .get("score_allocation_json")
+                    .and_then(Value::as_str)
+                    .unwrap_or("[]"),
+            )
             .bind(paper.get("header_note").and_then(Value::as_str))
-            .bind(i64::from(paper.get("sealed_line").and_then(Value::as_bool).unwrap_or(true)))
-            .bind(paper.get("paper_status").and_then(Value::as_str).unwrap_or("draft"))
+            .bind(i64::from(
+                paper
+                    .get("sealed_line")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(true),
+            ))
+            .bind(
+                paper
+                    .get("paper_status")
+                    .and_then(Value::as_str)
+                    .unwrap_or("draft"),
+            )
             .bind(items.len() as i64)
             .bind(&now)
             .bind(context.actor_id.clone())
@@ -960,9 +1127,7 @@ impl QuestionBankRepository for PostgresCourseRepository {
             .await
             .map_err(sqlx_storage_error)?;
             if result.rows_affected() == 0 {
-                return Err(CourseError::invalid(
-                    "Paper not found or version conflict",
-                ));
+                return Err(CourseError::invalid("Paper not found or version conflict"));
             }
             paper_id.clone()
         } else {
@@ -1038,8 +1203,16 @@ impl QuestionBankRepository for PostgresCourseRepository {
             .bind(&context.tenant_id)
             .bind(&context.organization_id)
             .bind(&paper_id)
-            .bind(item.get("question_id").and_then(Value::as_str).unwrap_or(""))
-            .bind(item.get("section_no").and_then(Value::as_str).unwrap_or("1"))
+            .bind(
+                item.get("question_id")
+                    .and_then(Value::as_str)
+                    .unwrap_or(""),
+            )
+            .bind(
+                item.get("section_no")
+                    .and_then(Value::as_str)
+                    .unwrap_or("1"),
+            )
             .bind(item.get("sort_order").and_then(Value::as_i64).unwrap_or(0))
             .bind(item.get("score").and_then(Value::as_str).unwrap_or("0"))
             .bind(&now)
@@ -1245,7 +1418,11 @@ impl QuestionBankRepository for PostgresCourseRepository {
         command: Value,
     ) -> CourseResult<Value> {
         let handout = command.get("handout").cloned().unwrap_or(Value::Null);
-        let items = command.get("items").and_then(Value::as_array).cloned().unwrap_or_default();
+        let items = command
+            .get("items")
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default();
         let now = chrono::Utc::now().to_rfc3339();
         let existing_id = handout.get("id").and_then(Value::as_str).map(str::to_owned);
 
@@ -1260,11 +1437,26 @@ impl QuestionBankRepository for PostgresCourseRepository {
                 "#,
             )
             .bind(handout.get("title").and_then(Value::as_str).unwrap_or(""))
-            .bind(handout.get("grade_level").and_then(Value::as_str).unwrap_or(""))
+            .bind(
+                handout
+                    .get("grade_level")
+                    .and_then(Value::as_str)
+                    .unwrap_or(""),
+            )
             .bind(handout.get("subject").and_then(Value::as_str).unwrap_or(""))
             .bind(handout.get("lesson_tag").and_then(Value::as_str))
-            .bind(handout.get("body_json").and_then(Value::as_str).unwrap_or("[]"))
-            .bind(handout.get("status").and_then(Value::as_str).unwrap_or("active"))
+            .bind(
+                handout
+                    .get("body_json")
+                    .and_then(Value::as_str)
+                    .unwrap_or("[]"),
+            )
+            .bind(
+                handout
+                    .get("status")
+                    .and_then(Value::as_str)
+                    .unwrap_or("active"),
+            )
             .bind(&now)
             .bind(context.actor_id.clone())
             .bind(handout_id)
@@ -1295,12 +1487,27 @@ impl QuestionBankRepository for PostgresCourseRepository {
             .bind(&context.organization_id)
             .bind(&handout_code)
             .bind(handout.get("title").and_then(Value::as_str).unwrap_or(""))
-            .bind(handout.get("grade_level").and_then(Value::as_str).unwrap_or(""))
+            .bind(
+                handout
+                    .get("grade_level")
+                    .and_then(Value::as_str)
+                    .unwrap_or(""),
+            )
             .bind(handout.get("subject").and_then(Value::as_str).unwrap_or(""))
             .bind(handout.get("lesson_tag").and_then(Value::as_str))
-            .bind(handout.get("body_json").and_then(Value::as_str).unwrap_or("[]"))
+            .bind(
+                handout
+                    .get("body_json")
+                    .and_then(Value::as_str)
+                    .unwrap_or("[]"),
+            )
             .bind(owner_user_id)
-            .bind(handout.get("status").and_then(Value::as_str).unwrap_or("active"))
+            .bind(
+                handout
+                    .get("status")
+                    .and_then(Value::as_str)
+                    .unwrap_or("active"),
+            )
             .bind(&now)
             .bind(context.actor_id.clone())
             .bind(&now)
@@ -1338,9 +1545,17 @@ impl QuestionBankRepository for PostgresCourseRepository {
             .bind(&context.tenant_id)
             .bind(&context.organization_id)
             .bind(&handout_id)
-            .bind(item.get("question_id").and_then(Value::as_str).unwrap_or(""))
+            .bind(
+                item.get("question_id")
+                    .and_then(Value::as_str)
+                    .unwrap_or(""),
+            )
             .bind(item.get("sort_order").and_then(Value::as_i64).unwrap_or(0))
-            .bind(item.get("usage_role").and_then(Value::as_str).unwrap_or("practice"))
+            .bind(
+                item.get("usage_role")
+                    .and_then(Value::as_str)
+                    .unwrap_or("practice"),
+            )
             .bind(&now)
             .bind(&now)
             .execute(self.pool())

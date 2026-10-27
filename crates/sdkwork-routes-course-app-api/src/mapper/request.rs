@@ -16,25 +16,26 @@ pub fn parse_question_query(params: &Value) -> QuestionQuery {
     };
     let read_bool = |key: &str| {
         params.get(key).and_then(|v| {
-            v.as_bool().or_else(|| {
-                v.as_str()
-                    .map(|s| matches!(s, "1" | "true" | "yes" | "on"))
-            })
+            v.as_bool()
+                .or_else(|| v.as_str().map(|s| matches!(s, "1" | "true" | "yes" | "on")))
         })
     };
     QuestionQuery {
         page: read_i64("page"),
         page_size: read_i64("page_size").or_else(|| read_i64("pageSize")),
         q: read("q"),
-        grade_level: read("grade").or_else(|| read("grade_level")).or_else(|| read("gradeLevel")),
+        grade_level: read("grade")
+            .or_else(|| read("grade_level"))
+            .or_else(|| read("gradeLevel")),
         subject: read("subject"),
         chapter: read("chapter"),
-        knowledge_point: read("knowledge_point")
-            .or_else(|| read("knowledgePoint")),
+        knowledge_point: read("knowledge_point").or_else(|| read("knowledgePoint")),
         question_type: read("question_type").or_else(|| read("questionType")),
         difficulty: read("difficulty"),
         tag: read("tag"),
-        source_type: read("source").or_else(|| read("source_type")).or_else(|| read("sourceType")),
+        source_type: read("source")
+            .or_else(|| read("source_type"))
+            .or_else(|| read("sourceType")),
         wrong_book: read_bool("wrong_book").or_else(|| read_bool("wrongBook")),
         status: read("status"),
         owner_user_id: read("owner_user_id").or_else(|| read("ownerUserId")),

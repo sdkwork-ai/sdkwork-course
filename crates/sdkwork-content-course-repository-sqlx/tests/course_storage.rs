@@ -35,9 +35,7 @@ async fn course_repository_applies_the_database_baseline_schema() {
         eprintln!("skipping course storage test: set SDKWORK_DATABASE_URL or DATABASE_URL to a postgres URL");
         return;
     };
-    let pool = PgPool::connect(&database_url)
-        .await
-        .expect("postgres pool");
+    let pool = PgPool::connect(&database_url).await.expect("postgres pool");
     let repository = PostgresCourseRepository::new(pool.clone());
 
     let table_names = COURSE_TABLES

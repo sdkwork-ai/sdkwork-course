@@ -14,7 +14,8 @@ pub async fn connect_course_database_pool_from_env() -> Result<CourseDatabasePoo
     create_pool_from_config(config).await
 }
 
-pub async fn connect_and_bootstrap_course_database_from_env() -> Result<CourseDatabaseHost, String> {
+pub async fn connect_and_bootstrap_course_database_from_env() -> Result<CourseDatabaseHost, String>
+{
     let pool = connect_course_database_pool_from_env()
         .await
         .map_err(|error| error.to_string())?;

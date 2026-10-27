@@ -18,10 +18,9 @@ use crate::ports::provider::{
 };
 use crate::ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseEnrollmentRepository,
-    CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
-    CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-    CourseResourceRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository, CourseInstructorRepository,
+    CourseLessonRepository, CourseLiveSessionRepository, CourseOfferingRepository,
+    CourseProgressRepository, CourseReactionRepository, CourseResourceRepository,
 };
 
 #[allow(dead_code)]
@@ -835,9 +834,7 @@ impl CourseApplicationService for CourseServiceImpl {
                 }
             }
         }
-        self.catalog_repo
-            .save_studio_course(context, command)
-            .await
+        self.catalog_repo.save_studio_course(context, command).await
     }
 
     async fn retrieve_studio_course(
@@ -877,17 +874,17 @@ impl CourseApplicationService for CourseServiceImpl {
         let Some(mut curriculum) = curriculum else {
             return Ok(None);
         };
-        let course = self.catalog_repo.retrieve_course(context, course_id.clone()).await?;
+        let course = self
+            .catalog_repo
+            .retrieve_course(context, course_id.clone())
+            .await?;
         let Some(course) = course else {
             return Ok(None);
         };
         if course.publish_status != "published" {
             return Ok(None);
         }
-        if !self
-            .has_full_course_access(context, &course_id)
-            .await?
-        {
+        if !self.has_full_course_access(context, &course_id).await? {
             let free_lesson_ids = curriculum
                 .lessons
                 .iter()
@@ -900,9 +897,9 @@ impl CourseApplicationService for CourseServiceImpl {
                     lesson.external_source_id = None;
                 }
             }
-            curriculum.resources.retain(|resource| {
-                free_lesson_ids.contains(&resource.owner_id)
-            });
+            curriculum
+                .resources
+                .retain(|resource| free_lesson_ids.contains(&resource.owner_id));
         }
         Ok(Some(curriculum))
     }
@@ -937,7 +934,10 @@ impl CourseApplicationService for CourseServiceImpl {
         }
         validate_submission(&detail)?;
 
-        let item = self.catalog_repo.submit_course(context, course_id.clone()).await?;
+        let item = self
+            .catalog_repo
+            .submit_course(context, course_id.clone())
+            .await?;
         self.append_course_audit(
             context,
             &course_id,
@@ -979,10 +979,7 @@ impl CourseApplicationService for CourseServiceImpl {
         command: CourseReviewDecisionCommand,
     ) -> CourseResult<CourseItem> {
         let decision = command.decision.trim().to_ascii_lowercase();
-        if !matches!(
-            decision.as_str(),
-            "approve" | "reject" | "request_changes"
-        ) {
+        if !matches!(decision.as_str(), "approve" | "reject" | "request_changes") {
             return Err(CourseError::invalid(
                 "decision must be approve, reject, or request_changes",
             ));
@@ -1839,8 +1836,9 @@ fn validate_studio_draft(command: &CourseStudioDraftCommand) -> CourseResult<()>
             "Course title must be between 2 and 120 characters",
         ));
     }
-    let kind = crate::domain::commands::normalize_course_kind(&command.kind)
-        .ok_or_else(|| CourseError::invalid("course kind must be standard, column, or collection"))?;
+    let kind = crate::domain::commands::normalize_course_kind(&command.kind).ok_or_else(|| {
+        CourseError::invalid("course kind must be standard, column, or collection")
+    })?;
     if command.tags.len() > 20
         || command
             .tags
@@ -1859,9 +1857,7 @@ fn validate_studio_draft(command: &CourseStudioDraftCommand) -> CourseResult<()>
             ));
         }
         if command.currency.as_deref().unwrap_or("").trim().is_empty() {
-            return Err(CourseError::invalid(
-                "Paid courses require a currency code",
-            ));
+            return Err(CourseError::invalid("Paid courses require a currency code"));
         }
     }
     if command.sections.len() > 100 {
@@ -1909,9 +1905,7 @@ fn validate_studio_draft(command: &CourseStudioDraftCommand) -> CourseResult<()>
             return Err(CourseError::invalid("Collection items cannot be empty"));
         }
         if command.course_id.as_deref() == Some(linked.as_str()) {
-            return Err(CourseError::invalid(
-                "A collection cannot include itself",
-            ));
+            return Err(CourseError::invalid("A collection cannot include itself"));
         }
         if !seen.insert(linked.as_str()) {
             return Err(CourseError::invalid(
@@ -1927,7 +1921,9 @@ fn validate_studio_draft(command: &CourseStudioDraftCommand) -> CourseResult<()>
     Ok(())
 }
 
-fn validate_resource_roles(resources: &[crate::domain::commands::CourseStudioResourceDraft]) -> CourseResult<()> {
+fn validate_resource_roles(
+    resources: &[crate::domain::commands::CourseStudioResourceDraft],
+) -> CourseResult<()> {
     const ROLES: [&str; 8] = [
         "cover",
         "intro_video",
@@ -2091,10 +2087,9 @@ fn validate_submission(detail: &CourseStudioDetail) -> CourseResult<()> {
                         let has_uploaded_video = detail.resources.iter().any(|resource| {
                             resource.owner_id == lesson.id
                                 && resource.resource_role == "vod_video"
-                                && resource
-                                    .mime_type
-                                    .as_deref()
-                                    .is_some_and(|mime| mime.to_ascii_lowercase().starts_with("video/"))
+                                && resource.mime_type.as_deref().is_some_and(|mime| {
+                                    mime.to_ascii_lowercase().starts_with("video/")
+                                })
                                 && resource.file_size_bytes.unwrap_or(0) > 0
                         });
                         if !has_external && !has_uploaded_video {

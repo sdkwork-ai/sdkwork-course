@@ -3,8 +3,8 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use sdkwork_content_course_service::CourseError;
 use sdkwork_utils_rust::{
-    PageInfo, PageMode, SdkWorkApiResponse, SdkWorkCommandData, SdkWorkPageData, SdkWorkProblemDetail,
-    SdkWorkProblemRouting, SdkWorkResourceData, SdkWorkResultCode,
+    PageInfo, PageMode, SdkWorkApiResponse, SdkWorkCommandData, SdkWorkPageData,
+    SdkWorkProblemDetail, SdkWorkProblemRouting, SdkWorkResourceData, SdkWorkResultCode,
 };
 use sdkwork_web_core::WebRequestContext;
 
@@ -39,10 +39,7 @@ fn problem_for_context(
     attach_trace_header((status, Json(problem)).into_response(), &trace_id)
 }
 
-pub fn success_item<T: serde::Serialize>(
-    context: Option<&WebRequestContext>,
-    item: T,
-) -> Response {
+pub fn success_item<T: serde::Serialize>(context: Option<&WebRequestContext>, item: T) -> Response {
     let trace_id = resolve_trace_id(context);
     let envelope = SdkWorkApiResponse::success(SdkWorkResourceData { item }, trace_id.clone());
     attach_trace_header((StatusCode::OK, Json(envelope)).into_response(), &trace_id)
@@ -131,7 +128,10 @@ pub fn map_route_error(
 ) -> Response {
     let (status, result_code) = match code {
         "not_found" => (StatusCode::NOT_FOUND, SdkWorkResultCode::NotFound),
-        "internal" => (StatusCode::INTERNAL_SERVER_ERROR, SdkWorkResultCode::InternalError),
+        "internal" => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            SdkWorkResultCode::InternalError,
+        ),
         _ => (StatusCode::BAD_REQUEST, SdkWorkResultCode::ValidationError),
     };
     problem_for_context(context, status, result_code, message)
@@ -140,10 +140,9 @@ pub fn map_route_error(
 fn attach_trace_header(response: Response, trace_id: &str) -> Response {
     let mut response = response;
     if let Ok(value) = HeaderValue::from_str(trace_id) {
-        response.headers_mut().insert(
-            HeaderName::from_static("x-sdkwork-trace-id"),
-            value,
-        );
+        response
+            .headers_mut()
+            .insert(HeaderName::from_static("x-sdkwork-trace-id"), value);
     }
     response
 }
@@ -168,7 +167,9 @@ mod tests {
         let payload: serde_json::Value = serde_json::from_slice(&body).expect("json body");
         assert_eq!(payload["code"], 0);
         assert_eq!(payload["data"]["item"]["id"], "course-1");
-        assert!(payload["traceId"].as_str().is_some_and(|value| !value.is_empty()));
+        assert!(payload["traceId"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty()));
     }
 
     #[tokio::test]
@@ -183,6 +184,8 @@ mod tests {
         assert_eq!(payload["status"], 404);
         assert_eq!(payload["code"], SdkWorkResultCode::NotFound.as_i32());
         assert_eq!(payload["detail"], "Course not found");
-        assert!(payload["traceId"].as_str().is_some_and(|value| !value.is_empty()));
+        assert!(payload["traceId"]
+            .as_str()
+            .is_some_and(|value| !value.is_empty()));
     }
 }

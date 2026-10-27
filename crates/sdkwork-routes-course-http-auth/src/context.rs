@@ -37,10 +37,7 @@ pub fn course_service_context_from_web(
     if let Some(principal) = app_ctx.principal.as_ref() {
         return Ok(CourseServiceContext {
             tenant_id: principal.tenant_id().to_owned(),
-            organization_id: principal
-                .organization_id()
-                .unwrap_or("0")
-                .to_owned(),
+            organization_id: principal.organization_id().unwrap_or("0").to_owned(),
             user_id: Some(principal.user_id().to_owned()),
             actor_id: Some(principal.user_id().to_owned()),
             request_id: Some(app_ctx.request_id.0.clone()),

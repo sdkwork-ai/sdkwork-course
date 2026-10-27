@@ -7,10 +7,10 @@ use sdkwork_content_course_repository_sqlx::{
 use sdkwork_content_course_service::{
     ports::repository::{
         CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-        CourseCategoryRepository, CourseEnrollmentRepository,
-        CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
-        CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
-        CourseResourceRepository, QuestionBankRepository,
+        CourseCategoryRepository, CourseEnrollmentRepository, CourseInstructorRepository,
+        CourseLessonRepository, CourseLiveSessionRepository, CourseOfferingRepository,
+        CourseProgressRepository, CourseReactionRepository, CourseResourceRepository,
+        QuestionBankRepository,
     },
     CourseApplicationService, CourseServiceImpl, QuestionBankService, QuestionBankServiceImpl,
 };
@@ -65,7 +65,7 @@ where
         ports.audit,
     )) as Arc<dyn CourseApplicationService>;
     let question_bank_service = Arc::new(QuestionBankServiceImpl::new(
-        Box::new(repo) as Box<dyn QuestionBankRepository>,
+        Box::new(repo) as Box<dyn QuestionBankRepository>
     )) as Arc<dyn QuestionBankService>;
     (course_service, question_bank_service)
 }

@@ -55,7 +55,9 @@ pub async fn web_module() -> Result<WebModule, String> {
 /// Same as [`web_module`] but composed on a process-shared database pool
 /// (platform gateways, API_ASSEMBLY_SPEC §4.1.1).
 pub async fn web_module_with_pool(pool: DatabasePool) -> Result<WebModule, String> {
-    Ok(WebModule::from_contribution(assemble_api_router_with_pool(pool).await?))
+    Ok(WebModule::from_contribution(
+        assemble_api_router_with_pool(pool).await?,
+    ))
 }
 
 /// Course backend business router for consuming hosts
