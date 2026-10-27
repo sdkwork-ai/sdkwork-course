@@ -18,7 +18,7 @@ VALUES
         -- Demo stays evergreen: the ongoing class always reads as started
         -- shortly ago regardless of when the seed runs.
         to_char((now() AT TIME ZONE 'UTC') - interval '85 minutes', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
-        to_char(now() + interval '45 minutes' AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+        to_char((now() + interval '45 minutes') AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
         to_char((now() AT TIME ZONE 'UTC') - interval '84 minutes', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
         NULL,
         'live', NULL, NULL, 1280,
@@ -33,8 +33,8 @@ VALUES
         'AI 效率工作坊：把重复工作交给工作流',
         '带着一个真实重复任务来，现场完成信息采集、整理与自动分发的闭环。',
         'sdkwork_live', 'https://live.bilibili.com/6',
-        to_char(now() + interval '26 hours' AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
-        to_char(now() + interval '27 hours 30 minutes' AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+        to_char((now() + interval '26 hours') AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+        to_char((now() + interval '27 hours 30 minutes') AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
         NULL, NULL,
         'scheduled', NULL, NULL, 0,
         '{"intervalSeconds":30,"graceSeconds":120}',
