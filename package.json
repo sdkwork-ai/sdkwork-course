@@ -6,6 +6,8 @@
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
+    "mock:live": "node scripts/mock-live-demo.mjs",
+    "mock:live:pc": "node scripts/mock-live-demo.mjs --vite",
     "stop": "pnpm exec sdkwork-app stop",
     "dev": "pnpm dev:standalone",
     "dev:standalone": "pnpm exec sdkwork-app dev --deployment-profile standalone",
