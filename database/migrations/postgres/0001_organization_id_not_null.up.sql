@@ -73,11 +73,6 @@ UPDATE course_lesson_progress SET organization_id = '0' WHERE organization_id IS
 ALTER TABLE course_lesson_progress ALTER COLUMN organization_id SET DEFAULT '0';
 ALTER TABLE course_lesson_progress ALTER COLUMN organization_id SET NOT NULL;
 
-ALTER TABLE course_comment ADD COLUMN IF NOT EXISTS organization_id TEXT NOT NULL DEFAULT '0';
-UPDATE course_comment SET organization_id = '0' WHERE organization_id IS NULL;
-ALTER TABLE course_comment ALTER COLUMN organization_id SET DEFAULT '0';
-ALTER TABLE course_comment ALTER COLUMN organization_id SET NOT NULL;
-
 ALTER TABLE course_reaction ADD COLUMN IF NOT EXISTS organization_id TEXT NOT NULL DEFAULT '0';
 UPDATE course_reaction SET organization_id = '0' WHERE organization_id IS NULL;
 ALTER TABLE course_reaction ALTER COLUMN organization_id SET DEFAULT '0';
