@@ -373,12 +373,13 @@ impl CourseLessonRepository for PostgresCourseRepository {
                    TRIM(BOTH '"' FROM lesson_kind) as kind, external_source_id, source_provider,
                    required_for_completion, sort_order::bigint as sort_weight, status
             FROM course_lesson
-            WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
+            WHERE id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL
         "#;
 
         let lesson = sqlx::query_as::<_, CourseLessonItem>(sql)
             .bind(&lesson_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_optional(self.pool())
             .await
             .map_err(sqlx_storage_error)?;

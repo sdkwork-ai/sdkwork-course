@@ -1028,10 +1028,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
 
             // Check if course has lessons
             let lesson_count = sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM course_lesson WHERE course_id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
+                "SELECT COUNT(*) FROM course_lesson WHERE course_id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL"
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_one(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -1707,6 +1708,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 FROM course_lesson
                 WHERE course_id = $1 
                   AND tenant_id = $2 
+                  AND (organization_id = $3 OR organization_id = '0')
                   AND status != 'deleted'
                   AND deleted_at IS NULL
                 ORDER BY sort_order ASC, id ASC
@@ -1714,6 +1716,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_all(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
