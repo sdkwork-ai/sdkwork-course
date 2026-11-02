@@ -424,7 +424,7 @@ impl CourseLessonRepository for PostgresCourseRepository {
             r#"
             UPDATE course_lesson
             SET status = 'deleted', deleted_at = $1, deleted_by = $2, updated_at = $3, updated_by = $4
-            WHERE id = $5 AND tenant_id = $6 AND deleted_at IS NULL
+            WHERE id = $5 AND tenant_id = $6 AND organization_id = $7 AND deleted_at IS NULL
             "#,
         )
         .bind(&now)
@@ -433,6 +433,7 @@ impl CourseLessonRepository for PostgresCourseRepository {
         .bind(&context.actor_id)
         .bind(&lesson_id)
         .bind(&context.tenant_id)
+        .bind(&context.organization_id)
         .execute(self.pool())
         .await
         .map_err(sqlx_storage_error)?;
@@ -660,7 +661,7 @@ impl CourseProgressRepository for PostgresCourseRepository {
             UPDATE course_lesson_progress
             SET progress_status = $1, watch_seconds = $2, watch_position_seconds = $3,
                 updated_at = $4, updated_by = $5, version = version + 1
-            WHERE id = $6 AND tenant_id = $7 AND deleted_at IS NULL
+            WHERE id = $6 AND tenant_id = $7 AND organization_id = $8 AND deleted_at IS NULL
             "#,
         )
         .bind(progress_status)
@@ -670,6 +671,7 @@ impl CourseProgressRepository for PostgresCourseRepository {
         .bind(&context.actor_id)
         .bind(&lesson_progress_id)
         .bind(&context.tenant_id)
+        .bind(&context.organization_id)
         .execute(self.pool())
         .await
         .map_err(sqlx_storage_error)?;
