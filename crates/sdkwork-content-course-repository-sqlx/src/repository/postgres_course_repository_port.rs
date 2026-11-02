@@ -1043,10 +1043,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
 
             // Check if course has offerings
             let offering_count = sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM course_offering WHERE course_id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
+                "SELECT COUNT(*) FROM course_offering WHERE course_id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL"
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_one(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -1188,10 +1189,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         Box::pin(async move {
             // Check for active offerings
             let active_offering_count = sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM course_offering WHERE course_id = $1 AND tenant_id = $2 AND status IN ('published', 'open') AND deleted_at IS NULL"
+                "SELECT COUNT(*) FROM course_offering WHERE course_id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND status IN ('published', 'open') AND deleted_at IS NULL"
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_one(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -1280,7 +1282,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                         start_at = $5, end_at = $6, open_at = $7, close_at = $8,
                         capacity = $9, completion_rule_json = $10, updated_at = $11,
                         updated_by = $12, version = version + 1
-                    WHERE id = $13 AND tenant_id = $14 AND deleted_at IS NULL
+                    WHERE id = $13 AND tenant_id = $14 AND (organization_id = $15 OR organization_id = '0') AND deleted_at IS NULL
                     "#,
                 )
                 .bind(&command.title)
@@ -1305,6 +1307,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .bind(&context.actor_id)
                 .bind(offering_id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .execute(self.pool())
                 .await
                 .map_err(sqlx_storage_error)?;
@@ -1378,10 +1381,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             };
 
             let current_status = sqlx::query_scalar::<_, String>(
-                "SELECT status FROM course_offering WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
+                "SELECT status FROM course_offering WHERE id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL"
             )
             .bind(&offering_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_one(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
