@@ -1204,10 +1204,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
 
             // Check for active enrollments
             let active_enrollment_count = sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM course_enrollment WHERE course_id = $1 AND tenant_id = $2 AND enrollment_status = 'active' AND deleted_at IS NULL"
+                "SELECT COUNT(*) FROM course_enrollment WHERE course_id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND enrollment_status = 'active' AND deleted_at IS NULL"
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_one(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -2521,13 +2522,14 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 UPDATE course_enrollment 
                 SET enrollment_status = 'revoked', updated_at = $1, updated_by = $2,
                     version = version + 1
-                WHERE id = $3 AND tenant_id = $4 AND enrollment_status = 'active' AND deleted_at IS NULL
+                WHERE id = $3 AND tenant_id = $4 AND (organization_id = $5 OR organization_id = '0') AND enrollment_status = 'active' AND deleted_at IS NULL
                 "#
             )
             .bind(&now)
             .bind(&context.actor_id)
             .bind(&enrollment_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .execute(&mut *tx)
             .await
             .map_err(sqlx_storage_error)?;
@@ -2542,13 +2544,14 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 UPDATE course_learning_progress 
                 SET progress_status = 'expired', updated_at = $1, updated_by = $2,
                     version = version + 1
-                WHERE enrollment_id = $3 AND tenant_id = $4 AND progress_status IN ('not_started', 'in_progress')
+                WHERE enrollment_id = $3 AND tenant_id = $4 AND (organization_id = $5 OR organization_id = '0') AND progress_status IN ('not_started', 'in_progress')
                 "#
             )
             .bind(&now)
             .bind(&context.actor_id)
             .bind(&enrollment_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .execute(&mut *tx)
             .await
             .map_err(sqlx_storage_error)?;
