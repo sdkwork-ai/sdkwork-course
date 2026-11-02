@@ -803,7 +803,7 @@ impl CourseApplicationRepository for PostgresCourseRepository {
             UPDATE course_application
             SET application_status = 'converted', converted_course_id = $1,
                 updated_at = $2, updated_by = $3
-            WHERE id = $4 AND tenant_id = $5
+            WHERE id = $4 AND tenant_id = $5 AND organization_id = $6
             "#,
         )
         .bind(&course_id)
@@ -811,6 +811,7 @@ impl CourseApplicationRepository for PostgresCourseRepository {
         .bind(&context.actor_id)
         .bind(&application_id)
         .bind(&context.tenant_id)
+        .bind(&context.organization_id)
         .execute(self.pool())
         .await
         .map_err(sqlx_storage_error)?;
@@ -968,7 +969,7 @@ impl CourseResourceRepository for PostgresCourseRepository {
             r#"
             UPDATE course_resource_ref
             SET status = 'deleted', deleted_at = $1, deleted_by = $2, updated_at = $3, updated_by = $4
-            WHERE id = $5 AND tenant_id = $6 AND deleted_at IS NULL
+            WHERE id = $5 AND tenant_id = $6 AND organization_id = $7 AND deleted_at IS NULL
             "#,
         )
         .bind(&now)
@@ -977,6 +978,7 @@ impl CourseResourceRepository for PostgresCourseRepository {
         .bind(&context.actor_id)
         .bind(&resource_ref_id)
         .bind(&context.tenant_id)
+        .bind(&context.organization_id)
         .execute(self.pool())
         .await
         .map_err(sqlx_storage_error)?;
@@ -1228,7 +1230,7 @@ impl CourseReactionRepository for PostgresCourseRepository {
                 r#"
                 UPDATE course_reaction
                 SET reaction_value = $1, updated_at = $2, updated_by = $3, version = version + 1
-                WHERE id = $4 AND tenant_id = $5
+                WHERE id = $4 AND tenant_id = $5 AND organization_id = $6
                 "#,
             )
             .bind(reaction_value)
@@ -1236,6 +1238,7 @@ impl CourseReactionRepository for PostgresCourseRepository {
             .bind(&context.actor_id)
             .bind(&existing_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .execute(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -1318,7 +1321,7 @@ impl CourseReactionRepository for PostgresCourseRepository {
             r#"
             UPDATE course_reaction
             SET status = 'deleted', deleted_at = $1, deleted_by = $2, updated_at = $3, updated_by = $4
-            WHERE id = $5 AND tenant_id = $6 AND deleted_at IS NULL
+            WHERE id = $5 AND tenant_id = $6 AND organization_id = $7 AND deleted_at IS NULL
             "#,
         )
         .bind(&now)
@@ -1327,6 +1330,7 @@ impl CourseReactionRepository for PostgresCourseRepository {
         .bind(&context.actor_id)
         .bind(&reaction_id)
         .bind(&context.tenant_id)
+        .bind(&context.organization_id)
         .execute(self.pool())
         .await
         .map_err(sqlx_storage_error)?;
