@@ -1012,10 +1012,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         Box::pin(async move {
             // Check if course has sections
             let section_count = sqlx::query_scalar::<_, i64>(
-                "SELECT COUNT(*) FROM course_section WHERE course_id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
+                "SELECT COUNT(*) FROM course_section WHERE course_id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL"
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_one(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -1436,6 +1437,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 FROM course_section
                 WHERE course_id = $1 
                   AND tenant_id = $2 
+                  AND (organization_id = $3 OR organization_id = '0')
                   AND status != 'deleted'
                   AND deleted_at IS NULL
                 ORDER BY sort_order ASC, id ASC
@@ -1443,6 +1445,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             )
             .bind(&course_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .fetch_all(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
@@ -1483,10 +1486,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     return Err(CourseError::invalid("courseId is required"));
                 };
                 course_id = sqlx::query_scalar::<_, String>(
-                    "SELECT course_id FROM course_section WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL",
+                    "SELECT course_id FROM course_section WHERE id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL",
                 )
                 .bind(id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .fetch_optional(self.pool())
                 .await
                 .map_err(sqlx_storage_error)?
@@ -1524,6 +1528,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                         sort_order = $4, status = $5, updated_at = $6, updated_by = $7,
                         version = version + 1
                     WHERE id = $8 AND course_id = $9 AND tenant_id = $10
+                      AND (organization_id = $12 OR organization_id = '0')
                       AND ($11 = 0 OR version = $11) AND deleted_at IS NULL
                     "#,
                 )
@@ -1537,6 +1542,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .bind(&id)
                 .bind(&course_id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .bind(version)
                 .execute(self.pool())
                 .await
