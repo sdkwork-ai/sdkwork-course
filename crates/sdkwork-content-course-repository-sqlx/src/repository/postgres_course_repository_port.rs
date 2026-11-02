@@ -168,10 +168,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Calculate path based on parent
             let path = if let Some(parent_id) = parent_id {
                 let parent_path: String = sqlx::query_scalar(
-                    "SELECT path FROM course_category WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
+                    "SELECT path FROM course_category WHERE id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL"
                 )
                 .bind(parent_id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .fetch_one(self.pool())
                 .await
                 .map_err(sqlx_storage_error)?;
@@ -184,10 +185,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Calculate level_no
             let level_no = if parent_id.is_some() {
                 let parent_level: i32 = sqlx::query_scalar(
-                    "SELECT level_no FROM course_category WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
+                    "SELECT level_no FROM course_category WHERE id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL"
                 )
                 .bind(parent_id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .fetch_one(self.pool())
                 .await
                 .map_err(sqlx_storage_error)?;
@@ -205,7 +207,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     SET category_code = $1, name = $2, description = $3, parent_id = $4,
                         icon_resource_snapshot = $5, path = $6, level_no = $7, sort_order = $8,
                         status = $9, updated_at = $10, updated_by = $11, version = version + 1
-                    WHERE id = $12 AND tenant_id = $13 AND version = $14 AND deleted_at IS NULL
+                    WHERE id = $12 AND tenant_id = $13 AND (organization_id = $15 OR organization_id = '0') AND version = $14 AND deleted_at IS NULL
                     "#,
                 )
                 .bind(category_code)
@@ -222,6 +224,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .bind(&id)
                 .bind(&context.tenant_id)
                 .bind(version)
+                .bind(&context.organization_id)
                 .execute(self.pool())
                 .await
                 .map_err(sqlx_storage_error)?;
@@ -311,7 +314,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     r#"
                     UPDATE course_category 
                     SET sort_order = $1, updated_at = $2, updated_by = $3, version = version + 1
-                    WHERE id = $4 AND tenant_id = $5 AND deleted_at IS NULL
+                    WHERE id = $4 AND tenant_id = $5 AND (organization_id = $6 OR organization_id = '0') AND deleted_at IS NULL
                     "#,
                 )
                 .bind(index as i64)
@@ -319,6 +322,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .bind(&context.actor_id)
                 .bind(category_id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .execute(&mut *tx)
                 .await
                 .map_err(sqlx_storage_error)?;
@@ -838,10 +842,11 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Validate category exists if provided
             if let Some(category_id) = &command.category_id {
                 let category_exists = sqlx::query_scalar::<_, bool>(
-                    "SELECT EXISTS(SELECT 1 FROM course_category WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL)"
+                    "SELECT EXISTS(SELECT 1 FROM course_category WHERE id = $1 AND tenant_id = $2 AND (organization_id = $3 OR organization_id = '0') AND deleted_at IS NULL)"
                 )
                 .bind(category_id)
                 .bind(&context.tenant_id)
+                .bind(&context.organization_id)
                 .fetch_one(self.pool())
                 .await
                 .map_err(sqlx_storage_error)?;
@@ -3068,7 +3073,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 r#"
                 UPDATE course_category
                 SET status = 'deleted', deleted_at = $1, deleted_by = $2, updated_at = $3, updated_by = $4
-                WHERE id = $5 AND tenant_id = $6 AND status != 'deleted' AND deleted_at IS NULL
+                WHERE id = $5 AND tenant_id = $6 AND (organization_id = $7 OR organization_id = '0') AND status != 'deleted' AND deleted_at IS NULL
                 "#,
             )
             .bind(&now)
@@ -3077,6 +3082,7 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             .bind(&context.actor_id)
             .bind(&category_id)
             .bind(&context.tenant_id)
+            .bind(&context.organization_id)
             .execute(self.pool())
             .await
             .map_err(sqlx_storage_error)?;
