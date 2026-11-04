@@ -6,12 +6,36 @@ settings:
 
 catalogs:
   default:
+    '@testing-library/dom':
+      specifier: 10.4.1
+      version: 10.4.1
+    '@testing-library/jest-dom':
+      specifier: ^7.0.1
+      version: 7.0.1
+    '@testing-library/react':
+      specifier: 16.3.2
+      version: 16.3.2
+    '@types/qrcode':
+      specifier: ^1.5.6
+      version: 1.5.6
+    '@types/react':
+      specifier: ^19.2.14
+      version: 19.3.0
+    '@types/react-dom':
+      specifier: ^19.2.3
+      version: 19.3.0
     i18next:
       specifier: ^26.3.6
       version: 26.5.3
+    jsdom:
+      specifier: 29.1.1
+      version: 29.1.1
     lucide-react:
       specifier: ^1.31.0
       version: 1.60.0
+    qrcode:
+      specifier: ^1.5.4
+      version: 1.5.4
     react:
       specifier: ^19.2.8
       version: 19.3.1
@@ -21,6 +45,15 @@ catalogs:
     react-router-dom:
       specifier: ^7.18.2
       version: 7.18.4
+    typescript:
+      specifier: ^6.0.2
+      version: 6.0.3
+    vite-plugin-dts:
+      specifier: ^5.0.3
+      version: 5.1.2
+    vitest:
+      specifier: ^4.1.10
+      version: 4.1.12
 
 overrides:
   '@sdkwork/sdk-common': workspace:*
@@ -47,6 +80,15 @@ importers:
 
   ../sdkwork-app-topology: {}
 
+  ../sdkwork-appbase/packages/common/foundation/sdkwork-appbase-component-core:
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@types/node@25.9.9)(jsdom@29.1.1)(vite@8.3.4(@types/node@25.9.9)(esbuild@0.28.1)(jiti@2.7.0))
+
   ../sdkwork-appbase/packages/common/foundation/sdkwork-runtime-bootstrap:
     dependencies:
       '@sdkwork/utils':
@@ -59,6 +101,9 @@ importers:
 
   ../sdkwork-appbase/packages/mobile-react/foundation/sdkwork-appbase-mobile-react:
     dependencies:
+      '@sdkwork/appbase-component-core':
+        specifier: workspace:*
+        version: link:../../../common/foundation/sdkwork-appbase-component-core
       '@sdkwork/core-pc-react':
         specifier: '*'
         version: 0.1.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -78,6 +123,15 @@ importers:
       '@sdkwork/ui-pc-react':
         specifier: workspace:*
         version: link:../../../../../sdkwork-ui/sdkwork-ui-pc-react
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   ../sdkwork-appbase/packages/mobile-react/foundation/sdkwork-shell-mobile-react:
     dependencies:
@@ -103,6 +157,9 @@ importers:
 
   ../sdkwork-appbase/packages/pc-react/foundation/sdkwork-appbase-pc-react:
     dependencies:
+      '@sdkwork/appbase-component-core':
+        specifier: workspace:*
+        version: link:../../../common/foundation/sdkwork-appbase-component-core
       '@sdkwork/runtime-bootstrap':
         specifier: workspace:*
         version: link:../../../common/foundation/sdkwork-runtime-bootstrap
@@ -183,13 +240,13 @@ importers:
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@types/react':
         specifier: 'catalog:'
-        version: 19.2.14
+        version: 19.3.0
       '@types/react-dom':
         specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.14)
+        version: 19.3.0(@types/react@19.3.0)
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
@@ -233,6 +290,9 @@ importers:
       '@sdkwork/iam-backend-sdk':
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript
+      '@sdkwork/iam-credential-entry':
+        specifier: workspace:*
+        version: link:../sdkwork-iam-credential-entry
       '@sdkwork/iam-sdk-adapter':
         specifier: workspace:*
         version: link:../sdkwork-iam-sdk-adapter
@@ -387,7 +447,7 @@ importers:
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
       lucide-react:
         specifier: 'catalog:'
-        version: 1.60.0(@types/react@19.2.14)(react@19.2.4)
+        version: 1.60.0(@types/react@19.3.0)(react@19.2.4)
       qrcode:
         specifier: 'catalog:'
         version: 1.5.4
@@ -409,16 +469,16 @@ importers:
         version: 7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.12(@types/node@25.9.9)(jsdom@29.1.1)(vite@8.3.4(@types/node@25.9.9)(esbuild@0.28.1)(jiti@2.7.0)))
       '@testing-library/react':
         specifier: 'catalog:'
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@types/qrcode':
         specifier: 'catalog:'
         version: 1.5.6
       '@types/react':
         specifier: 'catalog:'
-        version: 19.2.14
+        version: 19.3.0
       '@types/react-dom':
         specifier: 'catalog:'
-        version: 19.2.3(@types/react@19.2.14)
+        version: 19.3.0(@types/react@19.3.0)
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1
@@ -9160,16 +9220,6 @@ snapshots:
     optionalDependencies:
       vitest: 4.1.12(@types/node@25.9.9)(jsdom@29.1.1)(vite@8.3.4(@types/node@25.9.9)(esbuild@0.28.1)(jiti@2.7.0))
 
-  '@testing-library/react@16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
-    dependencies:
-      '@babel/runtime': 7.29.7
-      '@testing-library/dom': 10.4.1
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-    optionalDependencies:
-      '@types/react': 19.2.14
-      '@types/react-dom': 19.2.3(@types/react@19.2.14)
-
   '@testing-library/react@16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@babel/runtime': 7.29.7
@@ -9180,6 +9230,16 @@ snapshots:
       '@types/react': 19.2.17
       '@types/react-dom': 19.2.3(@types/react@19.2.17)
 
+  '@testing-library/react@16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      '@testing-library/dom': 10.4.1
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+    optionalDependencies:
+      '@types/react': 19.3.0
+      '@types/react-dom': 19.3.0(@types/react@19.3.0)
+
   '@testing-library/react@16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@babel/runtime': 7.29.7
@@ -9189,6 +9249,16 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
       '@types/react-dom': 19.2.3(@types/react@19.2.14)
+
+  '@testing-library/react@16.3.3(@testing-library/dom@10.4.1)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      '@testing-library/dom': 10.4.1
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
+    optionalDependencies:
+      '@types/react': 19.3.0
+      '@types/react-dom': 19.3.0(@types/react@19.3.0)
 
   '@tootallnate/once@2.0.1': {}
 
@@ -9295,7 +9365,7 @@ snapshots:
 
   '@types/qrcode@1.5.6':
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 25.9.9
 
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
@@ -9993,7 +10063,7 @@ snapshots:
   css-tree@3.2.1:
     dependencies:
       mdn-data: 2.27.1
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
 
   css.escape@1.5.1: {}
 
@@ -11237,12 +11307,6 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.60.0(@types/react@19.2.14)(react@19.2.4):
-    dependencies:
-      react: 19.2.4
-    optionalDependencies:
-      '@types/react': 19.2.14
-
   lucide-react@1.60.0(@types/react@19.2.17)(react@19.2.7):
     dependencies:
       react: 19.2.7
@@ -12315,7 +12379,7 @@ snapshots:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       acorn: 8.17.0
-      picomatch: 4.0.5
+      picomatch: 4.0.7
       webpack-virtual-modules: 0.6.2
 
   untildify@4.0.0: {}
