@@ -7,6 +7,7 @@ use sdkwork_content_course_service::ports::provider::CourseDrivePort;
 use sdkwork_drive_app_sdk_generated_rust::{
     CreateDownloadGrantRequest, SdkworkAppClient, SdkworkError,
 };
+use sdkwork_utils_rust::service_base_url::registry_base_url_or;
 use sdkwork_utils_rust::string::{is_blank, trim};
 
 const DRIVE_FACADE_URL_ENV: &str = "SDKWORK_DRIVE_FACADE_URL";
@@ -20,14 +21,21 @@ pub struct SdkDriveCoursePort {
 
 impl SdkDriveCoursePort {
     pub fn from_env() -> Result<Self, String> {
-        let base_url = std::env::var(DRIVE_FACADE_URL_ENV)
+        let configured = std::env::var(DRIVE_FACADE_URL_ENV)
             .ok()
             .or_else(|| std::env::var(DRIVE_APP_API_BASE_ENV).ok())
-            .map(|value| trim(&value).to_string())
+            .map(|value| trim(&value))
             .filter(|value| !is_blank(Some(value.as_str())))
-            .ok_or_else(|| {
-                format!("{DRIVE_FACADE_URL_ENV} or {DRIVE_APP_API_BASE_ENV} must be configured")
-            })?;
+            .unwrap_or_default();
+        // DISCOVERY_SPEC §12.1: a healthy registry instance may supply the URL
+        // even when the environment does not; the configured value is fallback.
+        let base_url = registry_base_url_or("sdkwork-drive", &configured);
+        if base_url.is_empty() {
+            return Err(format!(
+                "{DRIVE_FACADE_URL_ENV} or {DRIVE_APP_API_BASE_ENV} must be configured, \
+                 or the HTTP service registry must have a healthy sdkwork-drive instance"
+            ));
+        }
         Ok(Self { base_url })
     }
 
@@ -35,8 +43,10 @@ impl SdkDriveCoursePort {
         &self,
         context: &CourseServiceContext,
     ) -> Result<SdkworkAppClient, CourseError> {
-        let client =
-            SdkworkAppClient::new_with_base_url(&self.base_url).map_err(map_drive_error)?;
+        // Re-resolve per call so a registry failover takes effect without a
+        // process restart; the stored value is the degradation fallback.
+        let base_url = registry_base_url_or("sdkwork-drive", &self.base_url);
+        let client = SdkworkAppClient::new_with_base_url(&base_url).map_err(map_drive_error)?;
         if let Some(token) = std::env::var("SDKWORK_ACCESS_TOKEN")
             .ok()
             .map(|value| trim(&value).to_string())
