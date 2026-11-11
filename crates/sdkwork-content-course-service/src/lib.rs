@@ -28,10 +28,10 @@ pub use ports::provider::{
 };
 pub use ports::repository::{
     CourseApplicationRepository, CourseAuditLogRepository, CourseCatalogRepository,
-    CourseCategoryRepository, CourseEnrollmentRepository, CourseInstructorRepository,
-    CourseLessonRepository, CourseLiveSessionRepository, CourseOfferingRepository,
-    CourseProgressRepository, CourseReactionRepository, CourseResourceRepository,
-    QuestionBankRepository,
+    CourseCategoryRepository, CourseEnrollmentRepository, CourseEntitlementGrantRepository,
+    CourseInstructorRepository, CourseLessonRepository, CourseLiveSessionRepository,
+    CourseOfferingRepository, CourseProgressRepository, CourseReactionRepository,
+    CourseResourceRepository, QuestionBankRepository,
 };
 pub use service::course_service::{CourseApplicationService, CourseServiceImpl};
 pub use service::question_bank_service::{QuestionBankService, QuestionBankServiceImpl};

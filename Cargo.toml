@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "crates/sdkwork-api-course-standalone-gateway",
     "crates/sdkwork-api-course-assembly",
-    "crates/sdkwork-api-course-assembly",
     "crates/sdkwork-course-embedded-bootstrap",
     "crates/sdkwork-course-database-host",
     "crates/sdkwork-content-course-service",
@@ -68,3 +67,4 @@ sdkwork-iam-web-adapter = { path = "../sdkwork-iam/crates/sdkwork-iam-web-adapte
 sdkwork_iam_context_service = { path = "../sdkwork-iam/crates/sdkwork-iam-context-service", package = "sdkwork-iam-context-service" }
 sdkwork-utils-rust = { path = "../sdkwork-utils/packages/sdkwork-utils-rust" }
 sdkwork-drive-app-sdk-generated-rust = { path = "../sdkwork-drive/sdks/sdkwork-drive-app-sdk/sdkwork-drive-app-sdk-rust/generated/server-openapi", package = "sdkwork-drive-app-sdk-generated-rust" }
+sdkwork-drive-workspace-service = { path = "../sdkwork-drive/crates/sdkwork-drive-workspace-service", package = "sdkwork-drive-workspace-service" }

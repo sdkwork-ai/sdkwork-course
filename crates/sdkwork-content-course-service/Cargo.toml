@@ -10,6 +10,7 @@ description = "SDKWork content course business contracts, service traits, and in
 [lints]
 workspace = true
 [lib]
+name = "sdkwork_content_course_service"
 path = "src/lib.rs"
 
 [dependencies]

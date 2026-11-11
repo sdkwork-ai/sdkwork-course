@@ -2436,6 +2436,20 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             .map_err(sqlx_storage_error)?;
 
             if let Some(existing_id) = existing_enrollment {
+                // A replay of an already-delivered purchase. Keep the
+                // idempotency-key marker current so the commerce relay's batch
+                // lookup recognises rows that predate the marker or that were
+                // created by another enrollment path first.
+                if let Some(idempotency_key) = command.idempotency_key.as_deref() {
+                    super::postgres_entitlement_grant::stamp_enrollment_idempotency_key(
+                        self.pool(),
+                        &context.tenant_id,
+                        &command.offering_id,
+                        &command.learner_user_id,
+                        idempotency_key,
+                    )
+                    .await?;
+                }
                 return Ok(existing_id);
             }
 
@@ -2456,18 +2470,26 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             // Start transaction
             let mut tx = self.pool().begin().await.map_err(sqlx_storage_error)?;
 
-            // Create enrollment
-            let enrollment_id = uuid::Uuid::new_v4().to_string();
-            sqlx::query(
+            // Create enrollment. `(tenant_id, offering_id, user_id)` is the
+            // table's unique natural key, so a concurrent replay that passed
+            // the pre-check above loses the insert instead of failing the
+            // request: `ON CONFLICT DO NOTHING` turns that race into a read of
+            // the winner's row below. A read-then-write alone returns a
+            // unique-violation storage error to the second delivery.
+            let candidate_id = uuid::Uuid::new_v4().to_string();
+            let inserted_enrollment_id = sqlx::query_scalar::<_, String>(
                 r#"
                 INSERT INTO course_enrollment (
                     id, uuid, tenant_id, organization_id, course_id, offering_id,
                     user_id, enrollment_source, enrolled_at, enrollment_status, status,
-                    created_at, created_by, updated_at, updated_by, version
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active', 'active', $10, $11, $12, $13, 0)
+                    created_at, created_by, updated_at, updated_by, version,
+                    access_snapshot_json
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'active', 'active', $10, $11, $12, $13, 0, $14)
+                ON CONFLICT (tenant_id, offering_id, user_id) DO NOTHING
+                RETURNING id
                 "#
             )
-            .bind(&enrollment_id)
+            .bind(&candidate_id)
             .bind(&uuid)
             .bind(&context.tenant_id)
             .bind(&context.organization_id)
@@ -2480,9 +2502,28 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
             .bind(&context.actor_id)
             .bind(&now)
             .bind(&context.actor_id)
-            .execute(&mut *tx)
+            .bind(super::postgres_entitlement_grant::enrollment_access_snapshot(
+                command.idempotency_key.as_deref(),
+            ))
+            .fetch_optional(&mut *tx)
             .await
             .map_err(sqlx_storage_error)?;
+
+            let Some(enrollment_id) = inserted_enrollment_id else {
+                // A concurrently delivered duplicate won the insert; the
+                // idempotent answer is its enrollment, not a second row.
+                let existing_id = sqlx::query_scalar::<_, String>(
+                    "SELECT id FROM course_enrollment WHERE tenant_id = $1 AND offering_id = $2 AND user_id = $3 AND deleted_at IS NULL"
+                )
+                .bind(&context.tenant_id)
+                .bind(&command.offering_id)
+                .bind(&command.learner_user_id)
+                .fetch_one(&mut *tx)
+                .await
+                .map_err(sqlx_storage_error)?;
+                tx.commit().await.map_err(sqlx_storage_error)?;
+                return Ok(existing_id);
+            };
 
             // Initialize learning progress
             let progress_id = uuid::Uuid::new_v4().to_string();

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::domain::commands::{
     CourseAuditCommand, CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand,
     CourseLessonProgressCommand, CourseLiveSessionCommand, CourseOfferingCommand,
@@ -366,6 +368,38 @@ pub trait CourseEnrollmentRepository: Send + Sync {
         course_id: String,
         user_id: String,
     ) -> CourseResult<bool>;
+}
+
+/// Purchase-to-enrollment grant consumed by the commerce module in-process.
+///
+/// This is the callable form of the course purchase projection: the caller
+/// supplies the offering, the learner, and the purchase reference, and the
+/// implementation resolves the offering scope and creates the `commerce`
+/// enrollment. `purchase_ref` is the enrollment idempotency key, so replaying a
+/// purchase returns the enrollment created by the first delivery instead of
+/// minting a second one.
+#[async_trait::async_trait]
+pub trait CourseEntitlementGrantRepository: Send + Sync {
+    /// Grants learning access for a paid offering to a learner.
+    ///
+    /// Returns the enrollment id: the existing one on replay.
+    async fn grant_entitlement_by_offering(
+        &self,
+        offering_id: String,
+        learner_user_id: String,
+        purchase_ref: String,
+    ) -> CourseResult<String>;
+
+    /// Reports which of `purchase_refs` this tenant already delivered.
+    ///
+    /// The caller resolves a whole page of purchases per pass, so this is one
+    /// tenant-scoped batch query instead of one lookup per purchase: an empty
+    /// result means every reference on the page is still missing.
+    async fn list_granted_purchase_refs(
+        &self,
+        tenant_id: &str,
+        purchase_refs: &[String],
+    ) -> CourseResult<HashSet<String>>;
 }
 
 #[async_trait::async_trait]

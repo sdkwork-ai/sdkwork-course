@@ -19,10 +19,11 @@ use sdkwork_database_sqlx::DatabasePool;
 use sdkwork_routes_course_app_api::gateway_mount as mount_course_app_api;
 use sdkwork_routes_course_backend_api::gateway_mount as mount_course_backend_api;
 
-use crate::port_factory::build_provider_ports;
+use crate::port_factory::{build_provider_ports, ProviderPorts};
 
 fn build_course_service<R>(
     repo: R,
+    ports: ProviderPorts,
 ) -> (
     Arc<dyn CourseApplicationService>,
     Arc<dyn QuestionBankService>,
@@ -44,7 +45,6 @@ where
         + Clone
         + 'static,
 {
-    let ports = build_provider_ports();
     let course_service = Arc::new(CourseServiceImpl::new(
         Box::new(repo.clone()) as Box<dyn CourseCategoryRepository>,
         Box::new(repo.clone()) as Box<dyn CourseCatalogRepository>,
@@ -102,8 +102,11 @@ pub async fn course_service_runtime_from_pool(
         .ok_or_else(|| "embedded Course API requires PostgreSQL".to_owned())?
         .clone();
     let _host = bootstrap_course_database(pool.clone()).await?;
-    let (service, question_bank_service) =
-        build_course_service(PostgresCourseRepository::new(postgres_pool));
+    let ports = build_provider_ports(&postgres_pool).await?;
+    let (service, question_bank_service) = build_course_service(
+        PostgresCourseRepository::new(postgres_pool),
+        ports,
+    );
     Ok(CourseServiceRuntime {
         service,
         question_bank_service,
@@ -121,8 +124,11 @@ pub async fn course_service_runtime_from_env() -> Result<CourseServiceRuntime, S
         .as_postgres()
         .ok_or_else(|| "embedded Course API requires PostgreSQL".to_owned())?
         .clone();
-    let (service, question_bank_service) =
-        build_course_service(PostgresCourseRepository::new(postgres_pool));
+    let ports = build_provider_ports(&postgres_pool).await?;
+    let (service, question_bank_service) = build_course_service(
+        PostgresCourseRepository::new(postgres_pool),
+        ports,
+    );
     Ok(CourseServiceRuntime {
         service,
         question_bank_service,

@@ -20,12 +20,16 @@ sdkwork_content_course_repository_sqlx.workspace = true
 sdkwork_content_course_service.workspace = true
 sdkwork-course-database-host = { workspace = true }
 sdkwork-database-sqlx.workspace = true
-sdkwork_routes_course_app_api = { workspace = true, package = "sdkwork-routes-course-app-api" }
-sdkwork_routes_course_backend_api = { workspace = true, package = "sdkwork-routes-course-backend-api" }
+sdkwork_routes_course_app_api.workspace = true
+sdkwork_routes_course_backend_api.workspace = true
 tokio = { version = "1.52", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1"
 ureq = { version = "2.12", default-features = false, features = ["json"] }
 serde_json = "1.0"
 sdkwork-utils-rust.workspace = true
 sdkwork-drive-app-sdk-generated-rust.workspace = true
+# In-process Drive integration (MODULE_SPEC.md §4.2): the Drive service crate on
+# the shared PostgreSQL, instead of a backend-to-backend HTTP call.
+sdkwork-drive-workspace-service.workspace = true
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "postgres"] }
 uuid = { version = "1.16", features = ["v4"] }

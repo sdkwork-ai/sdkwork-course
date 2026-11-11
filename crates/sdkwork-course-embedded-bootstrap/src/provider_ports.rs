@@ -1,10 +1,7 @@
-use sdkwork_content_course_service::domain::commands::{
-    CourseLiveJoinGrant, CourseMediaResourceRef, CourseServiceContext,
-};
+use sdkwork_content_course_service::domain::commands::{CourseLiveJoinGrant, CourseServiceContext};
 use sdkwork_content_course_service::domain::models::CourseResult;
 use sdkwork_content_course_service::ports::provider::{
-    CourseAuditEventPort, CourseDrivePort, CourseEntitlementPort, CourseLiveProviderPort,
-    CourseNotificationPort,
+    CourseAuditEventPort, CourseEntitlementPort, CourseLiveProviderPort, CourseNotificationPort,
 };
 use sdkwork_content_course_service::CourseError;
 
@@ -15,33 +12,6 @@ macro_rules! integration_unavailable {
             $capability
         ))
     };
-}
-
-/// Unified-process embedded runtime: catalog mutations without external Drive validation.
-///
-/// The pass-through accepts resources unchecked so catalog authoring keeps
-/// working when no Drive facade is configured; the SDK-backed
-/// [`SdkDriveCoursePort`](crate::adapters::SdkDriveCoursePort) is preferred
-/// whenever a Drive facade URL is present. Download grants fail closed.
-pub struct EmbeddedPassThroughDrivePort;
-
-#[async_trait::async_trait]
-impl CourseDrivePort for EmbeddedPassThroughDrivePort {
-    async fn validate_resource(
-        &self,
-        _context: &CourseServiceContext,
-        resource: CourseMediaResourceRef,
-    ) -> CourseResult<CourseMediaResourceRef> {
-        Ok(resource)
-    }
-
-    async fn issue_download_grant(
-        &self,
-        _context: &CourseServiceContext,
-        _resource_ref_id: String,
-    ) -> CourseResult<String> {
-        Err(integration_unavailable!("drive"))
-    }
 }
 
 /// Fail-closed entitlement port for the unified-process embedded runtime.

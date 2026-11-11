@@ -85,10 +85,19 @@ pnpm db:seed
 pnpm db:drift:check
 ```
 
-Required runtime env for production media flows:
+Drive integration (`CourseDrivePort`) follows `MODULE_SPEC.md` §4.2:
 
-- `SDKWORK_DRIVE_FACADE_URL` or `SDKWORK_DRIVE_APP_API_BASE_URL`
-- `SDKWORK_ACCESS_TOKEN` / IAM session tokens for authenticated calls
+- **Default (no configuration): in-process.** Course calls public Drive service
+  ports on the shared PostgreSQL (`SqlUploaderStore::find_active_node` /
+  `find_active_space`, `SqlDrivePermissionService::resolve_effective_node_access`,
+  `build_download_token`) and reproduces the Drive route's tenant scope, active
+  node/space, `reader` ACL, grant TTL bounds, and download-token signing. Startup
+  fails if the Drive schema is absent from the shared database.
+- **Explicit opt-in: split deployment.** Set `SDKWORK_DRIVE_FACADE_URL` or
+  `SDKWORK_DRIVE_APP_API_BASE_URL` **and** `SDKWORK_ACCESS_TOKEN` to use the
+  HTTP adapter. The adapter validates both at startup; the process never
+  defaults to HTTP and never fails a course mutation after state has changed.
+  The exception is recorded in `specs/backend-module-call-boundary.allow.json`.
 
 ## 8. Verification
 

@@ -10,6 +10,7 @@ description = "SDKWork course backend-api route crate."
 [lints]
 workspace = true
 [lib]
+name = "sdkwork_routes_course_backend_api"
 path = "src/lib.rs"
 
 [dependencies]

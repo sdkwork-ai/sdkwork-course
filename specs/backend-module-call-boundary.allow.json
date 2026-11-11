@@ -1,0 +1,17 @@
+{
+  "comment": "Deliberate exceptions to MODULE_SPEC.md 4.2. The course module reaches the drive module in-process by default (SqlUploaderStore + SqlDrivePermissionService ports on the shared PostgreSQL). Only a deliberate split deployment opts into HTTP, and that adapter validates its endpoint and SDKWORK_ACCESS_TOKEN at startup.",
+  "allow": [
+    {
+      "file": "crates/sdkwork-course-embedded-bootstrap/src/adapters/drive_sdk.rs",
+      "envVar": "SDKWORK_DRIVE_FACADE_URL",
+      "module": "drive",
+      "reason": "Explicit split-deployment opt-in only: the course runtime uses the in-process Drive port unless this variable (or SDKWORK_DRIVE_APP_API_BASE_URL) is set; SdkDriveCoursePort::from_env() refuses to start without a configured endpoint and SDKWORK_ACCESS_TOKEN, and the in-process default needs no configuration."
+    },
+    {
+      "file": "crates/sdkwork-course-embedded-bootstrap/src/adapters/drive_sdk.rs",
+      "envVar": "SDKWORK_DRIVE_APP_API_BASE_URL",
+      "module": "drive",
+      "reason": "Explicit split-deployment opt-in only, handled by the same opt-in adapter and startup validation as SDKWORK_DRIVE_FACADE_URL; unset by default so the in-process Drive port is used and no backend-to-backend HTTP call happens."
+    }
+  ]
+}

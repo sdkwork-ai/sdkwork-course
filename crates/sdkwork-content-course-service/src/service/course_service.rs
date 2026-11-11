@@ -811,28 +811,27 @@ impl CourseApplicationService for CourseServiceImpl {
         require_creator(context)?;
         validate_studio_draft(&command)?;
 
-        if let Some(ref cover) = command.cover {
-            self.drive_port
-                .validate_resource(context, cover.clone())
-                .await?;
+        let mut media_resources = Vec::new();
+        if let Some(cover) = command.cover.clone() {
+            media_resources.push(cover);
         }
         for section in &command.sections {
             for lesson in &section.lessons {
                 for resource in &lesson.resources {
-                    self.drive_port
-                        .validate_resource(
-                            context,
-                            crate::domain::commands::CourseMediaResourceRef {
-                                drive_resource_id: resource.drive_resource_id.clone(),
-                                role: resource.resource_role.clone(),
-                                mime_type: resource.mime_type.clone(),
-                                duration_seconds: resource.duration_seconds,
-                                metadata: None,
-                            },
-                        )
-                        .await?;
+                    media_resources.push(crate::domain::commands::CourseMediaResourceRef {
+                        drive_resource_id: resource.drive_resource_id.clone(),
+                        role: resource.resource_role.clone(),
+                        mime_type: resource.mime_type.clone(),
+                        duration_seconds: resource.duration_seconds,
+                        metadata: None,
+                    });
                 }
             }
+        }
+        if !media_resources.is_empty() {
+            self.drive_port
+                .validate_resources(context, media_resources)
+                .await?;
         }
         self.catalog_repo.save_studio_course(context, command).await
     }
@@ -1278,9 +1277,9 @@ impl CourseApplicationService for CourseServiceImpl {
         context: &CourseServiceContext,
         command: CourseLessonCommand,
     ) -> CourseResult<CourseLessonItem> {
-        for resource in &command.resources {
+        if !command.resources.is_empty() {
             self.drive_port
-                .validate_resource(context, resource.clone())
+                .validate_resources(context, command.resources.clone())
                 .await?;
         }
         self.lesson_repo.save_lesson(context, command).await

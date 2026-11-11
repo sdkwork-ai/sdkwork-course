@@ -9,6 +9,27 @@ pub trait CourseDrivePort: Send + Sync {
         resource: CourseMediaResourceRef,
     ) -> CourseResult<CourseMediaResourceRef>;
 
+    /// Validates a whole material set in one call.
+    ///
+    /// The default keeps the single-resource contract for adapters without a
+    /// batch backend: every resource is checked in order and the caller sees the
+    /// first failure. An in-process adapter whose Drive backend exposes a
+    /// set-based ACL read overrides this to resolve all distinct nodes at once
+    /// and keep the per-resource error kinds.
+    ///
+    /// Input order is preserved in the returned vector.
+    async fn validate_resources(
+        &self,
+        context: &CourseServiceContext,
+        resources: Vec<CourseMediaResourceRef>,
+    ) -> CourseResult<Vec<CourseMediaResourceRef>> {
+        let mut validated = Vec::with_capacity(resources.len());
+        for resource in resources {
+            validated.push(self.validate_resource(context, resource).await?);
+        }
+        Ok(validated)
+    }
+
     async fn issue_download_grant(
         &self,
         context: &CourseServiceContext,

@@ -10,6 +10,7 @@ description = "SDKWork course app-api route crate."
 [lints]
 workspace = true
 [lib]
+name = "sdkwork_routes_course_app_api"
 path = "src/lib.rs"
 
 [dependencies]

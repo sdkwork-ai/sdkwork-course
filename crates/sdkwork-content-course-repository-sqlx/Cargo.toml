@@ -10,6 +10,7 @@ description = "SDKWork content course SQLx repository implementation and migrati
 [lints]
 workspace = true
 [lib]
+name = "sdkwork_content_course_repository_sqlx"
 path = "src/lib.rs"
 
 [dependencies]
@@ -25,4 +26,4 @@ tracing.workspace = true
 uuid = { version = "1.0", features = ["v4"] }
 
 [dev-dependencies]
-tokio = { version = "1.51", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.51", features = ["macros", "rt-multi-thread", "sync"] }
