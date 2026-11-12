@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 
+import { resetCommentsClient } from './commentsAppSdk'
 import { restoreCourseIamSession } from './iamSession'
 import { loadCourseSession, resetCourseGlobalTokenManager, saveCourseSession } from './session'
 
@@ -61,6 +62,9 @@ export const useAppStore = create<AppState>((set) => ({
   logout: () => {
     saveCourseSession(null)
     resetCourseGlobalTokenManager()
+    // The comments client memoizes the session token it was built with; drop
+    // it so a later sign-in never posts with the signed-out account's token.
+    resetCommentsClient()
     set({ user: null, isAuthenticated: false })
   },
 }))

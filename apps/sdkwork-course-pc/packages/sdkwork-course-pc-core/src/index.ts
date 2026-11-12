@@ -84,6 +84,7 @@ export type {
 export {
   ensureCommentsThread,
   getCommentsClient,
+  resetCommentsClient,
   resolveCommentsBaseUrl,
 } from './commentsAppSdk';
 

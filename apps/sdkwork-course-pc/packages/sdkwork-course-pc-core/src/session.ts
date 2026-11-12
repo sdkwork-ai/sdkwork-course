@@ -71,7 +71,8 @@ export function saveCourseSession(session: CourseSession | null): void {
 }
 
 export function resolveAppApiBaseUrl(): string {
-  const configured = trim(import.meta.env.VITE_API_BASE_URL ?? '');
+  const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+  const configured = trim(env?.VITE_API_BASE_URL ?? '');
   if (!isBlank(configured)) {
     // §6.3 protocol adaptation: the explicit override's scheme follows the
     // page scheme on the shared dual-scheme edge.

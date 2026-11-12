@@ -1,5 +1,7 @@
 import { createClient, type SdkworkAppClient } from '@sdkwork/comments-app-sdk'
 
+import { COURSE_SESSION_CHANGED_EVENT } from './session'
+
 interface IamSession {
   accessToken?: string
   authToken?: string
@@ -29,8 +31,30 @@ export function resolveCommentsBaseUrl(): string {
 }
 
 let cachedClient: SdkworkAppClient | null = null
+let sessionChangeBound = false
+
+/**
+ * Drop the memoized comments client.
+ *
+ * The client snapshots the session's access token when it is created. After a
+ * sign-out or an account switch that snapshot is stale, so the cache must be
+ * cleared or the next comment is authored with the previous account's token.
+ */
+export function resetCommentsClient(): void {
+  cachedClient = null
+}
+
+function bindCommentsSessionChangeReset(): void {
+  if (sessionChangeBound) return
+  if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return
+  sessionChangeBound = true
+  window.addEventListener(COURSE_SESSION_CHANGED_EVENT, () => {
+    resetCommentsClient()
+  })
+}
 
 export function getCommentsClient(): SdkworkAppClient {
+  bindCommentsSessionChangeReset()
   if (cachedClient) return cachedClient
   const session = readSession()
   const claims = decodeClaims(session.accessToken)
