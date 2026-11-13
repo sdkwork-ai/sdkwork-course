@@ -176,5 +176,17 @@
         "source": "openapi"
       }
     ]
+  },
+  "roles": {
+    "domainStandardRoles": [],
+    "roleExclusions": [],
+    "roleGrantExtensions": [
+      {
+        "roleCode": "org_admin",
+        "patterns": [
+          "course.*"
+        ]
+      }
+    ]
   }
 }
