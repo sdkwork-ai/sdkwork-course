@@ -737,13 +737,21 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 r#"
                 SELECT id, course_code, title, subtitle, summary, description,
                    cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor,
+                   (SELECT i.display_name FROM course_instructor i
+                     WHERE i.id = course_catalog.primary_instructor_id
+                       AND i.tenant_id = course_catalog.tenant_id
+                       AND i.deleted_at IS NULL) as instructor,
                    estimated_duration_seconds::text as duration_text,
                    lesson_count_snapshot::bigint as lessons_count,
                    rating_score_snapshot as rating_score,
                    student_count_snapshot::bigint as students_count,
                    difficulty_level as level,
-                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   category_id as category_id,
+                   (SELECT c.name FROM course_category c
+                     WHERE c.id = course_catalog.category_id
+                       AND c.tenant_id = course_catalog.tenant_id
+                       AND c.deleted_at IS NULL) as category,
+                   tags_json as tags, body_content as content,
                    status, publish_status, published_at,
                    course_kind as kind,
                    (is_free <> 0) as is_free,
@@ -798,13 +806,21 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 r#"
                 SELECT id, course_code, title, subtitle, summary, description,
                    cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor,
+                   (SELECT i.display_name FROM course_instructor i
+                     WHERE i.id = course_catalog.primary_instructor_id
+                       AND i.tenant_id = course_catalog.tenant_id
+                       AND i.deleted_at IS NULL) as instructor,
                    estimated_duration_seconds::text as duration_text,
                    lesson_count_snapshot::bigint as lessons_count,
                    rating_score_snapshot as rating_score,
                    student_count_snapshot::bigint as students_count,
                    difficulty_level as level,
-                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   category_id as category_id,
+                   (SELECT c.name FROM course_category c
+                     WHERE c.id = course_catalog.category_id
+                       AND c.tenant_id = course_catalog.tenant_id
+                       AND c.deleted_at IS NULL) as category,
+                   tags_json as tags, body_content as content,
                    status, publish_status, published_at,
                    course_kind as kind,
                    (is_free <> 0) as is_free,
@@ -914,13 +930,21 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     r#"
                     SELECT id, course_code, title, subtitle, summary, description,
                    cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor,
+                   (SELECT i.display_name FROM course_instructor i
+                     WHERE i.id = course_catalog.primary_instructor_id
+                       AND i.tenant_id = course_catalog.tenant_id
+                       AND i.deleted_at IS NULL) as instructor,
                    estimated_duration_seconds::text as duration_text,
                    lesson_count_snapshot::bigint as lessons_count,
                    rating_score_snapshot as rating_score,
                    student_count_snapshot::bigint as students_count,
                    difficulty_level as level,
-                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   category_id as category_id,
+                   (SELECT c.name FROM course_category c
+                     WHERE c.id = course_catalog.category_id
+                       AND c.tenant_id = course_catalog.tenant_id
+                       AND c.deleted_at IS NULL) as category,
+                   tags_json as tags, body_content as content,
                    status, publish_status, published_at,
                    course_kind as kind,
                    (is_free <> 0) as is_free,
@@ -980,13 +1004,21 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                     r#"
                     SELECT id, course_code, title, subtitle, summary, description,
                    cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor,
+                   (SELECT i.display_name FROM course_instructor i
+                     WHERE i.id = course_catalog.primary_instructor_id
+                       AND i.tenant_id = course_catalog.tenant_id
+                       AND i.deleted_at IS NULL) as instructor,
                    estimated_duration_seconds::text as duration_text,
                    lesson_count_snapshot::bigint as lessons_count,
                    rating_score_snapshot as rating_score,
                    student_count_snapshot::bigint as students_count,
                    difficulty_level as level,
-                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   category_id as category_id,
+                   (SELECT c.name FROM course_category c
+                     WHERE c.id = course_catalog.category_id
+                       AND c.tenant_id = course_catalog.tenant_id
+                       AND c.deleted_at IS NULL) as category,
+                   tags_json as tags, body_content as content,
                    status, publish_status, published_at,
                    course_kind as kind,
                    (is_free <> 0) as is_free,
@@ -1095,13 +1127,21 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 r#"
                 SELECT id, course_code, title, subtitle, summary, description,
                    cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor,
+                   (SELECT i.display_name FROM course_instructor i
+                     WHERE i.id = course_catalog.primary_instructor_id
+                       AND i.tenant_id = course_catalog.tenant_id
+                       AND i.deleted_at IS NULL) as instructor,
                    estimated_duration_seconds::text as duration_text,
                    lesson_count_snapshot::bigint as lessons_count,
                    rating_score_snapshot as rating_score,
                    student_count_snapshot::bigint as students_count,
                    difficulty_level as level,
-                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   category_id as category_id,
+                   (SELECT c.name FROM course_category c
+                     WHERE c.id = course_catalog.category_id
+                       AND c.tenant_id = course_catalog.tenant_id
+                       AND c.deleted_at IS NULL) as category,
+                   tags_json as tags, body_content as content,
                    status, publish_status, published_at,
                    course_kind as kind,
                    (is_free <> 0) as is_free,
@@ -1159,13 +1199,21 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 r#"
                 SELECT id, course_code, title, subtitle, summary, description,
                    cover_resource_snapshot as thumbnail,
-                   primary_instructor_id as instructor,
+                   (SELECT i.display_name FROM course_instructor i
+                     WHERE i.id = course_catalog.primary_instructor_id
+                       AND i.tenant_id = course_catalog.tenant_id
+                       AND i.deleted_at IS NULL) as instructor,
                    estimated_duration_seconds::text as duration_text,
                    lesson_count_snapshot::bigint as lessons_count,
                    rating_score_snapshot as rating_score,
                    student_count_snapshot::bigint as students_count,
                    difficulty_level as level,
-                   category_id as category_id, category_id as category, tags_json as tags, body_content as content,
+                   category_id as category_id,
+                   (SELECT c.name FROM course_category c
+                     WHERE c.id = course_catalog.category_id
+                       AND c.tenant_id = course_catalog.tenant_id
+                       AND c.deleted_at IS NULL) as category,
+                   tags_json as tags, body_content as content,
                    status, publish_status, published_at,
                    course_kind as kind,
                    (is_free <> 0) as is_free,
