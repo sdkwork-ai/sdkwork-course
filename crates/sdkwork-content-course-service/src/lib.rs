@@ -68,4 +68,33 @@ mod tests {
         assert_eq!(query.limit(), 200);
         assert_eq!(query.offset(), 400);
     }
+
+    #[test]
+    fn reports_overview_payload_keeps_the_admin_surface_keys() {
+        let payload =
+            crate::service::course_service::reports_overview_payload(2685, 2684, 0, 0, 3, 0.0);
+        assert_eq!(
+            payload,
+            serde_json::json!({
+                "courseCount": 2685,
+                "publishedCourseCount": 2684,
+                "studentCount": 0,
+                "enrollmentCount": 0,
+                "liveSessionCount": 3,
+                "completionRate": 0.0,
+            })
+        );
+        // The admin console reads exactly these names with a zero fallback, so
+        // a renamed key is invisible in review but renders 0 on every card.
+        for key in [
+            "courseCount",
+            "publishedCourseCount",
+            "studentCount",
+            "enrollmentCount",
+            "liveSessionCount",
+            "completionRate",
+        ] {
+            assert!(payload.get(key).is_some(), "missing overview key {key}");
+        }
+    }
 }

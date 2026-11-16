@@ -2415,6 +2415,30 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         })
     }
 
+    fn count_students<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64> {
+        Box::pin(async move {
+            let count = sqlx::query_scalar::<_, i64>(
+                r#"
+                SELECT COUNT(DISTINCT user_id)
+                FROM course_enrollment
+                WHERE tenant_id = $1
+                  AND (organization_id = $2 OR organization_id = '0')
+                  AND deleted_at IS NULL
+                  AND user_id <> ''
+                "#,
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            Ok(count)
+        })
+    }
+
     fn create_enrollment<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -3333,6 +3357,29 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
         })
     }
 
+    fn count_live_sessions<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64> {
+        Box::pin(async move {
+            let count = sqlx::query_scalar::<_, i64>(
+                r#"
+                SELECT COUNT(*)
+                FROM course_live_session
+                WHERE tenant_id = $1
+                  AND (organization_id = $2 OR organization_id = '0')
+                  AND deleted_at IS NULL
+                "#,
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            Ok(count)
+        })
+    }
+
     fn list_live_sessions<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -3677,6 +3724,43 @@ impl CourseSqlxRepositoryPort for PostgresCourseRepository {
                 .collect();
 
             Ok(items)
+        })
+    }
+
+    fn completion_rate<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, f64> {
+        Box::pin(async move {
+            // Course-level progress rows carry the completed/required lesson
+            // rollup, so the tenant rate is the ratio of the two sums. A tenant
+            // with no progress rows (nothing enrolled, or nobody started)
+            // reports 0 instead of NULL.
+            let rate = sqlx::query_scalar::<_, f64>(
+                r#"
+                SELECT COALESCE(
+                    SUM(completed_lesson_count)::float8
+                      / NULLIF(SUM(required_lesson_count), 0),
+                    0
+                )
+                FROM course_learning_progress
+                WHERE tenant_id = $1
+                  AND (organization_id = $2 OR organization_id = '0')
+                  AND deleted_at IS NULL
+                  AND required_lesson_count > 0
+                "#,
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .fetch_one(self.pool())
+            .await
+            .map_err(sqlx_storage_error)?;
+            let bounded = if rate.is_finite() {
+                rate.clamp(0.0, 1.0)
+            } else {
+                0.0
+            };
+            Ok((bounded * 10_000.0).round() / 10_000.0)
         })
     }
 

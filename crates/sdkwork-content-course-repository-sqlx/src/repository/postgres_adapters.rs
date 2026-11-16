@@ -505,6 +505,10 @@ impl CourseLiveSessionRepository for PostgresCourseRepository {
         CourseSqlxRepositoryPort::retrieve_live_session(self, context, live_session_id).await
     }
 
+    async fn count_live_sessions(&self, context: &CourseServiceContext) -> CourseResult<i64> {
+        CourseSqlxRepositoryPort::count_live_sessions(self, context).await
+    }
+
     async fn record_live_join(
         &self,
         context: &CourseServiceContext,
@@ -536,6 +540,10 @@ impl CourseLiveSessionRepository for PostgresCourseRepository {
 impl CourseEnrollmentRepository for PostgresCourseRepository {
     async fn count_enrollments(&self, context: &CourseServiceContext) -> CourseResult<i64> {
         CourseSqlxRepositoryPort::count_enrollments(self, context).await
+    }
+
+    async fn count_students(&self, context: &CourseServiceContext) -> CourseResult<i64> {
+        CourseSqlxRepositoryPort::count_students(self, context).await
     }
 
     async fn create_enrollment(
@@ -698,6 +706,10 @@ impl CourseProgressRepository for PostgresCourseRepository {
         enrollment_id: String,
     ) -> CourseResult<Option<Value>> {
         CourseSqlxRepositoryPort::retrieve_progress(self, context, enrollment_id).await
+    }
+
+    async fn completion_rate(&self, context: &CourseServiceContext) -> CourseResult<f64> {
+        CourseSqlxRepositoryPort::completion_rate(self, context).await
     }
 }
 

@@ -206,6 +206,12 @@ pub trait CourseSqlxRepositoryPort {
         context: &'a CourseServiceContext,
     ) -> CourseRepositoryFuture<'a, i64>;
 
+    /// Distinct learners holding an enrollment in the caller's scope.
+    fn count_students<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64>;
+
     fn create_enrollment<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -295,6 +301,12 @@ pub trait CourseSqlxRepositoryPort {
         query: CourseQuery,
     ) -> CourseRepositoryFuture<'a, Vec<Value>>;
 
+    /// Number of scheduled/held live sessions in the caller's scope.
+    fn count_live_sessions<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, i64>;
+
     fn retrieve_live_session<'a>(
         &'a self,
         context: &'a CourseServiceContext,
@@ -336,6 +348,12 @@ pub trait CourseSqlxRepositoryPort {
         context: &'a CourseServiceContext,
         enrollment_id: String,
     ) -> CourseRepositoryFuture<'a, Option<Value>>;
+
+    /// Share of required lessons already completed, as a `0.0..=1.0` fraction.
+    fn completion_rate<'a>(
+        &'a self,
+        context: &'a CourseServiceContext,
+    ) -> CourseRepositoryFuture<'a, f64>;
 }
 
 impl<Pool> SqlxCourseRepository<Pool> {

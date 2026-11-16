@@ -314,6 +314,9 @@ pub trait CourseLiveSessionRepository: Send + Sync {
         live_session_id: String,
     ) -> CourseResult<Option<serde_json::Value>>;
 
+    /// Number of scheduled/held live sessions in the caller's scope.
+    async fn count_live_sessions(&self, context: &CourseServiceContext) -> CourseResult<i64>;
+
     async fn record_live_join(
         &self,
         context: &CourseServiceContext,
@@ -336,6 +339,9 @@ pub trait CourseLiveSessionRepository: Send + Sync {
 #[async_trait::async_trait]
 pub trait CourseEnrollmentRepository: Send + Sync {
     async fn count_enrollments(&self, context: &CourseServiceContext) -> CourseResult<i64>;
+
+    /// Distinct learners holding an enrollment in the caller's scope.
+    async fn count_students(&self, context: &CourseServiceContext) -> CourseResult<i64>;
 
     async fn create_enrollment(
         &self,
@@ -428,6 +434,9 @@ pub trait CourseProgressRepository: Send + Sync {
         context: &CourseServiceContext,
         enrollment_id: String,
     ) -> CourseResult<Option<serde_json::Value>>;
+
+    /// Share of required lessons already completed, as a `0.0..=1.0` fraction.
+    async fn completion_rate(&self, context: &CourseServiceContext) -> CourseResult<f64>;
 }
 
 #[async_trait::async_trait]

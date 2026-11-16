@@ -1760,20 +1760,24 @@ impl CourseApplicationService for CourseServiceImpl {
     // ── Reports ─────────────────────────────────────────────────────
 
     async fn list_reports_overview(&self, context: &CourseServiceContext) -> CourseResult<Value> {
-        let total_courses = self.catalog_repo.count_courses(context, None).await?;
-        let published_courses = self
+        let course_count = self.catalog_repo.count_courses(context, None).await?;
+        let published_course_count = self
             .catalog_repo
             .count_courses(context, Some("published".to_string()))
             .await?;
-        let total_enrollments = self.enrollment_repo.count_enrollments(context).await?;
-        let total_applications = self.application_repo.count_applications(context).await?;
+        let student_count = self.enrollment_repo.count_students(context).await?;
+        let enrollment_count = self.enrollment_repo.count_enrollments(context).await?;
+        let live_session_count = self.live_session_repo.count_live_sessions(context).await?;
+        let completion_rate = self.progress_repo.completion_rate(context).await?;
 
-        Ok(serde_json::json!({
-            "totalCourses": total_courses,
-            "totalEnrollments": total_enrollments,
-            "totalApplications": total_applications,
-            "publishedCourses": published_courses,
-        }))
+        Ok(reports_overview_payload(
+            course_count,
+            published_course_count,
+            student_count,
+            enrollment_count,
+            live_session_count,
+            completion_rate,
+        ))
     }
 
     async fn list_reports_learning(
@@ -1797,6 +1801,33 @@ impl CourseApplicationService for CourseServiceImpl {
         Ok(serde_json::json!({ "items": sessions }))
     }
 }
+/// Canonical admin report-overview payload.
+///
+/// The operator console renders six cards from this single response, so the
+/// field names are part of the wire contract: `courseCount`,
+/// `publishedCourseCount`, `studentCount`, `enrollmentCount`,
+/// `liveSessionCount`, and `completionRate` (a `0.0..=1.0` fraction). Keep the
+/// admin surface and this payload in lockstep; renaming a key here silently
+/// renders zeros on every console card because the client reads named fields
+/// with a zero fallback.
+pub(crate) fn reports_overview_payload(
+    course_count: i64,
+    published_course_count: i64,
+    student_count: i64,
+    enrollment_count: i64,
+    live_session_count: i64,
+    completion_rate: f64,
+) -> Value {
+    serde_json::json!({
+        "courseCount": course_count,
+        "publishedCourseCount": published_course_count,
+        "studentCount": student_count,
+        "enrollmentCount": enrollment_count,
+        "liveSessionCount": live_session_count,
+        "completionRate": completion_rate,
+    })
+}
+
 fn require_creator(context: &CourseServiceContext) -> CourseResult<()> {
     match context.user_id.as_deref().map(str::trim) {
         Some(user_id) if !user_id.is_empty() => Ok(()),
