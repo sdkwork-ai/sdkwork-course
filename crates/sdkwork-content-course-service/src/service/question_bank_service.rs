@@ -1126,6 +1126,7 @@ mod tests {
             request_id: None,
             trace_id: None,
             permissions: Vec::new(),
+            caller: crate::domain::commands::CallerCredentials::default(),
         }
     }
 

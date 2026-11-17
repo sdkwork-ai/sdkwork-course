@@ -42,6 +42,7 @@ pub fn course_service_context_from_web(
             actor_id: Some(principal.user_id().to_owned()),
             request_id: Some(app_ctx.request_id.0.clone()),
             trace_id: app_ctx.trace_id.clone(),
+            caller: sdkwork_web_core::current_caller_credentials(),
             permissions: principal
                 .scopes
                 .permission_scope
@@ -82,6 +83,7 @@ pub fn course_service_context_from_web(
             // without provisioning IAM roles. Production always requires a
             // resolved principal with real permissions.
             permissions: vec!["course.*".to_owned()],
+            caller: sdkwork_content_course_service::CallerCredentials::default(),
         });
     }
 

@@ -7,6 +7,9 @@ use sdkwork_content_course_service::ports::provider::CourseDrivePort;
 use sdkwork_drive_app_sdk_generated_rust::{
     CreateDownloadGrantRequest, SdkworkAppClient, SdkworkError,
 };
+use sdkwork_utils_rust::caller_identity::{
+    missing_caller_identity, CallerCredentials, CallerTokenKind,
+};
 use sdkwork_utils_rust::service_base_url::registry_base_url_or;
 use sdkwork_utils_rust::string::{is_blank, trim};
 
@@ -14,8 +17,6 @@ use sdkwork_utils_rust::string::{is_blank, trim};
 const DRIVE_FACADE_URL_ENV: &str = "SDKWORK_DRIVE_FACADE_URL";
 /// Opt-in URL of a separately deployed Drive app-api surface.
 const DRIVE_APP_API_BASE_ENV: &str = "SDKWORK_DRIVE_APP_API_BASE_URL";
-/// Service credential the Drive app-api requires from a split-deployment caller.
-const DRIVE_ACCESS_TOKEN_ENV: &str = "SDKWORK_ACCESS_TOKEN";
 
 /// Drive integration over HTTP for a **deliberate split deployment**.
 ///
@@ -27,14 +28,13 @@ const DRIVE_ACCESS_TOKEN_ENV: &str = "SDKWORK_ACCESS_TOKEN";
 /// split-deployment configuration **at startup** and returns an error instead of
 /// letting the first course mutation fail at request time.
 ///
-/// Identity is carried by the service credential: the Drive app-api resolves the
-/// verified tenant/organization/actor from the access token, so this client does
-/// not project identity through request headers (AGENTS.md HTTP request header
-/// contract: identity projection headers must not appear on the wire).
+/// Identity is carried by the caller's verified dual tokens: the Drive app-api
+/// resolves tenant/organization/actor from the credential, and this adapter
+/// builds a caller-scoped client per call instead of holding a process token
+/// (`APP_SDK_INTEGRATION_SPEC.md` §5.2.1).
 #[derive(Clone)]
 pub struct SdkDriveCoursePort {
     base_url: String,
-    access_token: String,
 }
 
 impl SdkDriveCoursePort {
@@ -75,29 +75,33 @@ impl SdkDriveCoursePort {
                  or the HTTP service registry must have a healthy sdkwork-drive instance"
             ));
         }
-        let access_token = std::env::var(DRIVE_ACCESS_TOKEN_ENV)
-            .ok()
-            .map(|value| trim(&value).to_string())
-            .filter(|value| !is_blank(Some(value.as_str())))
-            .ok_or_else(|| {
-                format!(
-                    "{DRIVE_ACCESS_TOKEN_ENV} is required by the split-deployment HTTP Drive \
-                     adapter; unset {DRIVE_FACADE_URL_ENV}/{DRIVE_APP_API_BASE_ENV} to use the \
-                     default in-process adapter instead"
-                )
-            })?;
-        Ok(Self {
-            base_url,
-            access_token,
-        })
+        Ok(Self { base_url })
     }
 
-    fn client(&self) -> Result<SdkworkAppClient, CourseError> {
+    /// Builds the caller-scoped Drive app-api client for one call.
+    ///
+    /// `APP_SDK_INTEGRATION_SPEC.md` §5.2.1: a user-scoped Drive read must
+    /// authenticate as the caller (the Drive app-api requires the dual-token
+    /// pair), never as a process credential. A call without a caller identity
+    /// fails here with a diagnostic naming the destination.
+    fn client(&self, caller: &CallerCredentials) -> Result<SdkworkAppClient, CourseError> {
+        if caller.is_empty() {
+            return Err(CourseError::invalid(missing_caller_identity(
+                "sdkwork-drive app-api",
+            )));
+        }
         // Re-resolve per call so a registry failover takes effect without a
         // process restart; the stored value is the degradation fallback.
         let base_url = registry_base_url_or("sdkwork-drive", &self.base_url);
         let client = SdkworkAppClient::new_with_base_url(&base_url).map_err(map_drive_error)?;
-        client.set_access_token(self.access_token.clone());
+        caller.apply_typed(|kind, token| match kind {
+            CallerTokenKind::Auth => {
+                client.set_auth_token(token);
+            }
+            CallerTokenKind::Access => {
+                client.set_access_token(token);
+            }
+        });
         Ok(client)
     }
 }
@@ -114,13 +118,13 @@ fn read_configured_url(env_key: &str) -> Option<String> {
 impl CourseDrivePort for SdkDriveCoursePort {
     async fn validate_resource(
         &self,
-        _context: &CourseServiceContext,
+        context: &CourseServiceContext,
         resource: CourseMediaResourceRef,
     ) -> CourseResult<CourseMediaResourceRef> {
         if is_blank(Some(resource.drive_resource_id.as_str())) {
             return Err(CourseError::invalid("driveResourceId is required"));
         }
-        self.client()?
+        self.client(&context.caller)?
             .drive()
             .nodes_retrieve(&resource.drive_resource_id)
             .await
@@ -130,14 +134,14 @@ impl CourseDrivePort for SdkDriveCoursePort {
 
     async fn issue_download_grant(
         &self,
-        _context: &CourseServiceContext,
+        context: &CourseServiceContext,
         resource_ref_id: String,
     ) -> CourseResult<String> {
         if is_blank(Some(resource_ref_id.as_str())) {
             return Err(CourseError::invalid("resourceRefId is required"));
         }
         let grant = self
-            .client()?
+            .client(&context.caller)?
             .drive()
             .download_grants_create(
                 &resource_ref_id,
@@ -191,8 +195,10 @@ mod tests {
             .expect("the module has a production section");
         assert!(production.contains("SDKWORK_DRIVE_FACADE_URL"));
         assert!(production.contains("SDKWORK_DRIVE_APP_API_BASE_URL"));
-        assert!(production.contains("SDKWORK_ACCESS_TOKEN"));
-        // The adapter must not project identity through request headers.
+        // The adapter carries the caller pair through the generated client
+        // setters, never a process token or identity projection headers.
+        assert!(!production.contains("SDKWORK_ACCESS_TOKEN"));
+        assert!(production.contains("missing_caller_identity"));
         assert!(!production.contains("set_header"));
         assert!(!production.contains("X-Sdkwork-"));
     }
@@ -200,5 +206,27 @@ mod tests {
     #[test]
     fn the_grant_ttl_matches_the_drive_route_bounds() {
         assert!((30..=300).contains(&120));
+    }
+}
+
+#[cfg(test)]
+mod caller_identity_tests {
+    use super::*;
+
+    #[test]
+    fn a_call_without_caller_identity_fails_closed_with_the_destination_name() {
+        let port = SdkDriveCoursePort {
+            base_url: "http://127.0.0.1:1".to_owned(),
+        };
+        let error = port
+            .client(&sdkwork_content_course_service::CallerCredentials::default())
+            .err()
+            .expect("a call without a caller identity must not dispatch");
+        let message = error.to_string();
+        assert!(message.contains("sdkwork-drive app-api"), "{message}");
+        assert!(
+            message.contains("neither an Authorization bearer nor an Access-Token"),
+            "{message}"
+        );
     }
 }

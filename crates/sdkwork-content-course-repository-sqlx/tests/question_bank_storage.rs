@@ -32,6 +32,7 @@ fn test_context(tenant_id: &str) -> CourseServiceContext {
         request_id: None,
         trace_id: None,
         permissions: Vec::new(),
+        caller: sdkwork_content_course_service::CallerCredentials::default(),
     }
 }
 

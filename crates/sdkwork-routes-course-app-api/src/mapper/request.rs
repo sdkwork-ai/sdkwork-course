@@ -86,6 +86,7 @@ pub fn parse_service_context(
         request_id: None,
         trace_id: None,
         permissions: vec![],
+        caller: sdkwork_content_course_service::CallerCredentials::default(),
     }
 }
 

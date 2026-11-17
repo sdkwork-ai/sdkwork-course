@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+/// Verified caller dual credentials (`APP_SDK_INTEGRATION_SPEC.md` §5.2.1).
+pub use sdkwork_utils_rust::caller_identity::CallerCredentials;
+
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CourseServiceContext {
@@ -10,6 +13,11 @@ pub struct CourseServiceContext {
     pub request_id: Option<String>,
     pub trace_id: Option<String>,
     pub permissions: Vec<String>,
+    /// The authenticated caller's dual tokens, forwarded to every outbound
+    /// user-scoped dependency call. Never serialized; empty on a
+    /// service-identity path.
+    #[serde(skip)]
+    pub caller: CallerCredentials,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]

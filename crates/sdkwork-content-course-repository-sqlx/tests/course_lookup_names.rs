@@ -25,6 +25,7 @@ fn context() -> CourseServiceContext {
         request_id: Some("course-lookup-test".to_owned()),
         trace_id: None,
         permissions: vec!["course.*".to_owned()],
+        caller: sdkwork_content_course_service::CallerCredentials::default(),
     }
 }
 

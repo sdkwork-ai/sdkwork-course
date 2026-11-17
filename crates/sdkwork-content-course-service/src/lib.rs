@@ -6,13 +6,13 @@ pub mod service;
 pub mod test_support;
 
 pub use domain::commands::{
-    is_supported_course_kind, normalize_course_kind, CourseAuditCommand, CourseCatalogCommand,
-    CourseEnrollmentCommand, CourseLessonCommand, CourseLessonKind, CourseLessonProgressCommand,
-    CourseLiveJoinGrant, CourseLiveSessionCommand, CourseMediaResourceRef, CourseOfferingCommand,
-    CourseOfferingType, CourseOfflineCommand, CourseProgressStatus, CourseReviewDecisionCommand,
-    CourseServiceContext, CourseStudioDraftCommand, CourseStudioLessonDraft,
-    CourseStudioResourceDraft, CourseStudioSectionDraft, COURSE_KIND_COLLECTION,
-    COURSE_KIND_COLUMN, COURSE_KIND_STANDARD,
+    is_supported_course_kind, normalize_course_kind, CallerCredentials, CourseAuditCommand,
+    CourseCatalogCommand, CourseEnrollmentCommand, CourseLessonCommand, CourseLessonKind,
+    CourseLessonProgressCommand, CourseLiveJoinGrant, CourseLiveSessionCommand,
+    CourseMediaResourceRef, CourseOfferingCommand, CourseOfferingType, CourseOfflineCommand,
+    CourseProgressStatus, CourseReviewDecisionCommand, CourseServiceContext,
+    CourseStudioDraftCommand, CourseStudioLessonDraft, CourseStudioResourceDraft,
+    CourseStudioSectionDraft, COURSE_KIND_COLLECTION, COURSE_KIND_COLUMN, COURSE_KIND_STANDARD,
 };
 pub use domain::models::{
     is_supported_question_type, ComposeBucket, CourseApplicationCreateRequest,

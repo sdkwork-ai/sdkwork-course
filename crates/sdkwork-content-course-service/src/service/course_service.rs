@@ -1518,6 +1518,7 @@ impl CourseApplicationService for CourseServiceImpl {
             request_id: None,
             trace_id: None,
             permissions: Vec::new(),
+            caller: crate::domain::commands::CallerCredentials::default(),
         };
         self.grant_entitlement(&context, offering_id, learner_user_id, purchase_ref)
             .await

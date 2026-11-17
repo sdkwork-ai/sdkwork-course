@@ -116,6 +116,7 @@ impl CourseEntitlementGrantRepository for PostgresCourseRepository {
             request_id: None,
             trace_id: None,
             permissions: Vec::new(),
+            caller: sdkwork_content_course_service::CallerCredentials::default(),
         };
 
         // `purchase_ref` is the enrollment idempotency key; `create_enrollment`
