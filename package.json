@@ -76,7 +76,8 @@
     "_sdkwork:verify": "pnpm run test && pnpm run test:design && pnpm run test:sdk-contract && pnpm run test:contracts && pnpm run test:contract:database && pnpm run test:route-integration && pnpm run test:engagement && pnpm run test:questionbank && pnpm run check:api-envelope && pnpm run check:openapi-drift && pnpm run check:app-composition && pnpm run typecheck:apps && cargo test --workspace && pnpm check:cors-standard",
     "_sdkwork:clean": "cargo clean",
     "_sdkwork:build": "cargo build --workspace --release && pnpm --dir apps/sdkwork-course-pc run build:prod && pnpm --dir apps/sdkwork-course-h5 run build:prod && pnpm --dir apps/sdkwork-course-mini-program build",
-    "test:questionbank": "node --test scripts/course-question-bank-contract.test.mjs"
+    "test:questionbank": "node --test scripts/course-question-bank-contract.test.mjs",
+    "check:release-access-token:require-anchor": "node ../sdkwork-specs/tools/check-release-access-token-env.mjs --root . --require-anchor"
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
